@@ -1,0 +1,38 @@
+version: "3.5"
+services:
+  backend-d:
+    container_name: backend-api
+    image: backend-api
+    depends_on:
+      - mysql
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    ports:
+      - 8080:8080
+    networks:
+      - ticket_network
+    environment:
+      - DATABASE_NAME=projja
+      - DATABASE_USER=root
+      - DATABASE_PASS=root
+      - DATABASE_HOST=mysql
+    restart: always
+    
+  mysql:
+    container_name: mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 7706:3306
+    networks:
+      - ticket_network
+    restart: always  
+    
+networks:
+  ticket_network:
+    driver: bridge

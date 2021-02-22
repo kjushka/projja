@@ -50,7 +50,7 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) (int, stri
 }
 
 func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWriter) (int, string) {
-	username := params["username"]
+	username := params["uname"]
 	user := &model.User{}
 	row := c.DB.QueryRow(
 		"select u.name, u.username, u.telegram_id from users u where username = ?",
@@ -126,16 +126,13 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	for i, skill := range skills.Skills {
 		skill := strings.ToLower(skill)
 		if !skillsSet.Has(skill) {
-			newSkills = append(newSkills, fmt.Sprintf("('%v')", skill))
+			newSkills = append(newSkills, fmt.Sprintf("('%v')", strings.ToLower(skill)))
 		}
 		newUserSkills[i] = fmt.Sprintf("(%v, (select s.id from skill s where s.skill = '%v'))",
 			userId,
 			skill,
 		)
 	}
-
-	fmt.Println(strings.Join(newUserSkills, ", "), len(newUserSkills))
-	fmt.Println(skills.Skills)
 
 	if len(newSkills) != 0 {
 		_, err := c.DB.Exec("insert into skill (skill) values " + strings.Join(newSkills, ", "))
@@ -165,7 +162,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 
 	rowsAffected, _ := result.RowsAffected()
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "user registered", struct {
+	return c.makeContentResponse(202, "skills set", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -175,36 +172,103 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 }
 
 func (c *Controller) GetOpenUserProjects(params martini.Params, w http.ResponseWriter) (int, string) {
-	username := params["uname"]
-	row := c.DB.QueryRow("select id from users where username = ?", username)
-	var userId int
-	err := row.Scan(&userId)
-	if err != nil && err != sql.ErrNoRows {
-		log.Println("error in getting user id:", err)
+	user, err := c.getUserByUsername(params)
+	if err != nil {
+		log.Println("error in getting user:", err)
 		return 500, err.Error()
 	}
 
 	rows, err := c.DB.Query(
 		"select p.name, p.status from project p where p.owner = ? and p.status = ?",
-		userId,
+		user.Id,
 		"opened",
 	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
+	projects, err := c.scanProjects(rows, user)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "projects", projects)
 }
 
-func (c *Controller) GetAllUserProjects() {
+func (c *Controller) GetAllUserProjects(params martini.Params, w http.ResponseWriter) (int, string) {
+	user, err := c.getUserByUsername(params)
+	if err != nil {
+		log.Println("error in getting user:", err)
+		return 500, err.Error()
+	}
 
+	rows, err := c.DB.Query(
+		"select p.name, p.status from project p where p.owner = ?",
+		user.Id,
+	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
+	projects, err := c.scanProjects(rows, user)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "projects", projects)
 }
 
-func (c *Controller) ChangeUserName() {
+func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	username := params["uname"]
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("error in reading body:", err)
+		return 500, err.Error()
+	}
+	defer r.Body.Close()
 
+	nameStruct := &struct {
+		Name string
+	}{}
+	err = json.Unmarshal(body, nameStruct)
+	if err != nil {
+		log.Println("error in unmarshalling:", err)
+		return 500, err.Error()
+	}
+
+	result, err := c.DB.Exec("update users set name = ? where username = ?", nameStruct.Name, username)
+	if err != nil {
+		log.Println("error in updating name:", err)
+		return 500, err.Error()
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Name changed", struct {
+		Name    string
+		Content interface{}
+	}{
+		Name:    "Rows affected",
+		Content: rowsAffected,
+	})
 }
 
 func (c *Controller) getSkillsByUser(username string) ([]string, error) {
 	rows, err := c.DB.Query(
-		"select s.skill from users u "+
-			"left join (select us.users, ss.skill from users_skill us "+
-			"left join skill ss on us.skill = ss.id) s "+
-			"on s.users = u.id where u.username = ?",
+		"select s.skill from users_skill us "+
+			"left join skill s on s.id = us.skill "+
+			"inner join ("+
+			"select * from users u where u.username = ?"+
+			") u on u.id = us.users",
 		username,
 	)
 	if err != nil && err != sql.ErrNoRows {
@@ -222,6 +286,33 @@ func (c *Controller) getSkillsByUser(username string) ([]string, error) {
 		skills = append(skills, skill)
 	}
 	return skills, nil
+}
+
+func (c *Controller) getUserByUsername(params martini.Params) (*model.User, error) {
+	username := params["uname"]
+	row := c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", username)
+	user := &model.User{}
+	err := row.Scan(&user.Id, &user.Name, &user.Username, &user.TelegramId)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in getting user:", err)
+		return nil, err
+	}
+	return user, err
+}
+
+func (c *Controller) scanProjects(rows *sql.Rows, user *model.User) ([]*model.Project, error) {
+	projects := make([]*model.Project, 0)
+	for rows.Next() {
+		project := &model.Project{}
+		err := rows.Scan(&project.Name, &project.Status)
+		if err != nil {
+			log.Println("error in scanning rows:", err)
+			return nil, err
+		}
+		project.Owner = user
+		projects = append(projects, project)
+	}
+	return projects, nil
 }
 
 func (c *Controller) makeContentResponse(code int, desc string, content interface{}) (int, string) {

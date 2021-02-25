@@ -9,6 +9,7 @@ type User struct {
 }
 
 type Project struct {
+	Id     int64
 	Name   string
 	Owner  *User
 	Status string

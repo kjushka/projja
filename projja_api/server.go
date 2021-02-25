@@ -6,19 +6,18 @@ import (
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"os"
 	"projja_api/controller"
 
 	_ "github.com/lib/pq"
 )
 
 const (
-	//DSN = "root:Password123#@!@tcp(localhost:3306)/projja?&charset=utf8&interpolateParams=true&parseTime=true"
+	DSN  = "root:Password123#@!@tcp(localhost:3306)/projja?&charset=utf8&interpolateParams=true&parseTime=true"
 	addr = ":8080"
 )
 
 func main() {
-	host := os.Getenv("DATABASE_HOST")
+	/*host := os.Getenv("DATABASE_HOST")
 	name := os.Getenv("DATABASE_NAME")
 	user := os.Getenv("DATABASE_USER")
 	pass := os.Getenv("DATABASE_PASS")
@@ -29,9 +28,9 @@ func main() {
 		pass,
 		host,
 		name,
-	)
+	)*/
 
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("mysql", DSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,6 +50,11 @@ func main() {
 			r.Get("/:uname/owner/open", c.GetOpenUserProjects)
 			r.Get("/:uname/owner/all", c.GetAllUserProjects)
 			r.Post("/:uname/change", c.ChangeUserName)
+		})
+		router.Group("/project", func(r martini.Router) {
+			r.Post("/create", c.CreateProject)
+			r.Post("/:id/change/name", c.ChangeProjectName)
+			r.Post("/:id/change/status", c.ChangeProjectStatus)
 		})
 	})
 	m.RunOnAddr(addr)

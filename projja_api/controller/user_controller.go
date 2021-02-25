@@ -179,7 +179,7 @@ func (c *Controller) GetOpenUserProjects(params martini.Params, w http.ResponseW
 	}
 
 	rows, err := c.DB.Query(
-		"select p.name, p.status from project p where p.owner = ? and p.status = ?",
+		"select p.id, p.name, p.status from project p where p.owner = ? and p.status = ?",
 		user.Id,
 		"opened",
 	)
@@ -207,7 +207,7 @@ func (c *Controller) GetAllUserProjects(params martini.Params, w http.ResponseWr
 	}
 
 	rows, err := c.DB.Query(
-		"select p.name, p.status from project p where p.owner = ?",
+		"select p.id, p.name, p.status from project p where p.owner = ?",
 		user.Id,
 	)
 
@@ -304,7 +304,7 @@ func (c *Controller) scanProjects(rows *sql.Rows, user *model.User) ([]*model.Pr
 	projects := make([]*model.Project, 0)
 	for rows.Next() {
 		project := &model.Project{}
-		err := rows.Scan(&project.Name, &project.Status)
+		err := rows.Scan(&project.Id, &project.Name, &project.Status)
 		if err != nil {
 			log.Println("error in scanning rows:", err)
 			return nil, err

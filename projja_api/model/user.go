@@ -14,3 +14,8 @@ type Project struct {
 	Owner  *User
 	Status string
 }
+
+type TaskStatus struct {
+	Status string
+	Level  int
+}

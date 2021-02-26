@@ -53,10 +53,11 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 	username := params["uname"]
 	user := &model.User{}
 	row := c.DB.QueryRow(
-		"select u.name, u.username, u.telegram_id from users u where username = ?",
+		"select u.id, u.name, u.username, u.telegram_id from users u where username = ?",
 		username,
 	)
 	err := row.Scan(
+		&user.Id,
 		&user.Name,
 		&user.Username,
 		&user.TelegramId,
@@ -260,6 +261,65 @@ func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter
 		Name:    "Rows affected",
 		Content: rowsAffected,
 	})
+}
+
+func (c *Controller) GetOpenProjectsWhereMember(params martini.Params, w http.ResponseWriter) (int, string) {
+	user, err := c.getUserByUsername(params)
+	if err != nil {
+		log.Println("error in getting user:", err)
+		return 500, err.Error()
+	}
+
+	rows, err := c.DB.Query(
+		"select p.id, p.name, p.status from project p "+
+			"left join (select project, users from member) m on m.project = p.id "+
+			"where m.users = ? and p.status = ?",
+		user.Id,
+		"opened",
+	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
+	projects, err := c.scanProjects(rows, user)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "projects", projects)
+}
+
+func (c *Controller) GetAllProjectsWhereMember(params martini.Params, w http.ResponseWriter) (int, string) {
+	user, err := c.getUserByUsername(params)
+	if err != nil {
+		log.Println("error in getting user:", err)
+		return 500, err.Error()
+	}
+
+	rows, err := c.DB.Query(
+		"select p.id, p.name, p.status from project p "+
+			"left join (select project, users from member) m on m.project = p.id "+
+			"where m.users = ?",
+		user.Id,
+	)
+
+	if err != nil {
+		log.Println("error in getting all projects:", err)
+		return 500, err.Error()
+	}
+
+	projects, err := c.scanProjects(rows, user)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "projects", projects)
 }
 
 func (c *Controller) getSkillsByUser(username string) ([]string, error) {

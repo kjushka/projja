@@ -36,6 +36,32 @@ func (c *Controller) getSkillsByUser(username string) ([]string, error) {
 	return skills, nil
 }
 
+func (c *Controller) getSkillsTask(taskId int64) ([]string, error) {
+	rows, err := c.DB.Query(
+		"select s.skill from task_skill ts "+
+			"left join skill s on s.id = ts.skill "+
+			"inner join ("+
+			"select * from task t where t.id = ?"+
+			") t on t.id = ts.task",
+		taskId,
+	)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in getting skills by task id:", err)
+		return nil, err
+	}
+	skills := []string{}
+	for rows.Next() {
+		var skill string
+		err = rows.Scan(&skill)
+		if err != nil {
+			log.Println("error in scan skills:", err)
+			return nil, err
+		}
+		skills = append(skills, skill)
+	}
+	return skills, nil
+}
+
 func (c *Controller) getUserByUsername(params martini.Params) (*model.User, error) {
 	username := params["uname"]
 	row := c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", username)

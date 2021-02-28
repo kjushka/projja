@@ -69,7 +69,14 @@ func main() {
 			r.Get("/:id/get/tasks", c.GetProjectTasks)
 		})
 		router.Group("/task", func(r martini.Router) {
-
+			r.Get("/get/:id", c.GetTask)
+			r.Post("/:id/change/executor", c.ChangeTaskExecutor)
+			r.Post("/:id/change/description", c.ChangeTaskDescription)
+			r.Post("/:id/set/skills", c.SetSkillsToTask)
+			//r.Get("/:id/change/status/previous", c.SetPreviousTaskStatus)
+			//r.Get("/:id/change/status/next", c.SetNextTaskStatus)
+			r.Post("/:id/change/priority", c.ChangeTaskPriority)
+			r.Post("/:id/change/deadline", c.ChangeTaskDeadline)
 		})
 	})
 	m.RunOnAddr(addr)

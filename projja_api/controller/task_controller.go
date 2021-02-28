@@ -257,32 +257,36 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 	})
 }
 
-/*func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
-	projectId, err := strconv.ParseInt(params["id"], 10, 64)
+func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.ResponseWriter) (int, string) {
+	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
-		log.Println("error in parsing projectId", err)
+		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
 	}
 
-	jsonStatus, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		log.Println("error in reading body", err)
+	row := c.DB.QueryRow(
+		"select count(*) from task_status ts "+
+			"right join (select t.project, ts.level from task t "+
+			"left join task_status ts on ts.id = t.status where t.id = ?) "+
+			"t on t.project = ts.project where ts.level <= t.level - 1;",
+		tasktId,
+	)
+	count := 0
+	err = row.Scan(&count)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in getting count of previous levels:", err)
 		return 500, err.Error()
 	}
-	projectStatus := &struct {
-		Status string
-	}{}
-	err = json.Unmarshal(jsonStatus, projectStatus)
-	if err != nil {
-		log.Println("error in unmarshalling")
-		return 500, err.Error()
+	if count == 0 {
+		return 500, "no such previous status"
 	}
-
 	result, err := c.DB.Exec(
-		"update project set status = ? where id = ?",
-		projectStatus.Status,
-		projectId,
+		"update task set status = (select ts.id from task_status ts "+
+			"right join (select t.project, ts.level from task t "+
+			"left join task_status ts on ts.id = t.status where t.id = ?) "+
+			"t on t.project = ts.project where ts.level = t.level - 1) where id = ?;",
+		tasktId,
+		tasktId,
 	)
 	if err != nil {
 		log.Println("error in updating status:", err)
@@ -292,41 +296,45 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Project status updated", struct {
+	return c.makeContentResponse(200, "Task status updated", struct {
 		Name    string
 		Content interface{}
 	}{
 		Name:    "Rows affected",
 		Content: rowsAffected,
 	})
-}*/
+}
 
-/*func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
-	projectId, err := strconv.ParseInt(params["id"], 10, 64)
+func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWriter) (int, string) {
+	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
-		log.Println("error in parsing projectId", err)
+		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
 	}
 
-	jsonStatus, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	if err != nil {
-		log.Println("error in reading body", err)
+	row := c.DB.QueryRow(
+		"select count(*) from task_status ts "+
+			"right join (select t.project, ts.level from task t "+
+			"left join task_status ts on ts.id = t.status where t.id = ?) "+
+			"t on t.project = ts.project where ts.level >= t.level + 1;",
+		tasktId,
+	)
+	count := 0
+	err = row.Scan(&count)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in getting count of previous levels:", err)
 		return 500, err.Error()
 	}
-	projectStatus := &struct {
-		Status string
-	}{}
-	err = json.Unmarshal(jsonStatus, projectStatus)
-	if err != nil {
-		log.Println("error in unmarshalling")
-		return 500, err.Error()
+	if count == 0 {
+		return 500, "no such previous status"
 	}
-
 	result, err := c.DB.Exec(
-		"update project set status = ? where id = ?",
-		projectStatus.Status,
-		projectId,
+		"update task set status = (select ts.id from task_status ts "+
+			"right join (select t.project, ts.level from task t "+
+			"left join task_status ts on ts.id = t.status where t.id = ?) "+
+			"t on t.project = ts.project where ts.level = t.level + 1) where id = ?;",
+		tasktId,
+		tasktId,
 	)
 	if err != nil {
 		log.Println("error in updating status:", err)
@@ -336,14 +344,14 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Project status updated", struct {
+	return c.makeContentResponse(200, "Task status updated", struct {
 		Name    string
 		Content interface{}
 	}{
 		Name:    "Rows affected",
 		Content: rowsAffected,
 	})
-}*/
+}
 
 func (c *Controller) ChangeTaskPriority(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
 	tasktId, err := strconv.ParseInt(params["id"], 10, 64)

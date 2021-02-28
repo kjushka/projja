@@ -6,7 +6,6 @@ import (
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"os"
 	"projja_api/controller"
 
 	_ "github.com/lib/pq"
@@ -18,7 +17,7 @@ const (
 )
 
 func main() {
-	host := os.Getenv("DATABASE_HOST")
+	/*host := os.Getenv("DATABASE_HOST")
 	name := os.Getenv("DATABASE_NAME")
 	user := os.Getenv("DATABASE_USER")
 	pass := os.Getenv("DATABASE_PASS")
@@ -29,9 +28,9 @@ func main() {
 		pass,
 		host,
 		name,
-	)
+	)*/
 
-	db, err := sql.Open("mysql", dsn)
+	db, err := sql.Open("mysql", DSN)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,15 +65,16 @@ func main() {
 			r.Post("/:id/remove/status", c.RemoveStatusFromProject)
 			r.Get("/:id/statuses", c.GetProjectStatuses)
 			r.Post("/:id/create/task", c.CreateTask)
-			r.Get("/:id/get/tasks", c.GetProjectTasks)
+			r.Get("/:id/get/tasks/all", c.GetAllProjectTasks)
+			r.Get("/:id/get/tasks/process", c.GetProcessProjectTasks)
 		})
 		router.Group("/task", func(r martini.Router) {
 			r.Get("/get/:id", c.GetTask)
 			r.Post("/:id/change/executor", c.ChangeTaskExecutor)
 			r.Post("/:id/change/description", c.ChangeTaskDescription)
 			r.Post("/:id/set/skills", c.SetSkillsToTask)
-			//r.Get("/:id/change/status/previous", c.SetPreviousTaskStatus)
-			//r.Get("/:id/change/status/next", c.SetNextTaskStatus)
+			r.Get("/:id/change/status/previous", c.SetPreviousTaskStatus)
+			r.Get("/:id/change/status/next", c.SetNextTaskStatus)
 			r.Post("/:id/change/priority", c.ChangeTaskPriority)
 			r.Post("/:id/change/deadline", c.ChangeTaskDeadline)
 		})

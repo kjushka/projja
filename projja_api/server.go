@@ -6,6 +6,7 @@ import (
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"os"
 	"projja_api/controller"
 
 	_ "github.com/lib/pq"
@@ -17,7 +18,7 @@ const (
 )
 
 func main() {
-	/*host := os.Getenv("DATABASE_HOST")
+	host := os.Getenv("DATABASE_HOST")
 	name := os.Getenv("DATABASE_NAME")
 	user := os.Getenv("DATABASE_USER")
 	pass := os.Getenv("DATABASE_PASS")
@@ -28,9 +29,9 @@ func main() {
 		pass,
 		host,
 		name,
-	)*/
+	)
 
-	db, err := sql.Open("mysql", DSN)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}

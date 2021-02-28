@@ -53,6 +53,7 @@ func main() {
 			r.Post("/:uname/change", c.ChangeUserName)
 			r.Get("/:uname/member/opened", c.GetOpenProjectsWhereMember)
 			r.Get("/:uname/member/all", c.GetAllProjectsWhereMember)
+			r.Get("/:uname/executor", c.GetExecuteTasks)
 		})
 		router.Group("/project", func(r martini.Router) {
 			r.Post("/create", c.CreateProject)
@@ -64,7 +65,11 @@ func main() {
 			r.Post("/:id/create/status", c.CreateProjectTaskStatus)
 			r.Post("/:id/remove/status", c.RemoveStatusFromProject)
 			r.Get("/:id/statuses", c.GetProjectStatuses)
-			//r.Post("/:id/add/task", c.CreateTask)// POST Task: task {Task: task}
+			r.Post("/:id/create/task", c.CreateTask)
+			r.Get("/:id/get/tasks", c.GetProjectTasks)
+		})
+		router.Group("/task", func(r martini.Router) {
+
 		})
 	})
 	m.RunOnAddr(addr)

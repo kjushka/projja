@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `projja`.`users` (
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
   UNIQUE INDEX `telegram_id_UNIQUE` (`telegram_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS `projja`.`project` (
     ON DELETE CASCADE
     ON UPDATE RESTRICT)
 ENGINE = InnoDB
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS `projja`.`member` (
   `project` INT NOT NULL,
   INDEX `fk_member_1_idx` (`users` ASC) VISIBLE,
   INDEX `fk_member_2_idx` (`project` ASC) VISIBLE,
+  UNIQUE INDEX `primary_key` (`users` ASC, `project` ASC) VISIBLE,
   CONSTRAINT `fk_member_1`
     FOREIGN KEY (`users`)
     REFERENCES `projja`.`users` (`id`)
@@ -84,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `projja`.`skill` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `skill_UNIQUE` (`skill` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -194,3 +196,4 @@ COLLATE = utf8mb4_0900_ai_ci;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+

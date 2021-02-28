@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/go-martini/martini"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"projja_api/model"
 	"strconv"
+	"time"
 )
 
 func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int, string) {
@@ -381,36 +383,56 @@ func (c *Controller) GetProjectStatuses(params martini.Params, w http.ResponseWr
 	return c.makeContentResponse(200, "Current project task statuses", taskStatuses)
 }
 
-/*func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
 		return 500, err.Error()
 	}
 
-	jsonStatus, err := ioutil.ReadAll(r.Body)
+	jsonTask, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		log.Println("error in reading body", err)
 		return 500, err.Error()
 	}
-	projectStatus := &struct {
-		Status string
-	}{}
-	err = json.Unmarshal(jsonStatus, projectStatus)
+	task := &model.Task{}
+	err = json.Unmarshal(jsonTask, task)
 	if err != nil {
 		log.Println("error in unmarshalling")
 		return 500, err.Error()
 	}
 
+	deadline, err := time.Parse("2006-01-02", task.Deadline)
+	if err != nil {
+		log.Println("error in parsing time:", err)
+		return 500, err.Error()
+	}
+
 	result, err := c.DB.Exec(
-		"update project set status = ? where id = ?",
-		projectStatus.Status,
+		"insert into task (description, project, deadline, priority, status, is_closed, executor) "+
+			"values (?, ?, ?, ?, (select id from task_status where status = ? and project = ?), "+
+			"?, (select id from users where username = ?))",
+		task.Description,
 		projectId,
+		deadline,
+		task.Priority,
+		"new",
+		projectId,
+		0,
+		task.Executor.Username,
 	)
 	if err != nil {
-		log.Println("error in updating status:", err)
+		log.Println("error in creating task:", err)
 		return 500, err.Error()
+	}
+	lastInsertId, _ := result.LastInsertId()
+
+	if len(task.Skills) != 0 {
+		_, err = c.setSkillsToTask(task.Skills, lastInsertId)
+		if err != nil {
+			log.Println("error in adding skills")
+		}
 	}
 
 	rowsAffected, _ := result.RowsAffected()
@@ -423,4 +445,71 @@ func (c *Controller) GetProjectStatuses(params martini.Params, w http.ResponseWr
 		Name:    "Rows affected",
 		Content: rowsAffected,
 	})
-}*/
+}
+
+func (c *Controller) GetProjectTasks(params martini.Params, w http.ResponseWriter) (int, string) {
+	projectId, err := strconv.ParseInt(params["id"], 10, 64)
+	if err != nil {
+		log.Println("error in parsing projectId", err)
+		return 500, err.Error()
+	}
+
+	rows, err := c.DB.Query(
+		"select t.id, t.description, p.id, p.name, p.ow_id, p.ow_name, p.ow_username, "+
+			"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.level, "+
+			"e.id, e.name, e.username, e.telegram_id from task t "+
+			"left join (select p.id, p.name, u.id ow_id, u.name ow_name, "+
+			"u.username ow_username, u.telegram_id ow_telegram_id, p.status "+
+			"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
+			"left join task_status ts on ts.id = t.status "+
+			"left join users e on t.executor = e.id "+
+			"where t.project = ? and t.is_closed = 0;",
+		projectId,
+	)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in getting tasks:", err)
+		return 500, err.Error()
+	}
+
+	tasks := []*model.Task{}
+
+	for rows.Next() {
+		task := &model.Task{}
+		task.Project = &model.Project{}
+		task.Project.Owner = &model.User{}
+		task.Status = &model.TaskStatus{}
+		task.Executor = &model.User{}
+		var deadline time.Time
+
+		err = rows.Scan(
+			&task.Id,
+			&task.Description,
+			&task.Project.Id,
+			&task.Project.Name,
+			&task.Project.Owner.Id,
+			&task.Project.Owner.Name,
+			&task.Project.Owner.Username,
+			&task.Project.Owner.TelegramId,
+			&task.Project.Status,
+			&deadline,
+			&task.Priority,
+			&task.Status.Status,
+			&task.Status.Level,
+			&task.Executor.Id,
+			&task.Executor.Name,
+			&task.Executor.Username,
+			&task.Executor.TelegramId,
+		)
+
+		if err != nil {
+			log.Println("error in scanning tasks:", err)
+			return 500, err.Error()
+		}
+
+		task.Deadline = deadline.Format("2006-01-02")
+		tasks = append(tasks, task)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "project tasks", tasks)
+}

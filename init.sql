@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS `projja`.`users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(45) NOT NULL,
   `username` VARCHAR(45) NOT NULL,
-  `telegram_id` VARCHAR(45) NOT NULL,
+  `telegram_id` INT NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
   UNIQUE INDEX `telegram_id_UNIQUE` (`telegram_id` ASC) VISIBLE)

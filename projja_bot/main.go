@@ -7,6 +7,7 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	"net/http"
+	"io/ioutil"
 	"bytes"
 	"projja_bot/betypes"
 	"projja_bot/logger"
@@ -24,31 +25,47 @@ func setWebhook(bot *tgbotapi.BotAPI) {
 }
 
 func regiserUser(from *tgbotapi.User) {
+	fmt.Println("innn")
+
 	user := &betypes.User{
 		Name: from.FirstName + " " + from.LastName,
-		Username: from.UserName
+		Username: from.UserName,
 		TelegramId: from.ID,
 	}
 
-	// message := map[string]interface{}{
-	// 	"user": "test",
-	// }
 
 	messageBytes, err := json.Marshal(user)
-	if err != nil {
-		log.Info(err)
-	}
+	logger.ForError(err)
 
 	resp, err := http.Post("http://localhost:8080/user/regiser", "application/json", bytes.NewBuffer(messageBytes))
+	logger.ForError(err)
+
+	jsonUser, err := ioutil.ReadAll(resp.Body)
+
+	defer resp.Body.Close()
+
 	if err != nil {
-		log.Info(err)
+		log.Println("error during reading body:", err)
 	}
 
-	var result map[string]interface{}
+	newUser := &betypes.User{}
+	err = json.Unmarshal(jsonUser, newUser)
+	
+	if err != nil {
+		log.Println("error during unmarshalling:", err)
+	}
 
-	json.NewDecoder(resp.Body).Decode(&result)
+	log.Println(newUser);
+	 
 
-	log.Println(result)
+//	response := &struct {
+	//	Name string
+	//	Content interface{}
+//	}{}
+
+	// json.NewDecoder(resp.Body).Decode(&response)
+
+	// log.Println(response)
 }
 
 func checkUpdates(updates <-chan tgbotapi.Update) {
@@ -64,10 +81,10 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				case "register_user":
 					fmt.Println("register user")
 					
-					fmt.Println(message.From.FirstName)
-					fmt.Println(message.From.UserName)
-					fmt.Println(message.From.LastName)
-					fmt.Printf("%t", message.From.ID)
+					// fmt.Println(message.From.FirstName)
+					// fmt.Println(message.From.UserName)
+					// fmt.Println(message.From.LastName)
+					// fmt.Printf("%t", message.From.ID)
 
 					regiserUser(message.From)
 

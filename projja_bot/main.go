@@ -1,12 +1,13 @@
 package main
 
+// 	"io/ioutil"
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"bytes"
 	"projja_bot/betypes"
 	"projja_bot/logger"
 )
@@ -22,33 +23,74 @@ func setWebhook(bot *tgbotapi.BotAPI) {
 	logger.ForError(err)
 }
 
+func regiserUser(from *tgbotapi.User) {
+	user := &betypes.User{
+		Name: from.FirstName + " " + from.LastName,
+		Username: from.UserName
+		TelegramId: from.ID,
+	}
+
+	// message := map[string]interface{}{
+	// 	"user": "test",
+	// }
+
+	messageBytes, err := json.Marshal(user)
+	if err != nil {
+		log.Info(err)
+	}
+
+	resp, err := http.Post("http://localhost:8080/user/regiser", "application/json", bytes.NewBuffer(messageBytes))
+	if err != nil {
+		log.Info(err)
+	}
+
+	var result map[string]interface{}
+
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	log.Println(result)
+}
+
+func checkUpdates(updates <-chan tgbotapi.Update) {
+
+	for update := range updates {
+		message := update.Message
+
+		if message.IsCommand() {
+			command := message.Command()
+      //arguments := message.CommandArguments()
+
+			switch command {
+				case "register_user":
+					fmt.Println("register user")
+					
+					fmt.Println(message.From.FirstName)
+					fmt.Println(message.From.UserName)
+					fmt.Println(message.From.LastName)
+					fmt.Printf("%t", message.From.ID)
+
+					regiserUser(message.From)
+
+				default:
+					fmt.Println("other command")
+			}
+			
+		} else {
+			fmt.Println("it is'n a command")
+		}
+
+	}	
+}
+
 func main() {
-	// log.Printf("Autorized on account %s", Bot.Self.UserName)
 	logger.ForError(BotErr)
 	setWebhook(Bot)
 
-	message := func(w http.ResponseWriter, r *http.Request) {
-		text, err := ioutil.ReadAll(r.Body)
-		logger.ForError(err)
+	updates := Bot.ListenForWebhook("/")
 
-		var botText betypes.BotMessage
-		err = json.Unmarshal(text, &botText)
-		logger.ForError(err)
-
-		fmt.Println(fmt.Sprintf("%s", text))
-		logger.LogFile.Println(fmt.Sprintf("%s", text))
-
-		firstName := botText.Message.From.First_name
-		// userName := botText.Message.From.Username
-		chatGroup := botText.Message.Chat.Id
-		// mText := botText.Message.Text
-		msg := tgbotapi.NewMessage(chatGroup, fmt.Sprintf("Привет, %s", firstName))
-
-		Bot.Send(msg)
-	}
-
-	http.HandleFunc("/", message)
 	fmt.Println("Server is working!")
-	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf("%s:%s", betypes.BotInternalAddress, betypes.BotInternalPort),
-		betypes.CertPath, betypes.KeyPath, nil))
+	go http.ListenAndServeTLS(fmt.Sprintf("%s:%s", betypes.BotInternalAddress, betypes.BotInternalPort),
+		betypes.CertPath, betypes.KeyPath, nil)
+
+	checkUpdates(updates)
 }

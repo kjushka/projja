@@ -25,7 +25,6 @@ func setWebhook(bot *tgbotapi.BotAPI) {
 }
 
 func regiserUser(from *tgbotapi.User) {
-	fmt.Println("innn")
 
 	user := &betypes.User{
 		Name: from.FirstName + " " + from.LastName,
@@ -33,27 +32,25 @@ func regiserUser(from *tgbotapi.User) {
 		TelegramId: from.ID,
 	}
 
-
 	messageBytes, err := json.Marshal(user)
 	logger.ForError(err)
 
-	resp, err := http.Post("http://localhost:8080/user/regiser", "application/json", bytes.NewBuffer(messageBytes))
+	resp, err := http.Post("http://localhost:8080/api/user/regiser", "application/json", bytes.NewBuffer(messageBytes))
 	logger.ForError(err)
 
+	
+	// fmt.Println(resp.status);
+
 	jsonUser, err := ioutil.ReadAll(resp.Body)
-
 	defer resp.Body.Close()
+	logger.ForError(err)
 
-	if err != nil {
-		log.Println("error during reading body:", err)
-	}
+	// Печатаем код ошибки если он есть
+	fmt.Println(string(jsonUser));
 
 	newUser := &betypes.User{}
 	err = json.Unmarshal(jsonUser, newUser)
-	
-	if err != nil {
-		log.Println("error during unmarshalling:", err)
-	}
+	logger.ForError(err)
 
 	log.Println(newUser);
 	 
@@ -70,8 +67,12 @@ func regiserUser(from *tgbotapi.User) {
 
 func checkUpdates(updates <-chan tgbotapi.Update) {
 
+	// fmt.Println("check updates");
+
 	for update := range updates {
 		message := update.Message
+
+		// fmt.Println("update");
 
 		if message.IsCommand() {
 			command := message.Command()

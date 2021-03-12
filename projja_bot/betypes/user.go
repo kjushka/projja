@@ -2,9 +2,9 @@ package betypes
 
 type User struct {
 	Id         int64
-	Name       string
-	Username   string
-	TelegramId int
+	Name       string `json:"name"`
+	Username   string `json:"username"`
+	TelegramId int `json:"telegramId"`
 	Skills     []string
 }
 

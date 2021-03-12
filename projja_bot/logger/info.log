@@ -1,14 +1,6 @@
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-Post https://localhost:8080/user/regiser: http: server gave HTTP response to HTTPS client
-Post https://localhost:8080/user/regiser: http: server gave HTTP response to HTTPS client
-invalid character 'p' after top-level value
-invalid character 'p' after top-level value
-Post https://localhost:8080/api/user/regiser: http: server gave HTTP response to HTTPS client
-Post localhost:8080/api/user/regiser: unsupported protocol scheme "localhost"
+invalid character 'E' looking for beginning of value
+invalid character 'E' looking for beginning of value
+invalid character 'j' looking for beginning of value
+invalid character 'j' looking for beginning of value
+invalid character 'j' looking for beginning of value
+invalid character 'j' looking for beginning of value

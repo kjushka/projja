@@ -2,15 +2,14 @@ package main
 
 // 	"io/ioutil"
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"log"
-	"net/http"
 	"io/ioutil"
-	"bytes"
+	"net/http"
 	"projja_bot/betypes"
 	"projja_bot/logger"
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var (
@@ -26,52 +25,44 @@ func setWebhook(bot *tgbotapi.BotAPI) {
 
 func regiserUser(from *tgbotapi.User) {
 
+	// TODO: нужно переделать id на int
 	user := &betypes.User{
 		Name: from.FirstName + " " + from.LastName,
 		Username: from.UserName,
-		TelegramId: from.ID,
+		TelegramId: from.ID, 
 	}
 
+
 	messageBytes, err := json.Marshal(user)
+	fmt.Println(string(messageBytes))
 	logger.ForError(err)
 
-	resp, err := http.Post("http://localhost:8080/api/user/regiser", "application/json", bytes.NewBuffer(messageBytes))
+	resp, err := http.Post("http://localhost:8080/api/user/register", "application/json", bytes.NewBuffer(messageBytes))
 	logger.ForError(err)
 
+	// TODO: Можно добавить обработку ошибок
 	
-	// fmt.Println(resp.status);
+	// 500 ошибка может возвращаться, если ты пытаешься зарегать юзера, который уже есть в бд
+	fmt.Println("Status *********")
+	fmt.Println(resp.Status)
 
 	jsonUser, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	logger.ForError(err)
-
-	// Печатаем код ошибки если он есть
 	fmt.Println(string(jsonUser));
 
-	newUser := &betypes.User{}
-	err = json.Unmarshal(jsonUser, newUser)
-	logger.ForError(err)
+	// newUser := &betypes.User2{}
+	// err = json.Unmarshal(jsonUser, newUser)
+	// logger.ForError(err)
 
-	log.Println(newUser);
-	 
-
-//	response := &struct {
-	//	Name string
-	//	Content interface{}
-//	}{}
-
-	// json.NewDecoder(resp.Body).Decode(&response)
-
-	// log.Println(response)
 }
 
-func checkUpdates(updates <-chan tgbotapi.Update) {
 
+func checkUpdates(updates <-chan tgbotapi.Update) {
 	// fmt.Println("check updates");
 
 	for update := range updates {
 		message := update.Message
-
 		// fmt.Println("update");
 
 		if message.IsCommand() {
@@ -81,14 +72,8 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 			switch command {
 				case "register_user":
 					fmt.Println("register user")
-					
-					// fmt.Println(message.From.FirstName)
-					// fmt.Println(message.From.UserName)
-					// fmt.Println(message.From.LastName)
-					// fmt.Printf("%t", message.From.ID)
-
 					regiserUser(message.From)
-
+					
 				default:
 					fmt.Println("other command")
 			}

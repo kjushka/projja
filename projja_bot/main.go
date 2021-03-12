@@ -32,7 +32,6 @@ func regiserUser(from *tgbotapi.User) {
 		TelegramId: from.ID, 
 	}
 
-
 	messageBytes, err := json.Marshal(user)
 	fmt.Println(string(messageBytes))
 	logger.ForError(err)

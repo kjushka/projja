@@ -3,11 +3,12 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-martini/martini"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"os"
 	"projja_api/controller"
+
+	"github.com/go-martini/martini"
+	_ "github.com/go-sql-driver/mysql"
 
 	_ "github.com/lib/pq"
 )

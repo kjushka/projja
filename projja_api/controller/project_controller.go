@@ -3,16 +3,24 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/go-martini/martini"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"projja_api/model"
 	"strconv"
 	"time"
+
+	"github.com/go-martini/martini"
 )
 
 func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	jsonProject, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -62,6 +70,12 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 }
 
 func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -106,6 +120,12 @@ func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWri
 }
 
 func (c *Controller) ChangeProjectStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -245,6 +265,12 @@ func (c *Controller) RemoveMemberFromProject(params martini.Params, w http.Respo
 }
 
 func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -264,7 +290,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 		return 500, err.Error()
 	}
 
-	result, err := c.DB.Exec(
+	_, err = c.DB.Exec(
 		"update task_status set level = level + 1 where level >= ? and project = ?",
 		taskStatus.Level,
 		projectId,
@@ -273,7 +299,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 		log.Println("error in updating status:", err)
 		return 500, err.Error()
 	}
-	result, err = c.DB.Exec(
+	result, err := c.DB.Exec(
 		"insert into task_status (status, level, project) values (?, ?, ?)",
 		taskStatus.Status,
 		taskStatus.Level,
@@ -297,6 +323,12 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 }
 
 func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -384,6 +416,12 @@ func (c *Controller) GetProjectStatuses(params martini.Params, w http.ResponseWr
 }
 
 func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)

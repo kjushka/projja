@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-martini/martini"
-	"github.com/scylladb/go-set"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-martini/martini"
+	"github.com/scylladb/go-set"
 )
 
 func (c *Controller) GetTask(params martini.Params, w http.ResponseWriter) (int, string) {
@@ -83,6 +84,12 @@ func (c *Controller) GetTask(params martini.Params, w http.ResponseWriter) (int,
 }
 
 func (c *Controller) ChangeTaskExecutor(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
@@ -125,6 +132,12 @@ func (c *Controller) ChangeTaskExecutor(params martini.Params, w http.ResponseWr
 }
 
 func (c *Controller) ChangeTaskDescription(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
@@ -169,6 +182,12 @@ func (c *Controller) ChangeTaskDescription(params martini.Params, w http.Respons
 }
 
 func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
@@ -354,6 +373,12 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 }
 
 func (c *Controller) ChangeTaskPriority(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
@@ -398,6 +423,12 @@ func (c *Controller) ChangeTaskPriority(params martini.Params, w http.ResponseWr
 }
 
 func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
@@ -419,6 +450,10 @@ func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWr
 		return 500, err.Error()
 	}
 	timeDeadline, err := time.Parse("2006-01-02", deadline.Deadline)
+	if err != nil {
+		log.Println("error in parsing deadline: ", err)
+		return 500, err.Error()
+	}
 
 	result, err := c.DB.Exec(
 		"update task set deadline = ? where id = ?",

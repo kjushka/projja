@@ -4,19 +4,23 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-martini/martini"
-	"github.com/scylladb/go-set"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"projja_api/model"
 	"strings"
 	"time"
+
+	"github.com/go-martini/martini"
+	"github.com/scylladb/go-set"
 )
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) (int, string) {
-	if r.Header.Get("Content-Type") != "application/json" {
-		return 500, "unsupportable content-type"
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
 	}
 	jsonUser, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -80,8 +84,11 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 }
 
 func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w http.ResponseWriter) (int, string) {
-	if r.Header.Get("Content-Type") != "application/json" {
-		return 500, "unsupportable content-type"
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
 	}
 	jsonSkills, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -229,8 +236,14 @@ func (c *Controller) GetAllUserProjects(params martini.Params, w http.ResponseWr
 }
 
 func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	username := params["uname"]
-	body, err := ioutil.ReadAll(r.Body)
+	usenameJson, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("error in reading body:", err)
 		return 500, err.Error()
@@ -240,7 +253,7 @@ func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter
 	nameStruct := &struct {
 		Name string
 	}{}
-	err = json.Unmarshal(body, nameStruct)
+	err = json.Unmarshal(usenameJson, nameStruct)
 	if err != nil {
 		log.Println("error in unmarshalling:", err)
 		return 500, err.Error()

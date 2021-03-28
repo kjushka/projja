@@ -5,13 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Текущий файл",
-            "type": "python",
-            "request": "launch",
-            "program": "D:\\Projects\\projja\\projja_exec\\main.py",
-            "console": "integratedTerminal"
-        },
-        {
             "name": "Launch Package",
             "type": "go",
             "request": "launch",

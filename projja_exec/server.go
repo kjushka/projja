@@ -12,17 +12,18 @@ const (
 )
 
 func main() {
-	c := &controller.Controller{
-		Rds: redis.NewClient(&redis.Options{
-			Addr:     "redis:6379",
+	c := controller.NewController(
+		&redis.Options{
+			Addr:     "localhost:6379",
 			Password: "",
 			DB:       0,
-		}),
-	}
+		})
 
 	m := martini.Classic()
+	//m.Use(c.CheckContentType)
 	m.Group("/exec", func(r martini.Router) {
 		r.Post("/add/project", c.AddProject)
+		r.Get("/get/:id", c.GetRedisData)
 	})
 
 	// done := make(chan error, 1)

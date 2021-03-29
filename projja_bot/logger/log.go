@@ -16,3 +16,10 @@ func ForError(err error) {
 		// LogFile.Fatalln(er)
 	}
 }
+
+func LogCommandResult(str string){
+	if str != "" {
+		LogFile.Println(str)
+		// LogFile.Fatalln(er)
+	}
+}

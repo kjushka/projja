@@ -12,12 +12,14 @@ import (
 	"projja_bot/betypes"
 	"projja_bot/logger"
 	"fmt"
+	"strings"
 )
 
-
-func RegiserUser(from *tgbotapi.User) {
-
+// Данная функция возвращает ошибку или сообщение об 
+// удачной регистрации пользователя
+func RegiserUser(from *tgbotapi.User) string {
 	// Телега возвращает id типа int
+	var userName string = from.UserName
 	user := &betypes.User{
 		Name: from.FirstName + " " + from.LastName,
 		Username: from.UserName,
@@ -31,33 +33,42 @@ func RegiserUser(from *tgbotapi.User) {
 	resp, err := http.Post(betypes.GetPathToMySQl("http") + "api/user/register", "application/json", bytes.NewBuffer(messageBytes))
 	logger.ForError(err)
 
-	// TODO: Нужно возаращать результат работы удалос/не удалось зарегать юзера
-
+	// TODO: Нужно возаращать результат работы удалось/не удалось зарегать юзера
 	// 500 ошибка может возвращаться, если ты пытаешься зарегать юзера, который уже есть в бд
 	fmt.Print(resp.Status)
 	logger.LogCommandResult(resp.Status)
 
-	if(resp.StatusCode == 500) {
+	if(resp.StatusCode >= 500) {
 		jsonUser, err := ioutil.ReadAll(resp.Body)
 		defer resp.Body.Close()
 		logger.ForError(err)
 
 		var duplicateUser bool = strings.HasPrefix(string(jsonUser), string(jsonUser))
 		if (duplicateUser) {
-			
+			return "Такой пользователь уже зарегистрирован!"
 		}
 
+		return "Неизвестная ошибка"
+	} else if (resp.StatusCode < 300) {
+		fmt.Print(userName)
+		fmt.Print(from.UserName)
+		return fmt.Sprintf("Пользователь %s был успешно зарегистрирован!", from.UserName);
 	}
 
-
+	logger.LogCommandResult("Non-standard situation during registration.")
+	return "Что-то пошло не так..." 
 }
 
 func GetUser(userName string) {
-	// Todo Валидация на наличие имени
+	fmt.Println(userName)
 
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + "api/user/get/" + userName);
-	fmt.Print(resp)
+	fmt.Println(resp.StatusCode)
 	logger.ForError(err)
 
+	getUserInfo, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	logger.ForError(err)
+	fmt.Println(string(getUserInfo))
 
 } 

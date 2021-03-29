@@ -30,22 +30,27 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 		if message.IsCommand() {
 			command := message.Command()
       //arguments := message.CommandArguments()
-			fmt.Println(message.Text)
 
 			switch command {
 				case "register_user":
 					logger.LogCommandResult("Register user")
-					bot_commands.RegiserUser(message.From)
+					var ans string = bot_commands.RegiserUser(message.From)
+
+					msg := tgbotapi.NewMessage(message.Chat.ID, ans)
+					msg.ReplyToMessageID = message.MessageID
+					Bot.Send(msg)
+
 				case "get_user":
 					logger.LogCommandResult("Get user")
-				//	bot_commands.GetUser()
+				  
+					bot_commands.GetUser(message.CommandArguments())
 
 				default:
 					fmt.Println("other command")
 			}
 			
 		} else {
-			fmt.Println("it is'n a command")
+			fmt.Println("It isn't a command")
 		}
 
 	}	

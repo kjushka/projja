@@ -42,8 +42,20 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 
 				case "get_user":
 					logger.LogCommandResult("Get user")
-				  
-					bot_commands.GetUser(message.CommandArguments())
+					ans, _ := bot_commands.GetUser(message.CommandArguments())
+
+					msg := tgbotapi.NewMessage(message.Chat.ID, ans)
+					msg.ReplyToMessageID = message.MessageID
+					Bot.Send(msg)
+
+				case "set_skills":	
+					// TODO: надо красиво описывать команды в боте
+					logger.LogCommandResult("Set skills")
+					var ans string = bot_commands.SetSkills(message.CommandArguments())
+
+					msg := tgbotapi.NewMessage(message.Chat.ID, ans)
+					msg.ReplyToMessageID = message.MessageID
+					Bot.Send(msg)
 
 				default:
 					fmt.Println("other command")

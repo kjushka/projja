@@ -1,67 +1,164 @@
-invalid character 'E' looking for beginning of value
-invalid character 'E' looking for beginning of value
-invalid character 'j' looking for beginning of value
-invalid character 'j' looking for beginning of value
-invalid character 'j' looking for beginning of value
-invalid character 'j' looking for beginning of value
 Get user
+404 page not found
+
 Get user
+404 page not found
+
 Get user
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+404 page not found
+
+Get user
+Set skills
+Set skills
+Set skills
+Set skills
+{"Skills":["ds","ds"]}
+Set skills
+{"Skills":["kek"]}
+Set skills
+Set skills
+{"Skills":["ew"]}
 500 Internal Server Error
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-Get user
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-Get user
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+Set skills
+{"Skills":["ds"]}
 202 Accepted
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+Set skills
+{"Skills":["d","s"]}
+500 Internal Server Error
+Set skills
+Set skills
+{"Skills":["w"]}
+500 Internal Server Error
+Set skills
+{"Skills":["ds"]}
 202 Accepted
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+Set skills
+{"Skills":["ds"]}
 202 Accepted
 Get user
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["ds"]}}
+Set skills
+{"Skills":["kek"]}
+202 Accepted
+Set skills
+{"Skills":["kek"]}
+202 Accepted
 Get user
 Get user
-Get user
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-Get user
-Get user
-Get user
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek"]}}
+Set skills
+Set skills
+{"Skills":["kek","kek2","kek","keks"]}
+202 Accepted
 Get user
 Get user
-Ĉ
-Get user
-ĉ
-Get user
-/get_user
-Get user
-/get_user
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
 Get user
 Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(nil *betypes.User)
 Get user
 Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(nil *betypes.User)
+Get user
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+json: Unmarshal(nil *betypes.User)
 Get user
 Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(nil *betypes.User)
 Get user
 Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(nil *betypes.User)
 Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(nil *betypes.GetUserAnswer)
 Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(nil *betypes.GetUserAnswer)
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+json: Unmarshal(non-pointer map[string]interface {})
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{ "Description":  "Current user:",
+  "Content":      
+  {
+    "Id":0,
+    "Name":"",
+    "Username":"",
+    "TelegramId":0,
+    "Skills":[]
+  }
+}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}

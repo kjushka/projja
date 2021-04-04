@@ -57,6 +57,22 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 					msg.ReplyToMessageID = message.MessageID
 					Bot.Send(msg)
 
+				case "create_project":	
+					logger.LogCommandResult("Create project");
+					var ans string = bot_commands.CreateProject(message.CommandArguments())
+
+					msg := tgbotapi.NewMessage(message.Chat.ID, ans)
+					msg.ReplyToMessageID = message.MessageID
+					Bot.Send(msg)
+
+				case "get_all_projects":
+					logger.LogCommandResult("Get all projects");
+					var ans string = bot_commands.GetAllProjects(message.CommandArguments())
+
+					msg := tgbotapi.NewMessage(message.Chat.ID, ans)
+					msg.ReplyToMessageID = message.MessageID
+					Bot.Send(msg)
+
 				default:
 					fmt.Println("other command")
 			}

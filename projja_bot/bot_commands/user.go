@@ -13,6 +13,7 @@ import (
 	"projja_bot/logger"
 	"fmt"
 	"strings"
+	"strconv"
 )
 
 // Данная функция возвращает ошибку или сообщение об 
@@ -55,7 +56,6 @@ func RegiserUser(from *tgbotapi.User) string {
 	return "Что-то пошло не так..." 
 }
 
-// TODO: допилить эту функцию
 func GetUser(args string) (string, *betypes.User) {
 	if(args == "") {
 		return "Вы не указали имя пользавателя!", nil  
@@ -74,47 +74,16 @@ func GetUser(args string) (string, *betypes.User) {
 	logger.LogCommandResult(string(getUserInfo));
 
 	var userAns *betypes.GetUserAnswer
-	// var userAns map[string]interface{}
 	if err := json.Unmarshal(getUserInfo, &userAns); err != nil {
     logger.ForError(err)
 	}
 
-	fmt.Println(userAns)
-
-
-	// user := userAns["Content"].(map[string]interface{}) // для того, чтобы получить из свойства num число
-	// fmt.Println(user)
-	
-	// fmt.Println(user["Id"].(float64))
-	// fmt.Println(user["Name"].(string))
-
-
-	// user := &betypes.User{
-	// 	Id: userAns["Id"].(int64),
-	// 	Name: userAns["Name"].(string),
-	// 	Username: userAns["Username"].(string),
-	// 	TelegramId: userAns["TelegramId"].(int),
-	// 	Skills: userAns["Skills"].([]string), 
-	// }
-	
-	// fmt.Println(user)
-	// fmt.Print(userAns)
-
-	// fmt.Println(userAns["Content"])
-
-
-
-
-
-
-
-	// user := userAns["Content"].(*betypes.User) 
-	// fmt.Println(user)
-
-	// rerurn fmt.Sprintf("Пользоватль с именем %s не зарегистрирован!", userName)
+	if userAns.IsEmpty == true {
+		return fmt.Sprintf("Пользоватль с именем %s не зарегистрирован!", userName), nil 
+	}
 
 	// Если пользователь есть, то нужно его куда-то сохранить
-	return "test", nil
+	return fmt.Sprintf("Вы выбрали пользователя %s", userName), userAns.Content
 } 
 
 // ПРИМЕЧАНИЕ
@@ -162,3 +131,36 @@ func SetSkills(args string) string {
 
 // Нужна ли эта функция
 // func ChangeName()
+
+func GetAllProjects(args string) string {
+	if (args == "") {
+		return "Вы не указали имя пользователя, проекты которого хотите просмотреть!"
+	} 
+
+	var userName string = strings.Split(args, " ")[0]
+
+	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/user/%s/owner/all", userName))
+	logger.ForError(err)
+
+	fmt.Println(resp.Status)
+
+	gettingProjects, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	logger.ForError(err)
+
+	
+	var projects *betypes.ProjectsList
+	if err := json.Unmarshal(gettingProjects, &projects); err != nil {
+    logger.ForError(err)
+	}
+
+	ans := fmt.Sprintf("User %s have projects:\nId Project\n", userName)
+	for i := 0; i < len(projects.Content); i++ {
+		ans += strconv.FormatInt(projects.Content[i].Id, 10) + "  " + projects.Content[i].Name + "\n"
+	}
+
+	fmt.Println(ans)
+	
+
+	return ans
+}

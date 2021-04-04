@@ -2,6 +2,9 @@ package betypes
 
 import (
 	"encoding/json"
+	// "errors"
+	// "fmt"
+	// "fmt"
 	// "projja_bot/logger"
 )
 
@@ -16,9 +19,9 @@ type User struct {
 type GetUserAnswer struct {
 	Description string
 	Content	*User
+	IsEmpty bool
 }
 
-// TODO Тут стоит дабвить проверку на ошибки
 func (obj *GetUserAnswer) UnmarshalJSON(b []byte) error {
 
 	// Преобразуем входное значение к мапе
@@ -30,27 +33,30 @@ func (obj *GetUserAnswer) UnmarshalJSON(b []byte) error {
 	foomap := m["Content"]
 	v := foomap.(map[string]interface{})
 
-	// TODO хз Go -забеал
 	skills := []string{}
-  for _, value := range v["Skills"].(map[string]interface{}) {
+  for _, value := range v["Skills"].([]interface{}) {
 		skills = append(skills, value.(string))
   }
+	userName := v["Name"].(string)
 
 	// TODO хз, почему-то из базы ID Возвращается в виде float 64
 	obj.Content = &User{
 		Id: int64(v["Id"].(float64)),
-		Name: v["Name"].(string),
+		Name: userName,
 		Username: v["Username"].(string),
 		TelegramId: int(v["TelegramId"].(float64)),
 		Skills: skills, 
 	}
 
-	// var userAns *User
-	// if err := json.Unmarshal([]byte(v), &userAns); err != nil {
-  //   logger.ForError(err)
-	// }
-
-	// obj.Content = userAns["Content"].(*User) 
+	// Т.К. у сервера нет ответа о том, что пользовател уже есть в базе
+	// поэтому я сделаю его сам
+	if userName == "" {
+		obj.IsEmpty = true
+		// Либо можно сделать так
+		// return errors.New(fmt.Sprintf("500 user named %s does not exist", ))
+	} else {
+		obj.IsEmpty = false
+	}
 
 	return nil
 }
@@ -60,6 +66,39 @@ type Project struct {
 	Name   string
 	Owner  *User
 	Status string
+}
+
+type ProjectsList struct {
+	Content []*Project
+}
+
+func (obj *ProjectsList) UnmarshalJSON(b []byte) error {
+	var f interface{}
+	json.Unmarshal(b, &f)
+	m := f.(map[string]interface{})
+
+	foomap := m["Content"]
+
+	v := foomap.([]interface{})
+
+	projects := []*Project{}
+
+  for _, line := range v {
+		l := line.(map[string]interface{})
+
+		// TODO для желания можно добавить юзера, хотя он особо не нужен
+		projects = append(projects, 
+			&Project{
+				Name: l["Name"].(string),
+				Id: int64(l["Id"].(float64)),
+				Status: l["Status"].(string),
+				// Name: projName,
+			})
+  }
+
+	obj.Content = projects
+
+	return nil
 }
 
 type Task struct {

@@ -162,3 +162,108 @@ Get user
 {"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
 Get user
 {"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Get user
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Create project
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Create project
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Create project
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+{"Id":0,"Name":"ds","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
+202 Accepted
+Create project
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+{"Id":0,"Name":"ds","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
+202 Accepted
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
+202 Accepted
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
+202 Accepted
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
+202 Accepted
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+invalid character 's' looking for beginning of value
+Get all projects
+Get all projects
+invalid character 's' looking for beginning of value
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+invalid character 's' looking for beginning of value
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Register user
+{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+500 Internal Server Error
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects
+Get all projects

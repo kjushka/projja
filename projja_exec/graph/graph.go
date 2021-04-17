@@ -1,6 +1,8 @@
 package graph
 
-import "projja-exec/model"
+import (
+	"projja-exec/model"
+)
 
 type Project struct {
 	Id    int64
@@ -35,16 +37,28 @@ func MakeNewProject(newProject *model.Project) *Project {
 	return project
 }
 
-func (p *Project) LoadGraph() {
-	graph := &Graph{
-		Users:       make([]*model.User, 0),
-		Tasks:       make([]*model.Task, 0),
-		Skills:      make([]string, 0),
-		UserToTask:  make(map[int][]float32),
-		UserToSkill: make(map[int][]string),
-		TaskToSkill: make(map[int][]string),
+func (g *Graph) AddExecutor(executor *model.User) {
+	g.Users = append(g.Users, executor)
+
+	newSkills := make([]string, 0)
+	for _, s := range executor.Skills {
+		isNotExist := true
+
+		for _, gs := range g.Skills {
+			if s == gs {
+				isNotExist = false
+				break
+			}
+		}
+
+		if isNotExist {
+			newSkills = append(newSkills, s)
+		}
 	}
-	p.Graph = graph
+
+	g.Skills = append(g.Skills, newSkills...)
+
+	g.UserToSkill[len(g.Users)-1] = executor.Skills
 }
 
 func (g *Graph) AddTask(*model.Task) {

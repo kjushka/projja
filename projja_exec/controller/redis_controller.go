@@ -37,7 +37,7 @@ func (c *controller) writeProjectToRedis(project *graph.Project) error {
 	return nil
 }
 
-func (c *controller) ReadData(id int64) (*graph.Project, error) {
+func (c *controller) readData(id int64) (*graph.Project, error) {
 	val, err := c.Rds.Get(context.Background(), strconv.FormatInt(id, 10)).Result()
 	switch {
 	case err == redis.Nil:

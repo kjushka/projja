@@ -20,10 +20,11 @@ func main() {
 		})
 
 	m := martini.Classic()
-	//m.Use(c.CheckContentType)
+	m.Use(c.CheckContentType)
 	m.Group("/exec", func(r martini.Router) {
 		r.Post("/add/project", c.AddProject)
 		r.Get("/get/:id", c.GetRedisData)
+		r.Post("/project/:id/add/exec", c.AddExecutorToProject)
 	})
 
 	// done := make(chan error, 1)

@@ -3,6 +3,7 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -70,6 +71,12 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting user by username:", err)
 		return 500, err.Error()
+	}
+
+	if err == sql.ErrNoRows {
+		noUserErr := errors.New(fmt.Sprintf("no such user with username %s", username))
+		log.Println(noUserErr)
+		return 500, noUserErr.Error()
 	}
 
 	skills, err := c.getSkillsByUser(username)

@@ -59,7 +59,8 @@ func main() {
 		router.Group("/project", func(r martini.Router) {
 			r.Post("/create", c.CreateProject)
 			r.Post("/:id/change/name", c.ChangeProjectName)
-			r.Post("/:id/change/status", c.ChangeProjectStatus)
+			r.Get("/:id/close", c.CloseProject)
+			r.Get("/:id/open", c.OpenProject)
 			r.Get("/:id/members", c.GetProjectMembers)
 			r.Get("/:id/add/member/:uname", c.AddMemberToProject)
 			r.Get("/:id/remove/member/:uname", c.RemoveMemberFromProject)

@@ -119,54 +119,64 @@ func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWri
 	})
 }
 
-func (c *Controller) ChangeProjectStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
-	contentType := r.Header.Get("Content-Type")
-	if contentType != "application/json" {
-		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
-		log.Println(err)
-		return 500, err
-	}
+func (c *Controller) CloseProject(params martini.Params, w http.ResponseWriter) (int, string) {
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
 		return 500, err.Error()
 	}
 
-	jsonStatus, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
+	rowsAffected, err := c.changeProjectStatus(projectId, "closed")
 	if err != nil {
-		log.Println("error in reading body", err)
 		return 500, err.Error()
 	}
-	projectStatus := &struct {
-		Status string
-	}{}
-	err = json.Unmarshal(jsonStatus, projectStatus)
-	if err != nil {
-		log.Println("error in unmarshalling")
-		return 500, err.Error()
-	}
-
-	result, err := c.DB.Exec(
-		"update project set status = ? where id = ?",
-		projectStatus.Status,
-		projectId,
-	)
-	if err != nil {
-		log.Println("error in updating status:", err)
-		return 500, err.Error()
-	}
-
-	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Project status updated", struct {
+	return c.makeContentResponse(200, "Project closed", struct {
 		Name    string
 		Content interface{}
 	}{
 		Name:    "Rows affected",
 		Content: rowsAffected,
 	})
+}
+
+func (c *Controller) OpenProject(params martini.Params, w http.ResponseWriter) (int, string) {
+	projectId, err := strconv.ParseInt(params["id"], 10, 64)
+	if err != nil {
+		log.Println("error in parsing projectId", err)
+		return 500, err.Error()
+	}
+
+	rowsAffected, err := c.changeProjectStatus(projectId, "opened")
+	if err != nil {
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Project closed", struct {
+		Name    string
+		Content interface{}
+	}{
+		Name:    "Rows affected",
+		Content: rowsAffected,
+	})
+}
+
+func (c *Controller) changeProjectStatus(id int64, status string) (int64, error) {
+	result, err := c.DB.Exec(
+		"update project set status = ? where id = ?",
+		status,
+		id,
+	)
+	if err != nil {
+		log.Println("error in updating status:", err)
+		return 0, err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+
+	return rowsAffected, err
 }
 
 func (c *Controller) GetProjectMembers(params martini.Params, w http.ResponseWriter) (int, string) {

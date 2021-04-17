@@ -3,7 +3,6 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -74,7 +73,7 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 	}
 
 	if err == sql.ErrNoRows {
-		noUserErr := errors.New(fmt.Sprintf("no such user with username %s", username))
+		noUserErr := fmt.Errorf("no such user with username %s", username)
 		log.Println(noUserErr)
 		return 500, noUserErr.Error()
 	}
@@ -110,6 +109,23 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		log.Println("error during unmarshalling:", err)
 		return 500, err.Error()
 	}
+
+	uniqueSkills := make([]string, 0)
+	for _, s := range skills.Skills {
+		skip := false
+		for _, u := range uniqueSkills {
+			if s == u {
+				skip = true
+				break
+			}
+		}
+		if !skip {
+			uniqueSkills = append(uniqueSkills, s)
+		}
+	}
+
+	skills.Skills = uniqueSkills
+
 	username := params["uname"]
 
 	row := c.DB.QueryRow("select id from users where username = ?", username)
@@ -123,10 +139,12 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	rows, err := c.DB.Query(
 		"select s.skill from skill s",
 	)
+
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting skills:", err)
 		return 500, err.Error()
 	}
+
 	skillsSet := set.NewStringSet()
 	for rows.Next() {
 		var skill string
@@ -142,7 +160,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	for i, skill := range skills.Skills {
 		skill := strings.ToLower(skill)
 		if !skillsSet.Has(skill) {
-			newSkills = append(newSkills, fmt.Sprintf("('%v')", strings.ToLower(skill)))
+			newSkills = append(newSkills, fmt.Sprintf("('%v')", skill))
 		}
 		newUserSkills[i] = fmt.Sprintf("(%v, (select s.id from skill s where s.skill = '%v'))",
 			userId,
@@ -151,7 +169,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	}
 
 	if len(newSkills) != 0 {
-		_, err := c.DB.Exec("insert into skill (skill) values " + strings.Join(newSkills, ", "))
+		_, err := c.DB.Exec("insert into skill (skill) values " + strings.Join(newSkills, ", ") + "on conflict (id, skill) do nothing")
 		if err != nil {
 			log.Println("error in creating new skills:", err)
 			return 500, err.Error()
@@ -242,7 +260,7 @@ func (c *Controller) GetAllUserProjects(params martini.Params, w http.ResponseWr
 	return c.makeContentResponse(200, "projects", projects)
 }
 
-func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
@@ -257,25 +275,24 @@ func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter
 	}
 	defer r.Body.Close()
 
-	nameStruct := &struct {
-		Name string
-	}{}
-	err = json.Unmarshal(usenameJson, nameStruct)
+	newUserInfo := &model.User{}
+	err = json.Unmarshal(usenameJson, newUserInfo)
 	if err != nil {
 		log.Println("error in unmarshalling:", err)
 		return 500, err.Error()
 	}
 
-	result, err := c.DB.Exec("update users set name = ? where username = ?", nameStruct.Name, username)
+	result, err := c.DB.Exec("update users set name = ?, username = ?, telegram_id = ? where username = ?",
+		newUserInfo.Name, newUserInfo.Username, newUserInfo.TelegramId, username)
 	if err != nil {
-		log.Println("error in updating name:", err)
+		log.Println("error in updating info:", err)
 		return 500, err.Error()
 	}
 
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Name changed", struct {
+	return c.makeContentResponse(200, "Info updated", struct {
 		Name    string
 		Content interface{}
 	}{

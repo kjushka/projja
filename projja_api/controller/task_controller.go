@@ -341,11 +341,11 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 	count := 0
 	err = row.Scan(&count)
 	if err != nil && err != sql.ErrNoRows {
-		log.Println("error in getting count of previous levels:", err)
+		log.Println("error in getting count of next levels:", err)
 		return 500, err.Error()
 	}
 	if count == 0 {
-		return 500, "no such previous status"
+		return 500, "no such next status"
 	}
 	result, err := c.DB.Exec(
 		"update task set status = (select ts.id from task_status ts "+

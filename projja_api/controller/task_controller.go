@@ -325,7 +325,7 @@ func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.Respons
 }
 
 func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWriter) (int, string) {
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -336,7 +336,7 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 			"right join (select t.project, ts.level from task t "+
 			"left join task_status ts on ts.id = t.status where t.id = ?) "+
 			"t on t.project = ts.project where ts.level >= t.level + 1;",
-		tasktId,
+		taskId,
 	)
 	count := 0
 	err = row.Scan(&count)
@@ -344,26 +344,42 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 		log.Println("error in getting count of next levels:", err)
 		return 500, err.Error()
 	}
+	var result sql.Result
+	var message string
 	if count == 0 {
-		return 500, "no such next status"
-	}
-	result, err := c.DB.Exec(
-		"update task set status = (select ts.id from task_status ts "+
-			"right join (select t.project, ts.level from task t "+
-			"left join task_status ts on ts.id = t.status where t.id = ?) "+
-			"t on t.project = ts.project where ts.level = t.level + 1) where id = ?;",
-		tasktId,
-		tasktId,
-	)
-	if err != nil {
-		log.Println("error in updating status:", err)
-		return 500, err.Error()
+		result, err = c.DB.Exec(
+			"update task set isClosed = ? where id = ?",
+			true,
+			taskId,
+		)
+
+		if err != nil {
+			log.Println("error in closing task: ", err)
+			return 500, err.Error()
+		}
+
+		message = "Task closed because last status stayed yet"
+	} else {
+		result, err = c.DB.Exec(
+			"update task set status = (select ts.id from task_status ts "+
+				"right join (select t.project, ts.level from task t "+
+				"left join task_status ts on ts.id = t.status where t.id = ?) "+
+				"t on t.project = ts.project where ts.level = t.level + 1) where id = ?;",
+			taskId,
+			taskId,
+		)
+		if err != nil {
+			log.Println("error in updating status:", err)
+			return 500, err.Error()
+		}
+
+		message = "Task status set to next"
 	}
 
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Task status updated", struct {
+	return c.makeContentResponse(200, message, struct {
 		Name    string
 		Content interface{}
 	}{

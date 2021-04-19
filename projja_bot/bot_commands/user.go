@@ -13,7 +13,7 @@ import (
 	"projja_bot/logger"
 	"fmt"
 	"strings"
-	"strconv"
+	// "strconv"
 )
 
 // Данная функция возвращает ошибку или сообщение об 
@@ -56,14 +56,13 @@ func RegiserUser(from *tgbotapi.User) string {
 	return "Что-то пошло не так..." 
 }
 
-func GetUser(args string) (string, *betypes.User) {
-	if(args == "") {
+
+// Lолжен хешировать инфу о текущем юзере Redis/Memcash
+func GetUser(userName string) (string, *betypes.User) {
+	if(userName == "") {
 		return "Вы не указали имя пользавателя!", nil  
 	}
-
-	// Берем только первый аргумент
-	// возможно тут нужна более хорошая валидация
-	var userName string = strings.Split(args, " ")[0]
+	fmt.Println(userName)
 
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + "api/user/get/" + userName);
 	logger.ForError(err)
@@ -131,36 +130,3 @@ func SetSkills(args string) string {
 
 // Нужна ли эта функция
 // func ChangeName()
-
-func GetAllProjects(args string) string {
-	if (args == "") {
-		return "Вы не указали имя пользователя, проекты которого хотите просмотреть!"
-	} 
-
-	var userName string = strings.Split(args, " ")[0]
-
-	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/user/%s/owner/all", userName))
-	logger.ForError(err)
-
-	fmt.Println(resp.Status)
-
-	gettingProjects, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	logger.ForError(err)
-
-	
-	var projects *betypes.ProjectsList
-	if err := json.Unmarshal(gettingProjects, &projects); err != nil {
-    logger.ForError(err)
-	}
-
-	ans := fmt.Sprintf("User %s have projects:\nId Project\n", userName)
-	for i := 0; i < len(projects.Content); i++ {
-		ans += strconv.FormatInt(projects.Content[i].Id, 10) + "  " + projects.Content[i].Name + "\n"
-	}
-
-	fmt.Println(ans)
-	
-
-	return ans
-}

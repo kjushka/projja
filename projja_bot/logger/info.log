@@ -1,269 +1,56 @@
 Get user
-404 page not found
-
 Get user
-404 page not found
-
+{"Description":"Current user:","Content":{"Id":8,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
 Get user
-404 page not found
-
-Get user
-Set skills
-Set skills
-Set skills
-Set skills
-{"Skills":["ds","ds"]}
-Set skills
-{"Skills":["kek"]}
-Set skills
-Set skills
-{"Skills":["ew"]}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Register user
+{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Register user
+{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
 500 Internal Server Error
-Set skills
-{"Skills":["ds"]}
-202 Accepted
-Set skills
-{"Skills":["d","s"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Register user
+{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
 500 Internal Server Error
-Set skills
-Set skills
-{"Skills":["w"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Register user
+{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
 500 Internal Server Error
-Set skills
-{"Skills":["ds"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Register user
+{"Id":0,"name":"Anton Petrov","username":"kjushka","telegramId":310336293,"Skills":null}
 202 Accepted
-Set skills
-{"Skills":["ds"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Register user
+{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+500 Internal Server Error
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Id":0,"Name":"dssd","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":[]},"Status":"В работе!"}
 202 Accepted
-Get user
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["ds"]}}
-Set skills
-{"Skills":["kek"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":[]},"Status":"opened"}
 202 Accepted
-Set skills
-{"Skills":["kek"]}
-202 Accepted
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek"]}}
-Set skills
-Set skills
-{"Skills":["kek","kek2","kek","keks"]}
-202 Accepted
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(nil *betypes.User)
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(nil *betypes.User)
-Get user
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-json: Unmarshal(nil *betypes.User)
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(nil *betypes.User)
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(nil *betypes.User)
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(nil *betypes.GetUserAnswer)
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(nil *betypes.GetUserAnswer)
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-json: Unmarshal(non-pointer map[string]interface {})
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{ "Description":  "Current user:",
-  "Content":      
-  {
-    "Id":0,
-    "Name":"",
-    "Username":"",
-    "TelegramId":0,
-    "Skills":[]
-  }
-}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Create project
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Create project
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Create project
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-{"Id":0,"Name":"ds","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
-202 Accepted
-Create project
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-{"Id":0,"Name":"ds","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
-202 Accepted
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
-202 Accepted
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
-202 Accepted
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["kek","kek2","kek","keks"]}}
-{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":["kek","kek2","kek","keks"]},"Status":"В работе!"}
-202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
 Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-invalid character 's' looking for beginning of value
-Get all projects
-Get all projects
-invalid character 's' looking for beginning of value
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-invalid character 's' looking for beginning of value
-Get all projects
-Get all projects
-Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
 Get all projects
 Register user
 {"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
 500 Internal Server Error
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects
-Get all projects

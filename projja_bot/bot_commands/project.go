@@ -77,8 +77,7 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 
 	for i := 0; i < len(projects.Content); i++ {
 		var row []tgbotapi.InlineKeyboardButton
-		// TODO вторым параметром должен быть проект
-		btn := tgbotapi.NewInlineKeyboardButtonData(projects.Content[i].Name, "register_user")
+		btn := tgbotapi.NewInlineKeyboardButtonData(projects.Content[i].Name, "select_project " + projects.Content[i].Name)
 		
 		row = append(row, btn)
 		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)

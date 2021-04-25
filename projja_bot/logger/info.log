@@ -54,3 +54,11 @@ Get all projects
 Register user
 {"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
 500 Internal Server Error
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects

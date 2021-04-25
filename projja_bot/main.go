@@ -7,6 +7,7 @@ import (
 	"projja_bot/bot_commands"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -26,15 +27,22 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 	for update := range updates {
 		message := update.Message
 		var command string
+		var args[] string
 
-		if update.CallbackQuery != nil {
-			command = update.CallbackQuery.Data
-			message = update.CallbackQuery.Message
+		if update.CallbackQuery != nil { 
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+			args = response[1: len(response)]
+
 			// Подменяем from bota на from пользователя нажавшего кнопку
+			message = update.CallbackQuery.Message
 			message.From = update.CallbackQuery.From
 		} else if message.IsCommand() {
 			command = message.Command()
 		}
+
+		fmt.Println(command)
+
 
 		switch command {
 			case "start":
@@ -121,7 +129,16 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 					msg.ReplyMarkup = keyboard
 					Bot.Send(msg)
 				}
+			case "select_project":
+				// TODO тут надо кешировать название выбранного проекта 
+				fmt.Println(args)
 
+				text := "Добавить участника проекта \n" +
+				"Удалить \n" +
+				"Изменить название проекта"
+				msg := tgbotapi.NewMessage(message.Chat.ID, text)
+
+				Bot.Send(msg)
 			}
 	
 	}	

@@ -1,4 +1,4 @@
-package bot_commands
+package controller
 
 // TODO: не уверен, что это хорошее решение,
 // т.к. telegram-bot-api приходится подключать
@@ -16,8 +16,6 @@ import (
 	// "strconv"
 )
 
-// Данная функция возвращает ошибку или сообщение об 
-// удачной регистрации пользователя
 func RegiserUser(from *tgbotapi.User) string {
 	// Телега возвращает id типа int
 	user := &betypes.User{
@@ -85,25 +83,15 @@ func GetUser(userName string) (string, *betypes.User) {
 	return fmt.Sprintf("Вы выбрали пользователя %s", userName), userAns.Content
 } 
 
-// ПРИМЕЧАНИЕ
-// если вы добавляете юзеру навык, который у него уже есть, 
-// то все равно получите код 202 (все хорошо), хотя логичней
-// было бы сообщить о том, что такой навык уже есть
-// UPD Как сказал сан Антон. Алгоритм добавления навыков служит для координального изменения их
-// по этому эта команда стирает все навыки и записывает новые 
-func SetSkills(args string) string {	
-	if (args == "") {
-		return "Вы не указали имя пользователя и его навыки!"
+func SetSkills(userName string, args string) string {	
+	if (userName == "") {
+		return "Вы не указали имя пользователя!"
 	} 
-	
-	var argsArr[] string = strings.Split(args, " ")
-	if (len(argsArr) == 1){
-		return "Вы не указали навыки, которые хотите присвоить пользователю!"
+	if (args == "") {
+		return "Вы не указали навыки пользователя!"
 	}
-
-	userName := argsArr[0]
-	skills := argsArr[1: len(argsArr)]
-
+	
+	var skills[] string = strings.Split(args, " ")
 	userSkills := &betypes.Skills {
 		Skills: skills,
 	}
@@ -119,11 +107,9 @@ func SetSkills(args string) string {
 	if resp.StatusCode == 404 || resp.StatusCode == 500 {
 		return fmt.Sprintf("Пользователь с именем %s не зарегистрирован!", userName)
 	}
-
 	if resp.StatusCode == 202 {
-		return "Навыки были успешно установленн!"
+		return "Навыки были успешно установлены!"
 	}
-
 	return "Что-то пошло не так..."
 }
 

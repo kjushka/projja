@@ -62,3 +62,34 @@ Get all projects
 Get all projects
 {"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
 Get all projects
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+Register user
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+Get all projects
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+500 Internal Server Error
+{"Skills":["js"]}
+202 Accepted
+Get all projects
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
+202 Accepted
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects

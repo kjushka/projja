@@ -1,4 +1,4 @@
-package bot_commands
+package controller
 
 import (
 	"fmt"
@@ -60,13 +60,11 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/user/%s/owner/all", userName))
 	logger.ForError(err)
-
 	fmt.Println(resp.Status)
 
 	gettingProjects, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	logger.ForError(err)
-
 	
 	var projects *betypes.ProjectsList
 	if err := json.Unmarshal(gettingProjects, &projects); err != nil {
@@ -81,7 +79,6 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 		
 		row = append(row, btn)
 		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-
 	}
 
 	return keyboard, len(projects.Content)

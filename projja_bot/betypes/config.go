@@ -6,7 +6,7 @@ import (
 
 var (
 	BotToken           = "1436657093:AAEp-Vsd91oOWWjfDOhcfn9bNc5wmVzj0yw"
-	BotExternalAddress = "34.92.36.31"
+	BotExternalAddress = "35.220.142.212"
 	BotExternalPort    = "443"
 	BotInternalAddress = "0.0.0.0"
 	BotInternalPort    = "5000"

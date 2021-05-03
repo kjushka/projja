@@ -258,7 +258,7 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 		}
 		skillsSet.Add(skill)
 	}
-	newSkills := []string{}
+	newSkills := make([]string, 0)
 	newTaskSkills := make([]string, len(skills.Skills))
 	for i, skill := range skills.Skills {
 		skill := strings.ToLower(skill)

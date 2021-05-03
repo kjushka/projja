@@ -12,6 +12,192 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+func (c *controller) ListenExecStream(ctx context.Context) {
+	for {
+		xStreamSlice := c.Rds.XRead(ctx, &redis.XReadArgs{Block: 0, Streams: []string{"exec", "$"}})
+		xReadResult, err := xStreamSlice.Result()
+		if err != nil {
+			if err == redis.Nil {
+				continue
+			} else {
+				panic(err)
+			}
+		}
+		rdsMessages := xReadResult[len(xReadResult)-1].Messages
+		for _, rdsMessage := range rdsMessages {
+			rdsMap := rdsMessage.Values
+			if val, ok := rdsMap["skills"]; ok {
+				go c.setSkillsToUser(val)
+			}
+			if val, ok := rdsMap["info"]; ok {
+				go c.updateUserInfo(val)
+			}
+		}
+	}
+}
+
+func (c *controller) setSkillsToUser(jsonSkills interface{}) {
+	if strJsonSkills, ok := jsonSkills.(string); ok {
+		skillsData := &userSkillsData{}
+		err := json.Unmarshal([]byte(strJsonSkills), skillsData)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.setSkillsToUserInGraph(skillsData)
+		if err != nil {
+			log.Println("error in setting skills to user: ", err)
+		}
+	} else {
+		log.Println("error in casting user skills id")
+	}
+}
+
+func (c *controller) updateUserInfo(jsonUserInfo interface{}) {
+	if strJsonUserData, ok := jsonUserInfo.(string); ok {
+		userData := &model.User{}
+		err := json.Unmarshal([]byte(strJsonUserData), userData)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.updateUserInfoInGraph(userData)
+		if err != nil {
+			log.Println("error in updating user info: ", err)
+		}
+	} else {
+		log.Println("error in casting user info")
+	}
+}
+
+func (c *controller) ListenProjectStream(ctx context.Context) {
+	for {
+		xStreamSlice := c.Rds.XRead(ctx, &redis.XReadArgs{Block: 0, Streams: []string{"project", "$"}})
+		xReadResult, err := xStreamSlice.Result()
+		if err != nil {
+			if err == redis.Nil {
+				continue
+			} else {
+				panic(err)
+			}
+		}
+		rdsMessages := xReadResult[len(xReadResult)-1].Messages
+		for _, rdsMessage := range rdsMessages {
+			rdsMap := rdsMessage.Values
+			if val, ok := rdsMap["new"]; ok {
+				go c.createNewProject(val)
+			}
+			if val, ok := rdsMap["add-member"]; ok {
+				go c.addMember(val)
+			}
+			if val, ok := rdsMap["remove-member"]; ok {
+				go c.removeMember(val)
+			}
+			if val, ok := rdsMap["task"]; ok {
+				go c.createTask(val)
+			}
+		}
+	}
+}
+
+func (c *controller) createNewProject(jsonProject interface{}) {
+	if strJsonProject, ok := jsonProject.(string); ok {
+		newProject := &model.Project{}
+		err := json.Unmarshal([]byte(strJsonProject), newProject)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.addProject(newProject)
+		if err != nil {
+			log.Println("error in creating project: ", err)
+		}
+	} else {
+		log.Println("error in casting project")
+	}
+}
+
+func (c *controller) addMember(jsonProjectNewMember interface{}) {
+	if strJsonProjectNewMember, ok := jsonProjectNewMember.(string); ok {
+		newProjectMemberData := &addingMemberData{}
+		err := json.Unmarshal([]byte(strJsonProjectNewMember), newProjectMemberData)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.addMemberInGraph(newProjectMemberData)
+		if err != nil {
+			log.Println("error in adding member: ", err)
+		}
+	} else {
+		log.Println("error in casting project member data")
+	}
+}
+
+func (c *controller) removeMember(jsonRemovingMember interface{}) {
+	if strJsonRemovingMember, ok := jsonRemovingMember.(string); ok {
+		removingMember := &removingMemberData{}
+		err := json.Unmarshal([]byte(strJsonRemovingMember), removingMember)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.removeMemberInGraph(removingMember)
+		if err != nil {
+			log.Println("error in removing member: ", err)
+		}
+	} else {
+		log.Println("error in casting removing member data")
+	}
+}
+
+func (c *controller) createTask(jsonTask interface{}) {
+	if strJsonTask, ok := jsonTask.(string); ok {
+		task := &newTaskData{}
+		err := json.Unmarshal([]byte(strJsonTask), task)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.createTaskInGraph(task)
+		if err != nil {
+			log.Println("error in creating task: ", err)
+		}
+	} else {
+		log.Println("error in casting task")
+	}
+}
+
+func (c *controller) ListenTaskStream(ctx context.Context) {
+	for {
+		xStreamSlice := c.Rds.XRead(ctx, &redis.XReadArgs{Block: 0, Streams: []string{"task", "$"}})
+		xReadResult, err := xStreamSlice.Result()
+		if err != nil {
+			if err == redis.Nil {
+				continue
+			} else {
+				panic(err)
+			}
+		}
+		rdsMessages := xReadResult[len(xReadResult)-1].Messages
+		for _, rdsMessage := range rdsMessages {
+			rdsMap := rdsMessage.Values
+			if val, ok := rdsMap["executor"]; ok {
+				go c.unpackRdsMessage(val, "return")
+			}
+			if val, ok := rdsMap["description"]; ok {
+				go c.unpackRdsMessage(val, "return")
+			}
+			if val, ok := rdsMap["close"]; ok {
+				go c.unpackRdsMessage(val, "return")
+			}
+			if val, ok := rdsMap["deadline"]; ok {
+				go c.unpackRdsMessage(val, "return")
+			}
+		}
+	}
+}
+
 func (c *controller) saveNewProject(newProject *model.Project) error {
 	project := graph.MakeNewProject(newProject)
 

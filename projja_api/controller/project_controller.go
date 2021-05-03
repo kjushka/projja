@@ -57,7 +57,16 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow("select id from users where username = ?", project.Owner.Username)
+	var ownerId int64
+	err = row.Scan(&ownerId)
+	if err != nil {
+		log.Println("error in getting owner id: ", err)
+		return 500, err.Error()
+	}
+
 	project.Id = lastInsertId
+	project.Owner.Id = ownerId
 	_, err = c.sendDataToStream("project", "new", project)
 	if err != nil {
 		log.Println(err)
@@ -115,15 +124,6 @@ func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWri
 	}
 
 	rowsAffected, _ := result.RowsAffected()
-
-	_, err = c.sendDataToStream("project", "name", &model.Project{
-		Id:   projectId,
-		Name: projectName.Name,
-	})
-	if err != nil {
-		log.Println(err)
-		return 500, err.Error()
-	}
 
 	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(200, "Project name updated", struct {
@@ -536,7 +536,16 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 		}
 	}
 
+	row := c.DB.QueryRow("select id from users where username = ?", task.Executor.Username)
+	var executorId int64
+	err = row.Scan(&executorId)
+	if err != nil {
+		log.Println("error in getting executor id: ", err)
+		return 500, err.Error()
+	}
+
 	task.Id = lastInsertId
+	task.Executor.Id = executorId
 	_, err = c.sendDataToStream("project", "task", struct {
 		ProjectId int64
 		Task      *model.Task
@@ -544,6 +553,7 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 		projectId,
 		task,
 	})
+
 	if err != nil {
 		log.Println(err)
 		return 500, err.Error()

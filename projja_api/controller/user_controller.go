@@ -129,7 +129,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	username := params["uname"]
 
 	row := c.DB.QueryRow("select id from users where username = ?", username)
-	var userId int
+	var userId int64
 	err = row.Scan(&userId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting user id:", err)
@@ -155,7 +155,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		}
 		skillsSet.Add(skill)
 	}
-	newSkills := []string{}
+	newSkills := make([]string, 0)
 	newUserSkills := make([]string, len(skills.Skills))
 	for i, skill := range skills.Skills {
 		skill := strings.ToLower(skill)
@@ -194,7 +194,13 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		return 500, err.Error()
 	}
 
-	_, err = c.sendDataToStream("exec", "skills", skills)
+	_, err = c.sendDataToStream("exec", "skills", struct {
+		UserId int64
+		Skills []string
+	}{
+		userId,
+		skills.Skills,
+	})
 	if err != nil {
 		log.Println(err)
 		return 500, err.Error()

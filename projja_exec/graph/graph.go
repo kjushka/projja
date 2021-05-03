@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	timeCoefficient float32 = 1
+	timeCoefficient   float32 = 1
 	skillsCoefficient float32 = 1
 )
 
@@ -19,16 +19,15 @@ type Project struct {
 }
 
 type Graph struct {
-	Users        []*model.User
-	Tasks        []*model.Task
-	Skills       []string
-	UserToTask   map[int][]int
-	UserToSkills map[int][]string
-	TaskToSkill  map[int][]string
+	Users       map[int64]*model.User
+	Tasks       map[int64]*model.Task
+	Skills      []string
+	UserToTask  map[int64][]int64
+	TaskToSkill map[int64][]string
 }
 
 type rating struct {
-	UsersRating map[int]*userRating
+	UsersRating map[int64]*userRating
 }
 
 type userRating struct {
@@ -41,23 +40,21 @@ func MakeNewProject(newProject *model.Project) *Project {
 	project := &Project{
 		Id: newProject.Id,
 		Graph: &Graph{
-			Users:        make([]*model.User, 1),
-			Tasks:        make([]*model.Task, 0),
-			Skills:       make([]string, 0),
-			UserToTask:   make(map[int][]int),
-			UserToSkills: make(map[int][]string, 1),
-			TaskToSkill:  make(map[int][]string, 1),
+			Users:       make(map[int64]*model.User, 1),
+			Tasks:       make(map[int64]*model.Task, 0),
+			Skills:      make([]string, 0),
+			UserToTask:  make(map[int64][]int64),
+			TaskToSkill: make(map[int64][]string, 1),
 		},
 	}
-	project.Graph.Users[0] = newProject.Owner
+	project.Graph.Users[newProject.Owner.Id] = newProject.Owner
 	project.Graph.Skills = append(project.Graph.Skills, newProject.Owner.Skills...)
-	project.Graph.UserToSkills[0] = newProject.Owner.Skills
 
 	return project
 }
 
 func (g *Graph) AddExecutor(executor *model.User) {
-	g.Users = append(g.Users, executor)
+	g.Users[executor.Id] = executor
 
 	newSkills := make([]string, 0)
 	for _, s := range executor.Skills {
@@ -76,36 +73,50 @@ func (g *Graph) AddExecutor(executor *model.User) {
 	}
 
 	g.Skills = append(g.Skills, newSkills...)
-
-	g.UserToSkills[len(g.Users)-1] = executor.Skills
 }
 
-func (g *Graph) AddTaskWithExecutor(userIndex int, task *model.Task) {
-	taskIndex := len(g.Tasks)
-	g.Tasks = append(g.Tasks, task)
-	g.UserToTask[userIndex] = append(g.UserToTask[userIndex], taskIndex)
+func (g *Graph) RemoveMember(memberUsername string) {
+	for userId, user := range g.Users {
+		if user.Username == memberUsername {
+			delete(g.Users, userId)
+			tasksIds := g.UserToTask[userId]
+
+			for _, taskId := range tasksIds {
+				delete(g.Tasks, taskId)
+				delete(g.TaskToSkill, taskId)
+			}
+
+			delete(g.UserToTask, userId)
+			break
+		}
+	}
 }
 
-func (g *Graph) CalculateNewTaskExecutor(task *model.Task) (*model.User, int) {
+func (g *Graph) AddTaskWithExecutor(task *model.Task) {
+	g.Tasks[task.Id] = task
+	g.UserToTask[task.Executor.Id] = append(g.UserToTask[task.Executor.Id], task.Id)
+}
+
+func (g *Graph) CalculateNewTaskExecutor(task *model.Task) *model.User {
 	ratio := g.calculateRatingBySkills(task.Skills)
 	g.calculateRatingByTime(task.Deadline, ratio)
-	executor, index := g.selectExecutorByRating(ratio)
+	executor := g.selectExecutorByRating(ratio)
 	go g.checkCorrectWork()
-	
-	return executor, index
+
+	return executor
 }
 
 func (g *Graph) calculateRatingBySkills(taskSkills []string) *rating {
-	ratingStruct := &rating{UsersRating: make(map[int]*userRating, len(g.Users))}
+	ratingStruct := &rating{UsersRating: make(map[int64]*userRating, len(g.Users))}
 
-	for i, user := range g.Users {
-		ratio := g.checkSkillsSimilarity(g.UserToSkills[i], taskSkills)
+	for userId, user := range g.Users {
+		ratio := g.checkSkillsSimilarity(user.Skills, taskSkills)
 		userRate := &userRating{
 			User:         user,
 			SkillsRating: ratio,
 			TimeRating:   0,
 		}
-		ratingStruct.UsersRating[i] = userRate
+		ratingStruct.UsersRating[userId] = userRate
 	}
 
 	return ratingStruct
@@ -131,18 +142,18 @@ func (g *Graph) checkSkillsSimilarity(userSkills []string, taskSkills []string) 
 }
 
 func (g *Graph) calculateRatingByTime(deadline time.Time, ratio *rating) {
-	for i, _ := range g.Users {
-		rate := g.checkTime(i, deadline)
-		ratio.UsersRating[i].TimeRating = rate
+	for userId, _ := range g.Users {
+		rate := g.checkTime(userId, deadline)
+		ratio.UsersRating[userId].TimeRating = rate
 	}
 }
 
-func (g *Graph) checkTime(userIndex int, deadline time.Time) float32 {
-	tasksDeadlines := make([]int, len(g.UserToTask[userIndex]))
-	for i, index := range g.UserToTask[userIndex] {
-		daysTo := int(math.Ceil(time.Until(g.Tasks[index].Deadline).Hours()))
+func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
+	tasksDeadlines := make([]int, 0)
+	for _, taskId := range g.UserToTask[userId] {
+		daysTo := int(math.Ceil(time.Until(g.Tasks[taskId].Deadline).Hours()))
 		if daysTo > 0 {
-			tasksDeadlines[i] = daysTo
+			tasksDeadlines = append(tasksDeadlines, daysTo)
 		}
 	}
 
@@ -167,20 +178,18 @@ func (g *Graph) checkTime(userIndex int, deadline time.Time) float32 {
 	return ratio
 }
 
-func (g *Graph) selectExecutorByRating(ratio *rating) (*model.User, int) {
+func (g *Graph) selectExecutorByRating(ratio *rating) *model.User {
 	var bestUser *model.User = nil
-	bestUserIndex := 0
 	var bestRating float32 = -1
-	for index, userRatio := range ratio.UsersRating {
-		userRate := userRatio.TimeRating * timeCoefficient + userRatio.SkillsRating * skillsCoefficient
+	for _, userRatio := range ratio.UsersRating {
+		userRate := userRatio.TimeRating*timeCoefficient + userRatio.SkillsRating*skillsCoefficient
 		if userRate > bestRating {
 			bestUser = userRatio.User
 			bestRating = userRate
-			bestUserIndex = index
 		}
 	}
 
-	return bestUser, bestUserIndex
+	return bestUser
 }
 
 func (g *Graph) checkCorrectWork() {

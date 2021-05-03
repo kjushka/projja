@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"projja-exec/controller"
 
 	"github.com/go-martini/martini"
@@ -14,7 +15,7 @@ const (
 func main() {
 	c := controller.NewController(
 		&redis.Options{
-			Addr:     "localhost:6379",
+			Addr:     "redis:6379",
 			Password: "",
 			DB:       0,
 		})
@@ -22,15 +23,14 @@ func main() {
 	m := martini.Classic()
 	m.Use(c.CheckContentType)
 	m.Group("/exec", func(r martini.Router) {
-		r.Post("/add/project", c.AddProject)
 		r.Get("/get/:id", c.GetRedisData)
-		r.Post("/project/:id/add/exec", c.AddExecutorToProject)
-		r.Post("/project/:id/add/task", c.AddTaskToProject)
+		r.Post("/project/:id/add/task", c.CalculateTaskExecutor)
 	})
 
-	// done := make(chan error, 1)
-	// go c.ListenRedisStream(context.Background(), done)
-	// log.Println(<-done)
+	ctx := context.Background()
+	go c.ListenExecStream(ctx)
+	go c.ListenProjectStream(ctx)
+	go c.ListenTaskStream(ctx)
 
 	m.RunOnAddr(Addr)
 }

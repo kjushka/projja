@@ -45,7 +45,7 @@ func (c *controller) CheckContentType(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *controller) AddProject(w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *controller) AddProject(r *http.Request) (int, string) {
 	jsonProject, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("error in reading body: ", err)
@@ -75,7 +75,7 @@ func (c *controller) AddProject(w http.ResponseWriter, r *http.Request) (int, st
 	return c.makeContentResponse(200, "Project saved", newProject)
 }
 
-func (c *controller) AddExecutorToProject(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *controller) AddExecutorToProject(params martini.Params, r *http.Request) (int, string) {
 	id := params["id"]
 	intId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -88,6 +88,8 @@ func (c *controller) AddExecutorToProject(params martini.Params, w http.Response
 		log.Println("error during reading body:", err)
 		return 500, err.Error()
 	}
+	defer r.Body.Close()
+
 	exec := &model.User{}
 	err = json.Unmarshal(jsonExec, exec)
 	if err != nil {
@@ -105,6 +107,7 @@ func (c *controller) AddExecutorToProject(params martini.Params, w http.Response
 		if err != nil {
 			log.Println(err)
 			return 500, err.Error()
+			defer c.Mutex.Unlock()
 		}
 
 		c.Projects[intId] = &usingProject{1, project}
@@ -132,11 +135,73 @@ func (c *controller) AddExecutorToProject(params martini.Params, w http.Response
 }
 
 func (c *controller) AddTaskToProject(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	id := params["id"]
+	intId, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
 
-	return 200, ""
+	jsonTask, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("error in printing body: ", err)
+		return 500, err.Error()
+	}
+	defer r.Body.Close()
+
+	task := &model.Task{}
+	err = json.Unmarshal(jsonTask, task)
+	if err != nil {
+		log.Println("error in unmarshalling: ", err)
+		return 500, err.Error()
+	}
+
+	var project *graph.Project
+	c.Mutex.Lock()
+	if using, ok := c.Projects[intId]; ok {
+		project = using.Project
+		using.UsingCount++
+	} else {
+		project, err = c.readData(intId)
+		if err != nil {
+			log.Println(err)
+			return 500, err.Error()
+			defer c.Mutex.Unlock()
+		}
+
+		c.Projects[intId] = &usingProject{1, project}
+	}
+	c.Mutex.Unlock()
+
+	executor, index := project.Graph.CalculateNewTaskExecutor(task)
+	task.Executor = executor
+
+	c.Mutex.Lock()
+	if using, ok := c.Projects[intId]; ok && using.UsingCount == 1 {
+		delete(c.Projects, intId)
+	} else if ok && using.UsingCount > 1 {
+		using.Project = project
+		using.UsingCount--
+	}
+	c.Mutex.Unlock()
+
+	err = c.writeProjectToRedis(project)
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Task and executor's index", struct{
+		Task *model.Task
+		UserIndex int
+	}{
+		task,
+		index,
+	})
 }
 
-func (c *controller) GetRedisData(params martini.Params, w http.ResponseWriter) (int, string) {
+func (c *controller) GetRedisData(params martini.Params) (int, string) {
 	id := params["id"]
 	intId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {

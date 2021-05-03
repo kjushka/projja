@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"log"
 	"os"
 	"projja_api/controller"
@@ -43,6 +44,11 @@ func main() {
 	m := martini.Classic()
 	c := &controller.Controller{
 		DB: db,
+		Rds: redis.NewClient(&redis.Options{
+			Addr:     "redis:6379",
+			Password: "",
+			DB:       0,
+		}),
 	}
 	m.Group("/api", func(router martini.Router) {
 		router.Group("/user", func(r martini.Router) {

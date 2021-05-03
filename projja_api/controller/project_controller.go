@@ -57,6 +57,13 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		return 500, err.Error()
 	}
 
+	project.Id = lastInsertId
+	_, err = c.sendDataToStream("project", "new", project)
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
@@ -108,6 +115,15 @@ func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWri
 	}
 
 	rowsAffected, _ := result.RowsAffected()
+
+	_, err = c.sendDataToStream("project", "name", &model.Project{
+		Id:   projectId,
+		Name: projectName.Name,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(200, "Project name updated", struct {
@@ -233,6 +249,31 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	rowsAffected, _ := result.RowsAffected()
 
+	row := c.DB.QueryRow("select id, name, username, telegram_id from user where username = ?", memberUsername)
+	member := &model.User{}
+	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
+	if err != nil {
+		log.Println("error in getting new member info: ", err)
+		return 500, err.Error()
+	}
+	skills, err := c.getSkillsByUser(memberUsername)
+	if err != nil {
+		log.Println("error in getting new member skills: ", err)
+		return 500, err.Error()
+	}
+	member.Skills = skills
+
+	_, err = c.sendDataToStream("project", "add-member", struct {
+		ProjectId int64
+		Member    *model.User
+	}{projectId,
+		member,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(202, "Member added", struct {
 		Name    string
@@ -259,6 +300,18 @@ func (c *Controller) RemoveMemberFromProject(params martini.Params, w http.Respo
 	)
 	if err != nil {
 		log.Println("error in deleting member:", err)
+		return 500, err.Error()
+	}
+
+	_, err = c.sendDataToStream("project", "remove-member", struct {
+		ProjectId      int64
+		MemberUsername string
+	}{
+		projectId,
+		memberUsername,
+	})
+	if err != nil {
+		log.Println(err)
 		return 500, err.Error()
 	}
 
@@ -481,6 +534,19 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 		if err != nil {
 			log.Println("error in adding skills")
 		}
+	}
+
+	task.Id = lastInsertId
+	_, err = c.sendDataToStream("project", "task", struct {
+		ProjectId int64
+		Task      *model.Task
+	}{
+		projectId,
+		task,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
 	}
 
 	rowsAffected, _ := result.RowsAffected()

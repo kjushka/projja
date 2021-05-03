@@ -17,7 +17,7 @@ import (
 )
 
 func (c *Controller) GetTask(params martini.Params, w http.ResponseWriter) (int, string) {
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -32,7 +32,7 @@ func (c *Controller) GetTask(params martini.Params, w http.ResponseWriter) (int,
 		"left join task_status ts on ts.id = t.status "+
 		"left join users e on t.executor = e.id "+
 		"where t.id = ?;",
-		tasktId,
+		taskId,
 	)
 	task := &model.Task{}
 	task.Project = &model.Project{}
@@ -73,7 +73,7 @@ func (c *Controller) GetTask(params martini.Params, w http.ResponseWriter) (int,
 		task.IsClosed = true
 	}
 
-	skills, err := c.getSkillsTask(tasktId)
+	skills, err := c.getSkillsTask(taskId)
 	if err != nil {
 		log.Println("error in getting skills:", err)
 	}
@@ -90,7 +90,7 @@ func (c *Controller) ChangeTaskExecutor(params martini.Params, w http.ResponseWr
 		log.Println(err)
 		return 500, err
 	}
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -112,8 +112,28 @@ func (c *Controller) ChangeTaskExecutor(params martini.Params, w http.ResponseWr
 	result, err := c.DB.Exec(
 		"update task set executor = (select id from users where username = ?) where id = ?",
 		executor.Username,
-		tasktId,
+		taskId,
 	)
+
+	row := c.DB.QueryRow("select id from users where username = ?", executor.Username)
+	var userId int64
+	err = row.Scan(&userId)
+	if err != nil {
+		log.Println("error in getting userId: ", err)
+		return 500, err.Error()
+	}
+	_, err = c.sendDataToStream("task", "executor", struct {
+		TaskId int64
+		UserId int64
+	}{
+		taskId,
+		userId,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	if err != nil {
 		log.Println("error in updating executor:", err)
 		return 500, err.Error()
@@ -138,7 +158,7 @@ func (c *Controller) ChangeTaskDescription(params martini.Params, w http.Respons
 		log.Println(err)
 		return 500, err
 	}
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -162,10 +182,22 @@ func (c *Controller) ChangeTaskDescription(params martini.Params, w http.Respons
 	result, err := c.DB.Exec(
 		"update task set description = ? where id = ?",
 		description.Description,
-		tasktId,
+		taskId,
 	)
 	if err != nil {
 		log.Println("error in updating description:", err)
+		return 500, err.Error()
+	}
+
+	_, err = c.sendDataToStream("task", "description", struct {
+		TaskId      int64
+		Description string
+	}{
+		taskId,
+		description.Description,
+	})
+	if err != nil {
+		log.Println(err)
 		return 500, err.Error()
 	}
 
@@ -188,7 +220,7 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 		log.Println(err)
 		return 500, err
 	}
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -234,7 +266,7 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 			newSkills = append(newSkills, fmt.Sprintf("('%v')", strings.ToLower(skill)))
 		}
 		newTaskSkills[i] = fmt.Sprintf("(%v, (select s.id from skill s where s.skill = '%v'))",
-			tasktId,
+			taskId,
 			skill,
 		)
 	}
@@ -249,7 +281,7 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 
 	_, err = c.DB.Exec(
 		"delete from task_skill where task = ?",
-		tasktId,
+		taskId,
 	)
 	if err != nil {
 		log.Println("error in deleting skills:", err)
@@ -277,7 +309,7 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 }
 
 func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.ResponseWriter) (int, string) {
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -288,7 +320,7 @@ func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.Respons
 			"right join (select t.project, ts.level from task t "+
 			"left join task_status ts on ts.id = t.status where t.id = ?) "+
 			"t on t.project = ts.project where ts.level <= t.level - 1;",
-		tasktId,
+		taskId,
 	)
 	count := 0
 	err = row.Scan(&count)
@@ -304,8 +336,8 @@ func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.Respons
 			"right join (select t.project, ts.level from task t "+
 			"left join task_status ts on ts.id = t.status where t.id = ?) "+
 			"t on t.project = ts.project where ts.level = t.level - 1) where id = ?;",
-		tasktId,
-		tasktId,
+		taskId,
+		taskId,
 	)
 	if err != nil {
 		log.Println("error in updating status:", err)
@@ -358,6 +390,16 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 			return 500, err.Error()
 		}
 
+		_, err = c.sendDataToStream("task", "close", struct {
+			TaskId int64
+		}{
+			taskId,
+		})
+		if err != nil {
+			log.Println(err)
+			return 500, err.Error()
+		}
+
 		message = "Task closed because last status stayed yet"
 	} else {
 		result, err = c.DB.Exec(
@@ -395,7 +437,7 @@ func (c *Controller) ChangeTaskPriority(params martini.Params, w http.ResponseWr
 		log.Println(err)
 		return 500, err
 	}
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -419,7 +461,7 @@ func (c *Controller) ChangeTaskPriority(params martini.Params, w http.ResponseWr
 	result, err := c.DB.Exec(
 		"update task set priority = ? where id = ?",
 		priority.Priority,
-		tasktId,
+		taskId,
 	)
 	if err != nil {
 		log.Println("error in updating priority:", err)
@@ -445,7 +487,7 @@ func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWr
 		log.Println(err)
 		return 500, err
 	}
-	tasktId, err := strconv.ParseInt(params["id"], 10, 64)
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing taskId", err)
 		return 500, err.Error()
@@ -474,10 +516,22 @@ func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWr
 	result, err := c.DB.Exec(
 		"update task set deadline = ? where id = ?",
 		timeDeadline,
-		tasktId,
+		taskId,
 	)
 	if err != nil {
 		log.Println("error in updating deadline:", err)
+		return 500, err.Error()
+	}
+
+	_, err = c.sendDataToStream("task", "deadline", struct {
+		TaskId       int64
+		TaskDeadline time.Time
+	}{
+		taskId,
+		timeDeadline,
+	})
+	if err != nil {
+		log.Println(err)
 		return 500, err.Error()
 	}
 

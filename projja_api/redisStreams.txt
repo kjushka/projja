@@ -1,0 +1,13 @@
+setSkillsToUser     exec    skills          []string
+updateUserData      exec    info            model.User
+
+createNewProject    project new             model.Project
+changeProjectName   project name            model.Project
+addMember           project add-member      struct{int64, model.User}
+removeMember        project remove-member   struct{int64, string}
+createTask          project task            struct{int64, model.Task}
+
+changeExecutor      task    executor        struct{int64 (taskId), int64(userId)}
+changeDescription   task    description     struct{int64, string}
+closeTask           task    close           struct{int64}
+changeTaskDeadline  task    deadline        struct{int64, time.Time}

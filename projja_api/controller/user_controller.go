@@ -194,6 +194,12 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		return 500, err.Error()
 	}
 
+	_, err = c.sendDataToStream("exec", "skills", skills)
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	rowsAffected, _ := result.RowsAffected()
 	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(202, "skills set", struct {
@@ -268,7 +274,7 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 		return 500, err
 	}
 	username := params["uname"]
-	usenameJson, err := ioutil.ReadAll(r.Body)
+	userDataJson, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("error in reading body:", err)
 		return 500, err.Error()
@@ -276,18 +282,26 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 	defer r.Body.Close()
 
 	newUserInfo := &model.User{}
-	err = json.Unmarshal(usenameJson, newUserInfo)
+	err = json.Unmarshal(userDataJson, newUserInfo)
 	if err != nil {
 		log.Println("error in unmarshalling:", err)
 		return 500, err.Error()
 	}
 
-	result, err := c.DB.Exec("update users set name = ?, username = ?, telegram_id = ? where username = ?",
-		newUserInfo.Name, newUserInfo.Username, newUserInfo.TelegramId, username)
+	row := c.DB.QueryRow("select id from user where username = ?", username)
+	var userId int64
+	err = row.Scan(&userId)
+
+	result, err := c.DB.Exec("update users set name = ?, username = ?, telegram_id = ? where id = ?",
+		newUserInfo.Name, newUserInfo.Username, newUserInfo.TelegramId, userId)
 	if err != nil {
 		log.Println("error in updating info:", err)
 		return 500, err.Error()
 	}
+
+	newUserInfo.Id = userId
+
+	_, err = c.sendDataToStream("exec", "info", newUserInfo)
 
 	rowsAffected, _ := result.RowsAffected()
 

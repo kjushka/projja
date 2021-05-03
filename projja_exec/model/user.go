@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type User struct {
 	Id         int64
 	Name       string
@@ -11,7 +13,7 @@ type User struct {
 type Task struct {
 	Id          int64
 	Description string
-	Deadline    string
+	Deadline    time.Time
 	Executor    *User
 	Skills      []string
 }

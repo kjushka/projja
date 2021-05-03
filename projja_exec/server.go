@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Addr = ":8080"
+	Addr = ":8090"
 )
 
 func main() {
@@ -25,6 +25,7 @@ func main() {
 		r.Post("/add/project", c.AddProject)
 		r.Get("/get/:id", c.GetRedisData)
 		r.Post("/project/:id/add/exec", c.AddExecutorToProject)
+		r.Post("/project/:id/add/task", c.AddTaskToProject)
 	})
 
 	// done := make(chan error, 1)

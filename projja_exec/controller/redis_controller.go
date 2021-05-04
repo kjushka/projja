@@ -55,7 +55,7 @@ func (c *controller) setSkillsToUser(jsonSkills interface{}) {
 
 func (c *controller) updateUserInfo(jsonUserInfo interface{}) {
 	if strJsonUserData, ok := jsonUserInfo.(string); ok {
-		userData := &model.User{}
+		userData := &updateUserData{}
 		err := json.Unmarshal([]byte(strJsonUserData), userData)
 		if err != nil {
 			log.Println("error in unmarshalling:", err)
@@ -183,18 +183,86 @@ func (c *controller) ListenTaskStream(ctx context.Context) {
 		for _, rdsMessage := range rdsMessages {
 			rdsMap := rdsMessage.Values
 			if val, ok := rdsMap["executor"]; ok {
-				go c.unpackRdsMessage(val, "return")
+				go c.changeTaskExecutor(val)
 			}
 			if val, ok := rdsMap["description"]; ok {
-				go c.unpackRdsMessage(val, "return")
+				go c.changeTaskDescription(val)
 			}
 			if val, ok := rdsMap["close"]; ok {
-				go c.unpackRdsMessage(val, "return")
+				go c.closeTask(val)
 			}
 			if val, ok := rdsMap["deadline"]; ok {
-				go c.unpackRdsMessage(val, "return")
+				go c.changeTaskDeadline(val)
 			}
 		}
+	}
+}
+
+func (c *controller) changeTaskExecutor(jsonTask interface{}) {
+	if strJsonTask, ok := jsonTask.(string); ok {
+		task := &newTaskData{}
+		err := json.Unmarshal([]byte(strJsonTask), task)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.createTaskInGraph(task)
+		if err != nil {
+			log.Println("error in creating task: ", err)
+		}
+	} else {
+		log.Println("error in casting task")
+	}
+}
+
+func (c *controller) changeTaskDescription(jsonTask interface{}) {
+	if strJsonTask, ok := jsonTask.(string); ok {
+		task := &newTaskData{}
+		err := json.Unmarshal([]byte(strJsonTask), task)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.createTaskInGraph(task)
+		if err != nil {
+			log.Println("error in creating task: ", err)
+		}
+	} else {
+		log.Println("error in casting task")
+	}
+}
+
+func (c *controller) closeTask(jsonTask interface{}) {
+	if strJsonTask, ok := jsonTask.(string); ok {
+		task := &newTaskData{}
+		err := json.Unmarshal([]byte(strJsonTask), task)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.createTaskInGraph(task)
+		if err != nil {
+			log.Println("error in creating task: ", err)
+		}
+	} else {
+		log.Println("error in casting task")
+	}
+}
+
+func (c *controller) changeTaskDeadline(jsonTask interface{}) {
+	if strJsonTask, ok := jsonTask.(string); ok {
+		task := &newTaskData{}
+		err := json.Unmarshal([]byte(strJsonTask), task)
+		if err != nil {
+			log.Println("error in unmarshalling:", err)
+			return
+		}
+		err = c.createTaskInGraph(task)
+		if err != nil {
+			log.Println("error in creating task: ", err)
+		}
+	} else {
+		log.Println("error in casting task")
 	}
 }
 

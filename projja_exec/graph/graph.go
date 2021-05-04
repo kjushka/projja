@@ -53,50 +53,6 @@ func MakeNewProject(newProject *model.Project) *Project {
 	return project
 }
 
-func (g *Graph) AddExecutor(executor *model.User) {
-	g.Users[executor.Id] = executor
-
-	newSkills := make([]string, 0)
-	for _, s := range executor.Skills {
-		isNotExist := true
-
-		for _, gs := range g.Skills {
-			if s == gs {
-				isNotExist = false
-				break
-			}
-		}
-
-		if isNotExist {
-			newSkills = append(newSkills, s)
-		}
-	}
-
-	g.Skills = append(g.Skills, newSkills...)
-}
-
-func (g *Graph) RemoveMember(memberUsername string) {
-	for userId, user := range g.Users {
-		if user.Username == memberUsername {
-			delete(g.Users, userId)
-			tasksIds := g.UserToTask[userId]
-
-			for _, taskId := range tasksIds {
-				delete(g.Tasks, taskId)
-				delete(g.TaskToSkill, taskId)
-			}
-
-			delete(g.UserToTask, userId)
-			break
-		}
-	}
-}
-
-func (g *Graph) AddTaskWithExecutor(task *model.Task) {
-	g.Tasks[task.Id] = task
-	g.UserToTask[task.Executor.Id] = append(g.UserToTask[task.Executor.Id], task.Id)
-}
-
 func (g *Graph) CalculateNewTaskExecutor(task *model.Task) *model.User {
 	ratio := g.calculateRatingBySkills(task.Skills)
 	g.calculateRatingByTime(task.Deadline, ratio)

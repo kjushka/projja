@@ -1,5 +1,5 @@
-setSkillsToUser     exec    skills          struct{int64, []string}
-updateUserData      exec    info            model.User
+setSkillsToUser     exec    skills          struct{int64, []string, []int64}
+updateUserData      exec    info            struct{model.User, []int64}
 
 createNewProject    project new             model.Project
 addMember           project add-member      struct{int64, model.User}

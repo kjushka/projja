@@ -122,11 +122,53 @@ func (c *controller) GetRedisData(params martini.Params) (int, string) {
 }
 
 func (c *controller) setSkillsToUserInGraph(skillsData *userSkillsData) error {
-	return nil
+	var err error = nil
+	for _, projectId := range skillsData.ProjectsIds {
+		err = c.setSkillsToUserInProject(projectId, skillsData.UserId, skillsData.Skills)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
 
-func (c *controller) updateUserInfoInGraph(userInfo *model.User) error {
-	return nil
+func (c *controller) setSkillsToUserInProject(projectId int64, userId int64, skills []string) error {
+	project, err := c.getProject(projectId)
+	if err != nil {
+		return err
+	}
+
+	project.Graph.SetSkillsToUser(userId, skills)
+
+	err = c.closeProjectWork(project, projectId)
+
+	return err
+}
+
+func (c *controller) updateUserInfoInGraph(userInfo *updateUserData) error {
+	var err error = nil
+	for _, projectId := range userInfo.ProjectsIds {
+		err = c.changeUserData(projectId, userInfo.NewUserInfo)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
+}
+
+func (c *controller) changeUserData(projectId int64, newUserInfo *model.User) error {
+	project, err := c.getProject(projectId)
+	if err != nil {
+		return err
+	}
+
+	project.Graph.ChangeUserData(newUserInfo)
+
+	err = c.closeProjectWork(project, projectId)
+
+	return err
 }
 
 func (c *controller) addProject(newProject *model.Project) error {
@@ -135,103 +177,76 @@ func (c *controller) addProject(newProject *model.Project) error {
 }
 
 func (c *controller) addMemberInGraph(newMemberData *addingMemberData) error {
-	var project *graph.Project
-	var err error
-	c.Mutex.Lock()
-	if using, ok := c.Projects[newMemberData.ProjectId]; ok {
-		project = using.Project
-		using.UsingCount++
-	} else {
-		project, err = c.readData(newMemberData.ProjectId)
-		if err != nil {
-			log.Println(err)
-			defer c.Mutex.Unlock()
-			return err
-		}
-
-		c.Projects[newMemberData.ProjectId] = &usingProject{1, project}
+	project, err := c.getProject(newMemberData.ProjectId)
+	if err != nil {
+		return err
 	}
-	c.Mutex.Unlock()
 
 	project.Graph.AddExecutor(newMemberData.Member)
 
-	c.Mutex.Lock()
-	if using, ok := c.Projects[newMemberData.ProjectId]; ok && using.UsingCount == 1 {
-		delete(c.Projects, newMemberData.ProjectId)
-	} else if ok && using.UsingCount > 1 {
-		using.Project = project
-		using.UsingCount--
-	}
-	c.Mutex.Unlock()
+	err = c.closeProjectWork(project, newMemberData.ProjectId)
 
-	err = c.writeProjectToRedis(project)
 	return err
 }
 
 func (c *controller) removeMemberInGraph(removingMember *removingMemberData) error {
-	var project *graph.Project
-	var err error
-	c.Mutex.Lock()
-	if using, ok := c.Projects[removingMember.ProjectId]; ok {
-		project = using.Project
-		using.UsingCount++
-	} else {
-		project, err = c.readData(removingMember.ProjectId)
-		if err != nil {
-			log.Println(err)
-			defer c.Mutex.Unlock()
-			return err
-		}
-
-		c.Projects[removingMember.ProjectId] = &usingProject{1, project}
+	project, err := c.getProject(removingMember.ProjectId)
+	if err != nil {
+		return err
 	}
-	c.Mutex.Unlock()
 
 	project.Graph.RemoveMember(removingMember.MemberUsername)
 
-	c.Mutex.Lock()
-	if using, ok := c.Projects[removingMember.ProjectId]; ok && using.UsingCount == 1 {
-		delete(c.Projects, removingMember.ProjectId)
-	} else if ok && using.UsingCount > 1 {
-		using.Project = project
-		using.UsingCount--
-	}
-	c.Mutex.Unlock()
+	err = c.closeProjectWork(project, removingMember.ProjectId)
 
-	err = c.writeProjectToRedis(project)
 	return err
 }
 
 func (c *controller) createTaskInGraph(taskData *newTaskData) error {
-	var project *graph.Project
-	var err error
-	c.Mutex.Lock()
-	if using, ok := c.Projects[taskData.ProjectId]; ok {
-		project = using.Project
-		using.UsingCount++
-	} else {
-		project, err = c.readData(taskData.ProjectId)
-		if err != nil {
-			log.Println(err)
-			defer c.Mutex.Unlock()
-			return err
-		}
-
-		c.Projects[taskData.ProjectId] = &usingProject{1, project}
+	project, err := c.getProject(taskData.ProjectId)
+	if err != nil {
+		return err
 	}
-	c.Mutex.Unlock()
 
 	project.Graph.AddTaskWithExecutor(taskData.Task)
 
+	err = c.closeProjectWork(project, taskData.ProjectId)
+
+	return err
+}
+
+func (c *controller) getProject(projectId int64) (*graph.Project, error) {
+	var project *graph.Project
+	var err error
 	c.Mutex.Lock()
-	if using, ok := c.Projects[taskData.ProjectId]; ok && using.UsingCount == 1 {
-		delete(c.Projects, taskData.ProjectId)
+	if using, ok := c.Projects[projectId]; ok {
+		project = using.Project
+		using.UsingCount++
+	} else {
+		project, err = c.readData(projectId)
+		if err != nil {
+			log.Println(err)
+			defer c.Mutex.Unlock()
+			return nil, err
+		}
+
+		c.Projects[projectId] = &usingProject{1, project}
+	}
+	c.Mutex.Unlock()
+
+	return project, err
+}
+
+func (c *controller) closeProjectWork(project *graph.Project, projectId int64) error {
+	c.Mutex.Lock()
+	if using, ok := c.Projects[projectId]; ok && using.UsingCount == 1 {
+		delete(c.Projects, projectId)
 	} else if ok && using.UsingCount > 1 {
 		using.Project = project
 		using.UsingCount--
 	}
 	c.Mutex.Unlock()
 
-	err = c.writeProjectToRedis(project)
+	err := c.writeProjectToRedis(project)
 	return err
 }

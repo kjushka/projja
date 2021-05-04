@@ -194,12 +194,38 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		return 500, err.Error()
 	}
 
+	rows, err = c.DB.Query(
+		"select p.id, p.name, p.status from project p "+
+			"left join (select project, users from member) m on m.project = p.id "+
+			"where m.users = ? and p.status = ?",
+		userId,
+		"opened",
+	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
+	projects, err := c.scanProjects(rows, nil)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	projectsIds := make([]int64, len(projects))
+	for i, v := range projects {
+		projectsIds[i] = v.Id
+	}
+
 	_, err = c.sendDataToStream("exec", "skills", struct {
 		UserId int64
 		Skills []string
+		ProjectsIds []int64
 	}{
 		userId,
 		skills.Skills,
+		projectsIds,
 	})
 	if err != nil {
 		log.Println(err)
@@ -305,9 +331,39 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 		return 500, err.Error()
 	}
 
+	rows, err := c.DB.Query(
+		"select p.id, p.name, p.status from project p "+
+			"left join (select project, users from member) m on m.project = p.id "+
+			"where m.users = ? and p.status = ?",
+		userId,
+		"opened",
+	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
 	newUserInfo.Id = userId
 
-	_, err = c.sendDataToStream("exec", "info", newUserInfo)
+	projects, err := c.scanProjects(rows, nil)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	projectsIds := make([]int64, len(projects))
+	for i, v := range projects {
+		projectsIds[i] = v.Id
+	}
+
+	_, err = c.sendDataToStream("exec", "info", struct {
+		NewUserInfo *model.User
+		ProjectsIds []int64
+	}{
+		newUserInfo,
+		projectsIds,
+	})
 
 	rowsAffected, _ := result.RowsAffected()
 

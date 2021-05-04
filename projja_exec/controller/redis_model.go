@@ -3,8 +3,14 @@ package controller
 import "projja-exec/model"
 
 type userSkillsData struct {
-	UserId int64
-	Skills []string
+	UserId      int64
+	Skills      []string
+	ProjectsIds []int64
+}
+
+type updateUserData struct {
+	NewUserInfo *model.User
+	ProjectsIds []int64
 }
 
 type addingMemberData struct {

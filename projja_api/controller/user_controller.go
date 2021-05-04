@@ -169,7 +169,9 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	}
 
 	if len(newSkills) != 0 {
-		_, err := c.DB.Exec("insert into skill (skill) values " + strings.Join(newSkills, ", ") + "on conflict (id, skill) do nothing")
+		_, err := c.DB.Exec("insert ignore into skill (skill) values " +
+			strings.Join(newSkills, ", "),
+		)
 		if err != nil {
 			log.Println("error in creating new skills:", err)
 			return 500, err.Error()
@@ -219,8 +221,8 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	}
 
 	_, err = c.sendDataToStream("exec", "skills", struct {
-		UserId int64
-		Skills []string
+		UserId      int64
+		Skills      []string
 		ProjectsIds []int64
 	}{
 		userId,

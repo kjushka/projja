@@ -1,10 +1,11 @@
 version: "3.5"
 services:
-  backend-d:
+  backend-api:
     container_name: backend-api
     image: backend-api
     depends_on:
       - mysql
+      - redis
     security_opt:
       - seccomp:unconfined
     cap_add:
@@ -19,6 +20,21 @@ services:
       - DATABASE_PASS=root
       - DATABASE_HOST=mysql
     restart: always
+
+  backend-exec:
+    container_name: backend-exec
+    image: backend-exec
+    depends_on:
+      - redis
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    ports:
+      - 8090:8090
+    networks:
+      - ticket_network
+    restart: always
     
   mysql:
     container_name: mysql
@@ -31,7 +47,16 @@ services:
       - 7706:3306
     networks:
       - ticket_network
-    restart: always  
+    restart: always
+
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 7705:6379
+    networks:
+      - ticket_network
+    restart: always
     
 networks:
   ticket_network:

@@ -3,6 +3,8 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-martini/martini"
+	"github.com/go-redis/redis/v8"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,9 +12,7 @@ import (
 	"projja-exec/model"
 	"strconv"
 	"sync"
-
-	"github.com/go-martini/martini"
-	"github.com/go-redis/redis/v8"
+	"time"
 )
 
 type controller struct {
@@ -60,11 +60,29 @@ func (c *controller) CalculateTaskExecutor(params martini.Params, w http.Respons
 	}
 	defer r.Body.Close()
 
-	task := &model.Task{}
-	err = json.Unmarshal(jsonTask, task)
+	taskDTO := &struct {
+		Id          int64
+		Description string
+		Deadline    string
+		Executor    *model.User
+		Skills      []string
+	}{}
+	err = json.Unmarshal(jsonTask, taskDTO)
 	if err != nil {
 		log.Println("error in unmarshalling: ", err)
 		return 500, err.Error()
+	}
+	deadline, err := time.Parse("2006-01-02", taskDTO.Deadline)
+	if err != nil {
+		log.Println("error in parse deadline: ", err)
+		return 500, err.Error()
+	}
+	task := &model.Task{
+		Id:          taskDTO.Id,
+		Description: taskDTO.Description,
+		Deadline:    deadline,
+		Executor:    taskDTO.Executor,
+		Skills:      taskDTO.Skills,
 	}
 
 	var project *graph.Project
@@ -211,6 +229,62 @@ func (c *controller) createTaskInGraph(taskData *newTaskData) error {
 	project.Graph.AddTaskWithExecutor(taskData.Task)
 
 	err = c.closeProjectWork(project, taskData.ProjectId)
+
+	return err
+}
+
+func (c *controller) changeTaskExecutorInGraph(changeTaskExecutor *changeExecutorData) error {
+	project, err := c.getProject(changeTaskExecutor.ProjectId)
+	if err != nil {
+		return err
+	}
+
+	project.Graph.ChangeTaskExecutor(
+		changeTaskExecutor.OldUserId,
+		changeTaskExecutor.NewUserId,
+		changeTaskExecutor.TaskId,
+	)
+
+	err = c.closeProjectWork(project, changeTaskExecutor.ProjectId)
+
+	return err
+}
+
+func (c *controller) changeTaskDescriptionInGraph(changeDescription *changeDescriptionData) error {
+	project, err := c.getProject(changeDescription.ProjectId)
+	if err != nil {
+		return err
+	}
+
+	project.Graph.ChangeTaskDescription(changeDescription.TaskId, changeDescription.Description)
+
+	err = c.closeProjectWork(project, changeDescription.ProjectId)
+
+	return err
+}
+
+func (c *controller) closeTaskInGraph(closeTask *closeTaskData) error {
+	project, err := c.getProject(closeTask.ProjectId)
+	if err != nil {
+		return err
+	}
+
+	project.Graph.CloseTask(closeTask.TaskId, closeTask.ExecutorId)
+
+	err = c.closeProjectWork(project, closeTask.ProjectId)
+
+	return err
+}
+
+func (c *controller) changeTaskDeadlineInGraph(changeDeadline *changeDeadlineData) error {
+	project, err := c.getProject(changeDeadline.ProjectId)
+	if err != nil {
+		return err
+	}
+
+	project.Graph.ChangeTaskDeadline(changeDeadline.TaskId, changeDeadline.Deadline)
+
+	err = c.closeProjectWork(project, changeDeadline.ProjectId)
 
 	return err
 }

@@ -109,26 +109,52 @@ func (c *Controller) ChangeTaskExecutor(params martini.Params, w http.ResponseWr
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow("select executor from task where id = ?", taskId)
+	var oldUserId int64
+	err = row.Scan(&oldUserId)
+	if err != nil {
+		log.Println("error in getting userId: ", err)
+		return 500, err.Error()
+	}
+
 	result, err := c.DB.Exec(
 		"update task set executor = (select id from users where username = ?) where id = ?",
 		executor.Username,
 		taskId,
 	)
+	if err != nil {
+		log.Println("error in updating task executor: ", err)
+		return 500, err.Error()
+	}
 
-	row := c.DB.QueryRow("select id from users where username = ?", executor.Username)
-	var userId int64
-	err = row.Scan(&userId)
+	row = c.DB.QueryRow("select id from users where username = ?", executor.Username)
+	var newUserId int64
+	err = row.Scan(&newUserId)
 	if err != nil {
 		log.Println("error in getting userId: ", err)
 		return 500, err.Error()
 	}
+
+	row = c.DB.QueryRow("select project from task where id = ?", taskId)
+	var projectId int64
+	err = row.Scan(&projectId)
+	if err != nil {
+		log.Println("error in getting projectId: ", err)
+		return 500, err.Error()
+	}
+
 	_, err = c.sendDataToStream("task", "executor", struct {
-		TaskId int64
-		UserId int64
+		TaskId    int64
+		OldUserId int64
+		NewUserId int64
+		ProjectId int64
 	}{
 		taskId,
-		userId,
+		oldUserId,
+		newUserId,
+		projectId,
 	})
+
 	if err != nil {
 		log.Println(err)
 		return 500, err.Error()
@@ -189,12 +215,22 @@ func (c *Controller) ChangeTaskDescription(params martini.Params, w http.Respons
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow("select project from task where id = ?", taskId)
+	var projectId int64
+	err = row.Scan(&projectId)
+	if err != nil {
+		log.Println("error in getting projectId: ", err)
+		return 500, err.Error()
+	}
+
 	_, err = c.sendDataToStream("task", "description", struct {
 		TaskId      int64
 		Description string
+		ProjectId   int64
 	}{
 		taskId,
 		description.Description,
+		projectId,
 	})
 	if err != nil {
 		log.Println(err)
@@ -390,10 +426,30 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 			return 500, err.Error()
 		}
 
+		row := c.DB.QueryRow("select executor from task where id = ?", taskId)
+		var executorId int64
+		err = row.Scan(&executorId)
+		if err != nil {
+			log.Println("error in getting userId: ", err)
+			return 500, err.Error()
+		}
+
+		row = c.DB.QueryRow("select project from task where id = ?", taskId)
+		var projectId int64
+		err = row.Scan(&projectId)
+		if err != nil {
+			log.Println("error in getting projectId: ", err)
+			return 500, err.Error()
+		}
+
 		_, err = c.sendDataToStream("task", "close", struct {
-			TaskId int64
+			TaskId     int64
+			ExecutorId int64
+			ProjectId  int64
 		}{
 			taskId,
+			executorId,
+			projectId,
 		})
 		if err != nil {
 			log.Println(err)
@@ -523,12 +579,22 @@ func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWr
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow("select project from task where id = ?", taskId)
+	var projectId int64
+	err = row.Scan(&projectId)
+	if err != nil {
+		log.Println("error in getting projectId: ", err)
+		return 500, err.Error()
+	}
+
 	_, err = c.sendDataToStream("task", "deadline", struct {
 		TaskId       int64
 		TaskDeadline time.Time
+		ProjectId    int64
 	}{
 		taskId,
 		timeDeadline,
+		projectId,
 	})
 	if err != nil {
 		log.Println(err)

@@ -24,7 +24,7 @@ func main() {
 	m.Use(c.CheckContentType)
 	m.Group("/exec", func(r martini.Router) {
 		r.Get("/get/:id", c.GetRedisData)
-		r.Post("/project/:id/add/task", c.CalculateTaskExecutor)
+		r.Post("/project/:id/calc/task", c.CalculateTaskExecutor)
 	})
 
 	ctx := context.Background()

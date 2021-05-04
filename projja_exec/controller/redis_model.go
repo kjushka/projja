@@ -1,6 +1,9 @@
 package controller
 
-import "projja-exec/model"
+import (
+	"projja-exec/model"
+	"time"
+)
 
 type userSkillsData struct {
 	UserId      int64
@@ -26,4 +29,29 @@ type removingMemberData struct {
 type newTaskData struct {
 	ProjectId int64
 	Task      *model.Task
+}
+
+type changeExecutorData struct {
+	TaskId    int64
+	OldUserId int64
+	NewUserId int64
+	ProjectId int64
+}
+
+type changeDescriptionData struct {
+	TaskId      int64
+	Description string
+	ProjectId   int64
+}
+
+type closeTaskData struct {
+	TaskId     int64
+	ExecutorId int64
+	ProjectId  int64
+}
+
+type changeDeadlineData struct {
+	TaskId    int64
+	Deadline  time.Time
+	ProjectId int64
 }

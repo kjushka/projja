@@ -86,20 +86,16 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 }
 
 func AddMemberToProject(userName string) string {
-	fmt.Println("member key 2 " + fmt.Sprintf("%s_member",userName))
-
 	addedUser, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member",userName))
 	if err != nil {
 		logger.ForError(err)
-		fmt.Println(err)
-		return "Указанный пользователь не найден!"
+		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
 
-	fmt.Println("project key 2 " + fmt.Sprintf("%s_poject",userName))
 	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject",userName))
 	if err != nil {
 		logger.ForError(err)
-		return "Указанный проект не найден!"
+		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
 
 	fmt.Println(addedUser)

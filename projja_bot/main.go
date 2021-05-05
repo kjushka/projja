@@ -61,6 +61,8 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 			case "create_project":	
 				msg := view.CreateProject(message);
 				Bot.Send(msg)
+				msg = view.ChooseProjjaAction(message)
+				Bot.Send(msg)
 			case "change_profile":
 				// var text string;
 				// text = "Для изменения настроек пользователя вы можете использовать следующие команды\n"
@@ -73,17 +75,15 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				msg := view.GetAllProjects(message);
 				Bot.Send(msg)				
 			case "select_project":
+				// Тут находится логика, которую можно выполнить после выбора проекта
 				selectedProject := args[0]
-				// Обрабатываются дальнейшие действия с проектом, после того, как юзверь выбрал его
-				// TODO тут надо кешировать название выбранного проекта 
-				fmt.Println(selectedProject)
-
-				text := "Добавить участника проекта \n" +
-				"Удалить \n" +
-				"Изменить название проекта"
-				msg := tgbotapi.NewMessage(message.Chat.ID, text)
-
+				msg := view.SelectProject(message, selectedProject)
 				Bot.Send(msg)
+				msg = view.ChosePrjectAction(message);
+				Bot.Send(msg)
+			case "members_management":
+				msg := view.MembersManagment(message)
+				Bot.Send(msg)	
 			}
 	
 	}	
@@ -96,8 +96,7 @@ func main() {
 	updates := Bot.ListenForWebhook("/")
 
 	fmt.Println("Server is working!")
-	go http.ListenAndServeTLS(fmt.Sprintf("%s:%s", betypes.BotInternalAddress, betypes.BotInternalPort),
-		betypes.CertPath, betypes.KeyPath, nil)
+	go http.ListenAndServeTLS(fmt.Sprintf("%s:%s", betypes.BotInternalAddress, betypes.BotInternalPort), betypes.CertPath, betypes.KeyPath, nil)
 
 	checkUpdates(updates)
 }

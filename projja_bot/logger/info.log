@@ -93,3 +93,48 @@ Get all projects
 Get all projects
 {"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
+202 Accepted
+{"Skills":["js"]}
+202 Accepted
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
+202 Accepted
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+{"Id":0,"Name":"test2","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
+202 Accepted
+Get all projects
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Create project
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+{"Id":0,"Name":"ewew","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
+202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
+{"Id":0,"Name":"ttt","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
+202 Accepted

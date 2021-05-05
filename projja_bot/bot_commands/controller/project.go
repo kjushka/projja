@@ -83,3 +83,4 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 
 	return keyboard, len(projects.Content)
 }
+

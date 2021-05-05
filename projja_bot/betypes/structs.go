@@ -12,7 +12,7 @@ type User struct {
 	Id         int64
 	Name       string `json:"name"`
 	Username   string `json:"username"`
-	TelegramId int `json:"telegramId"`
+	TelegramId string `json:"telegramId"`
 	Skills     []string
 }
 
@@ -44,7 +44,7 @@ func (obj *GetUserAnswer) UnmarshalJSON(b []byte) error {
 		Id: int64(v["Id"].(float64)),
 		Name: userName,
 		Username: v["Username"].(string),
-		TelegramId: int(v["TelegramId"].(float64)),
+		TelegramId: v["TelegramId"].(string),
 		Skills: skills, 
 	}
 
@@ -70,6 +70,10 @@ type Project struct {
 
 type ProjectsList struct {
 	Content []*Project
+}
+
+type MembersList struct {
+	Content []*User
 }
 
 func (obj *ProjectsList) UnmarshalJSON(b []byte) error {

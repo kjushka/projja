@@ -146,8 +146,9 @@ func SetSkills(message *tgbotapi.Message) tgbotapi.MessageConfig {
 func SelectProject(message *tgbotapi.Message, projectName string, projectId string) tgbotapi.MessageConfig {	
 	text := fmt.Sprintf("Вы выбрали проект %s\n", projectName) 	
 	// Кешируем выбранный проект
+	// TODO переделать так, чтобы два аргумента не были одной строкой
 	key := fmt.Sprintf("%s_poject", message.From.UserName)
-	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectId), Expiration: 600})
+	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectId + " " + projectName), Expiration: 600})
 	
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
@@ -155,7 +156,7 @@ func SelectProject(message *tgbotapi.Message, projectName string, projectId stri
 func AddMemberToProject(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	userName := strings.Split(message.CommandArguments(), " ")[0]
 	if userName == "" {
-		text := fmt.Sprintf("Вы не пользователя, которого хотите добавить в проект!")
+		text := fmt.Sprintf("Вы не указали пользователя, которого хотите добавить в проект!")
 		return tgbotapi.NewMessage(message.Chat.ID, text)
 	}
 
@@ -186,12 +187,40 @@ func AddMemberToProject(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	return msg
 }
 
-func AddMemberYes(message *tgbotapi.Message)  {
-	ans := controller.AddMemberToProject(message.From.UserName)
-	fmt.Println(ans)
-
+func AddMemberYes(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+	text := controller.AddMemberToProject(message.From.UserName)
+	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
 
-// func AddMemberNo(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+func AddMemberNo(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+	text := "Вы можете выбрать друго пользователя, при помощи команды\n" + 
+					"/add_member \"имя пользователя\" \n" + 
+					"или открыть меню команд\n /start"
 
-// }
+	return tgbotapi.NewMessage(message.Chat.ID, text)
+}
+
+func GetMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
+	logger.LogCommandResult("Get all project members");
+	project, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", message.From.UserName))
+	
+	var text string
+	if err != nil {
+		logger.ForError(err)
+		text = "Истекло время ожидания, выберите проект заново!"
+		return tgbotapi.NewMessage(message.Chat.ID, text);
+	}
+	
+	projectArg := strings.Split(string(project.Value), " ")
+	projectId := projectArg[0]
+	projectName := projectArg[1]
+	text, membersCount := controller.GetMembers(projectId)
+
+	if	membersCount == 0 {
+		text = fmt.Sprintf("В проекте %s нет ни одного исполнителя:(", projectName)
+		return tgbotapi.NewMessage(message.Chat.ID, "")	
+	}
+
+	msg := tgbotapi.NewMessage(message.Chat.ID, text)
+	return msg
+}

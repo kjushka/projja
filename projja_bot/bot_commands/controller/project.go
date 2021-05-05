@@ -92,21 +92,50 @@ func AddMemberToProject(userName string) string {
 	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", userName))
 	if err != nil {
 		logger.ForError(err)
-		return "Истекло время ожидания, заново выберете проект и пользователя!"
+		return "Истекло время ожидания, заново выберите проект и пользователя!"
 	}
 	
 	member := string(addedMember.Value)
-	projectId := string(projectForAdd.Value)
-	fmt.Println(member)
-	fmt.Println(projectId)
+	args := strings.Split(string(projectForAdd.Value), " ")
+	projectId := args[0]
+	projectName := args[1]
 
-	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/0/add/member/kjushka"))
-
+	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/%s/add/member/%s", projectId, member))
 	logger.ForError(err)
-	fmt.Println(resp.Status)
-	fmt.Println(resp.Body)
 
-	return "test"
+	if(resp.StatusCode >= 500) {
+		jsonUser, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		logger.ForError(err)
+
+		var duplicateUser bool = strings.HasPrefix(string(jsonUser), "Error 1062:")
+		if (duplicateUser) {
+			return fmt.Sprintf("Пользователь %s уже является участником проекта %s!", member, projectName)
+		}
+
+		return "Неизвестная ошибка"
+	}
+
+	return fmt.Sprintf("Пользователь %s добавлен в проект %s!", member, projectName)
 }
 
+func GetMembers(projectId string) (string, int) {
+	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/%s/members", projectId))
+	logger.ForError(err)
 
+	gettingMembers, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	logger.ForError(err)
+
+	var members *betypes.MembersList
+	if err := json.Unmarshal(gettingMembers, &members); err != nil {
+    logger.ForError(err)
+	}
+
+	answer := "№ RealName UserName\n"
+	for i := 0; i < len(members.Content); i++ {
+		answer += fmt.Sprintf("%d. %s %s\n", i+1, members.Content[i].Name, members.Content[i].Username)
+	}
+
+	return answer, len(members.Content)
+}

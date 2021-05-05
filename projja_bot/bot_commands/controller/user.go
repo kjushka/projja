@@ -13,6 +13,7 @@ import (
 	"projja_bot/logger"
 	"fmt"
 	"strings"
+	"strconv"
 	// "strconv"
 )
 
@@ -21,7 +22,7 @@ func RegiserUser(from *tgbotapi.User) string {
 	user := &betypes.User{
 		Name: from.FirstName + " " + from.LastName,
 		Username: from.UserName,
-		TelegramId: from.ID, 
+		TelegramId: strconv.Itoa(from.ID), 
 	}
 
 	messageBytes, err := json.Marshal(user)
@@ -40,7 +41,7 @@ func RegiserUser(from *tgbotapi.User) string {
 		defer resp.Body.Close()
 		logger.ForError(err)
 
-		var duplicateUser bool = strings.HasPrefix(string(jsonUser), string(jsonUser))
+		var duplicateUser bool = strings.HasPrefix(string(jsonUser), "Error 1062:")
 		if (duplicateUser) {
 			return "Такой пользователь уже зарегистрирован!"
 		}

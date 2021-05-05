@@ -59,7 +59,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 	
 	_, err = c.DB.Exec(
 		"insert into member (project, users) values (?, (select id from users where username = ?))",
-		projectId,
+		lastInsertId,
 		project.Owner.Username,
 	)
 	if err != nil {

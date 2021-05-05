@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"projja_bot/betypes"
-	"projja_bot/logger"
-	"projja_bot/bot_commands/view"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"net/http"
+	"projja_bot/betypes"
+	"projja_bot/bot_commands/view"
+	"projja_bot/logger"
 	"strings"
+
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var (
@@ -43,7 +44,6 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 		}
 
 		fmt.Println(command)
-
 
 		switch command {
 			case "start":
@@ -84,6 +84,15 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 			case "members_management":
 				msg := view.MembersManagment(message)
 				Bot.Send(msg)	
+			case "add_member":
+				msg := view.AddMemberToProject(message)	
+				Bot.Send(msg)	
+			case "add_member_yes":
+				view.AddMemberYes(message)
+				
+			case "add_member_no":
+
+
 			}
 	
 	}	

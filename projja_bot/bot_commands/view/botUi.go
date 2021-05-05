@@ -16,7 +16,6 @@ func ChooseProjjaAction(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	text := fmt.Sprintf("%s , что вы хотите сделать?\n" +
 	"Чтобы создать проект, воспользуйтес командой:\n" +
 	"/create_project название проекта", message.From.UserName)
-
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
@@ -39,7 +38,6 @@ func ChooseProjjaAction(message *tgbotapi.Message) tgbotapi.MessageConfig {
 
 func ChosePrjectAction(message *tgbotapi.Message) tgbotapi.MessageConfig  {
 	msg := tgbotapi.NewMessage(message.Chat.ID, "Выберите нужное действие:")
-
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
 	var row1 []tgbotapi.InlineKeyboardButton
@@ -67,21 +65,22 @@ func MembersManagment(message *tgbotapi.Message) tgbotapi.MessageConfig  {
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
-	var row []tgbotapi.InlineKeyboardButton
+	var row1 []tgbotapi.InlineKeyboardButton
+	var row2 []tgbotapi.InlineKeyboardButton
 	addMemberBtn := tgbotapi.NewInlineKeyboardButtonData("Просмотреть участников проекта", "get_members")
 	removememberBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_task")
 
-	row = append(row, addMemberBtn)
-	row = append(row, removememberBtn)
+	row1 = append(row1, addMemberBtn)
+	row2 = append(row2, removememberBtn)
 
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
 	msg.ReplyMarkup = keyboard
 	return msg
 }
 
-
 func Start(message *tgbotapi.Message) tgbotapi.MessageConfig {
-	_, isRegister := controller.GetUser(message.From.UserName)
+	isRegister := controller.GetUser(message.From.UserName)
 	var text string
 
 	if isRegister == nil {
@@ -148,24 +147,51 @@ func SelectProject(message *tgbotapi.Message, projectName string) tgbotapi.Messa
 	text := fmt.Sprintf("Вы выбрали проект %s\n", projectName) 	
 	// Кешируем выбранный проект
 	key := fmt.Sprintf("%s_poject", message.From.UserName)
-	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectName), Expiration: 3})
+	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectName), Expiration: 600})
 	
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
 
-func AddMemberToProject(message *tgbotapi.Message, userName string) string {
+func AddMemberToProject(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+	userName := strings.Split(message.CommandArguments(), " ")[0]
 	if userName == "" {
-		return "Вы не указали владельца проекта!"
+		text := fmt.Sprintf("Вы не пользователя, которого хотите добавить в проект!")
+		return tgbotapi.NewMessage(message.Chat.ID, text)
 	}
-	_userName := strings.Split(userName, " ")[0]
 
-	ans, user := controller.GetUser(_userName)
-	if	user == nil {
-		return ans
+	user := controller.GetUser(userName)
+	if user == nil {
+		text := fmt.Sprintf("Пользоватль с именем %s не зарегистрирован!", userName)
+		return tgbotapi.NewMessage(message.Chat.ID, text)
 	}
 
 	// Кешируем выбраного пользователя, данные хранятся следующим образом
 	// ключ: имяПользователяРаботающегоСботом_member значение: имя выбранного пользователя_
-	key := fmt.Sprintf("%_member", message.From.UserName)
-	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(user.Username), Expiration: 3})
+	key := fmt.Sprintf("%s_member", message.From.UserName)
+	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(user.Username), Expiration: 600})
+	
+	text := fmt.Sprintf("Вы хотите дабавить пользователя %s, с навыками %s?", user.Username, user.Skills)
+	msg := tgbotapi.NewMessage(message.Chat.ID, text)
+	keyboard := tgbotapi.InlineKeyboardMarkup{}
+
+	var row []tgbotapi.InlineKeyboardButton
+	yesBtn := tgbotapi.NewInlineKeyboardButtonData("Да", "add_member_yes")
+	noBtn := tgbotapi.NewInlineKeyboardButtonData("Нет", "add_member_no")
+
+	row = append(row, yesBtn)
+	row = append(row, noBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	msg.ReplyMarkup = keyboard
+
+	return msg
 }
+
+func AddMemberYes(message *tgbotapi.Message)  {
+	ans := controller.AddMemberToProject(message.From.UserName)
+	fmt.Println(ans)
+
+}
+
+// func AddMemberNo(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+
+// }

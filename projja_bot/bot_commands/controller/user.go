@@ -54,10 +54,9 @@ func RegiserUser(from *tgbotapi.User) string {
 	return "Что-то пошло не так..." 
 }
 
-// Lолжен хешировать инфу о текущем юзере Redis/Memcash
-func GetUser(userName string) (string, *betypes.User) {
+func GetUser(userName string) (*betypes.User) {
 	if(userName == "") {
-		return "Вы не указали имя пользавателя!", nil  
+		return nil  
 	}
 	fmt.Println(userName)
 
@@ -75,10 +74,10 @@ func GetUser(userName string) (string, *betypes.User) {
 	}
 
 	if userAns.IsEmpty == true {
-		return fmt.Sprintf("Пользоватль с именем %s не зарегистрирован!", userName), nil 
+		return nil 
 	}
 	
-	return fmt.Sprintf("Вы выбрали пользователя %s", userName), userAns.Content
+	return userAns.Content
 } 
 
 func SetSkills(userName string, args string) string {	
@@ -110,7 +109,6 @@ func SetSkills(userName string, args string) string {
 	}
 	return "Что-то пошло не так..."
 }
-
 
 
 // Нужна ли эта функция

@@ -1,14 +1,15 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"strings"
+	"io/ioutil"
+	"net/http"
 	"projja_bot/betypes"
 	"projja_bot/logger"
-	"io/ioutil"
-	"bytes"
-	"net/http"
-	"encoding/json"
+	"strings"
+
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -24,9 +25,9 @@ func CreateProject(userName string, projectName string) string {
 	}
 	_projectName := strings.Split(projectName, " ")[0]
 
-	ans, user := GetUser(userName)
+	user := GetUser(userName)
 	if	user == nil {
-		return ans
+		return fmt.Sprintf("Пользоватль с именем %s не зарегистрирован!", userName)
 	}
 
 	project := &betypes.Project{
@@ -83,4 +84,28 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 
 	return keyboard, len(projects.Content)
 }
+
+func AddMemberToProject(userName string) string {
+	fmt.Println("member key 2 " + fmt.Sprintf("%s_member",userName))
+
+	addedUser, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member",userName))
+	if err != nil {
+		logger.ForError(err)
+		fmt.Println(err)
+		return "Указанный пользователь не найден!"
+	}
+
+	fmt.Println("project key 2 " + fmt.Sprintf("%s_poject",userName))
+	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject",userName))
+	if err != nil {
+		logger.ForError(err)
+		return "Указанный проект не найден!"
+	}
+
+	fmt.Println(addedUser)
+	fmt.Println(projectForAdd)
+
+	return "test"
+}
+
 

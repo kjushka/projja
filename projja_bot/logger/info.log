@@ -1,140 +1,41 @@
-Get user
-Get user
-{"Description":"Current user:","Content":{"Id":8,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-Get user
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-202 Accepted
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Register user
-{"Id":0,"name":"Anton Petrov","username":"kjushka","telegramId":310336293,"Skills":null}
-202 Accepted
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Id":0,"Name":"dssd","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":[]},"Status":"В работе!"}
-202 Accepted
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":[]},"Status":"opened"}
-202 Accepted
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-Register user
-{"Id":0,"name":"Evgen Kovarniy","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Kovarniy","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-Register user
-{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-202 Accepted
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":[]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-500 Internal Server Error
-{"Skills":["js"]}
-202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
-202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}
+memcache: cache miss
+{"Description":"Current user:","Content":{"Id":2,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
 Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Description":"Current user:","Content":{"Id":0,"Name":"","Username":"","TelegramId":0,"Skills":[]}}
-{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":null}
-202 Accepted
-{"Skills":["js"]}
-202 Accepted
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
-202 Accepted
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-{"Id":0,"Name":"test2","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
-202 Accepted
-Get all projects
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Get all projects
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Create project
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-{"Id":0,"Name":"ewew","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
-202 Accepted
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-Create project
-{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":647628159,"Skills":["js"]}}
-{"Id":0,"Name":"ttt","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":647628159,"Skills":["js"]},"Status":"opened"}
-202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Fedor ","Username":"fedor_sche","TelegramId":1355003317,"Skills":["js"]}}

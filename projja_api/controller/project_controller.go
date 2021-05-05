@@ -249,7 +249,7 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	rowsAffected, _ := result.RowsAffected()
 
-	row := c.DB.QueryRow("select id, name, username, telegram_id from user where username = ?", memberUsername)
+	row := c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", memberUsername)
 	member := &model.User{}
 	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
 	if err != nil {

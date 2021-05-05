@@ -56,17 +56,38 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		log.Println("error in creating task status 'new':", err)
 		return 500, err.Error()
 	}
+	
+	_, err = c.DB.Exec(
+		"insert into member (project, users) values (?, (select id from users where username = ?))",
+		projectId,
+		project.Owner.Username,
+	)
+	if err != nil {
+		log.Println("error in adding owner as project member:", err)
+		return 500, err.Error()
+	}
 
-	row := c.DB.QueryRow("select id from users where username = ?", project.Owner.Username)
+	row := c.DB.QueryRow("select id, name, telegram_id from users where username = ?", project.Owner.Username)
 	var ownerId int64
-	err = row.Scan(&ownerId)
+	var ownerName string
+	var ownerTelegramId string
+	err = row.Scan(&ownerId, &ownerName, &ownerTelegramId)
 	if err != nil {
 		log.Println("error in getting owner id: ", err)
 		return 500, err.Error()
 	}
 
+	skills, err := c.getSkillsByUser(project.Owner.Username)
+	if err != nil {
+		log.Println("error in getting owner skills: ", err)
+		return 500, err.Error()
+	}
+	
 	project.Id = lastInsertId
 	project.Owner.Id = ownerId
+	project.Owner.Name = ownerName
+	project.Owner.TelegramId = ownerTelegramId
+	project.Owner.Skills = skills
 	_, err = c.sendDataToStream("project", "new", project)
 	if err != nil {
 		log.Println(err)
@@ -249,7 +270,7 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	rowsAffected, _ := result.RowsAffected()
 
-	row := c.DB.QueryRow("select id, name, username, telegram_id from user where username = ?", memberUsername)
+	row := c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", memberUsername)
 	member := &model.User{}
 	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
 	if err != nil {

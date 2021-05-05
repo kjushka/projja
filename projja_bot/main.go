@@ -96,9 +96,11 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				msg := view.AddMemberNo(message)
 				Bot.Send(msg)	
 			case "get_members":
-				msg := view.GetMembers(message)
+				msg := view.GetProjectMembers(message)
 				Bot.Send(msg)	
-
+			case "remove_member":
+				msg := view.RemoveMemberFromProject(message)
+				Bot.Send(msg)		
 			}
 	
 	}	

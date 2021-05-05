@@ -161,3 +161,10 @@ Get all project members
 Get all project members
 Get all project members
 Get all project members
+Get all project members
+{"Id":0,"name":"Alexandra ","username":"aleksandra_mint","telegramId":"885047877","Skills":null}
+202 Accepted
+{"Id":0,"name":"Alexandra ","username":"aleksandra_mint","telegramId":"885047877","Skills":null}
+500 Internal Server Error
+{"Skills":["python","html","and","chilling"]}
+202 Accepted

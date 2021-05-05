@@ -68,7 +68,7 @@ func MembersManagment(message *tgbotapi.Message) tgbotapi.MessageConfig  {
 	var row1 []tgbotapi.InlineKeyboardButton
 	var row2 []tgbotapi.InlineKeyboardButton
 	addMemberBtn := tgbotapi.NewInlineKeyboardButtonData("Просмотреть участников проекта", "get_members")
-	removememberBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_task")
+	removememberBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
 
 	row1 = append(row1, addMemberBtn)
 	row2 = append(row2, removememberBtn)
@@ -200,7 +200,7 @@ func AddMemberNo(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
 
-func GetMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
+func GetProjectMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	logger.LogCommandResult("Get all project members");
 	project, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", message.From.UserName))
 	
@@ -214,7 +214,7 @@ func GetMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	projectArg := strings.Split(string(project.Value), " ")
 	projectId := projectArg[0]
 	projectName := projectArg[1]
-	text, membersCount := controller.GetMembers(projectId)
+	text, membersCount := controller.GetProjectMembers(projectId)
 
 	if	membersCount == 0 {
 		text = fmt.Sprintf("В проекте %s нет ни одного исполнителя:(", projectName)
@@ -223,4 +223,11 @@ func GetMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 	return msg
+}
+
+func RemoveMemberFromProject(message *tgbotapi.Message) tgbotapi.MessageConfig {
+	logger.LogCommandResult("Remove member from project");
+	controller.RemoveMemberFromProject(message.From.UserName)
+	
+
 }

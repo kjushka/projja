@@ -119,7 +119,7 @@ func AddMemberToProject(userName string) string {
 	return fmt.Sprintf("Пользователь %s добавлен в проект %s!", member, projectName)
 }
 
-func GetMembers(projectId string) (string, int) {
+func GetProjectMembers(projectId string) (string, int) {
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/%s/members", projectId))
 	logger.ForError(err)
 
@@ -139,3 +139,31 @@ func GetMembers(projectId string) (string, int) {
 
 	return answer, len(members.Content)
 }
+
+func RemoveMemberFromProject(userName string) {
+	addedMember, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member", userName))
+	if err != nil {
+		logger.ForError(err)
+		return "Истекло время ожидания, заново выберете проект и пользователя!"
+	}
+
+	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", userName))
+	if err != nil {
+		logger.ForError(err)
+		return "Истекло время ожидания, заново выберите проект и пользователя!"
+	}
+	
+	member := string(addedMember.Value)
+	args := strings.Split(string(projectForAdd.Value), " ")
+	projectId := args[0]
+	projectName := args[1]
+
+	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/$s/remove/member/%s", projectId, member))
+	logger.ForError(err)
+	fmt.Println(resp.Status)
+
+
+}
+
+
+// TODO перенести логику выбора пользователя в одну функцию!!!

@@ -1,7 +1,11 @@
 package controller
 
-import "database/sql"
+import (
+	"database/sql"
+	"github.com/go-redis/redis/v8"
+)
 
 type Controller struct {
-	DB *sql.DB
+	Rds *redis.Client
+	DB  *sql.DB
 }

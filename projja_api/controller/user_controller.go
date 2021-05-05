@@ -4,19 +4,23 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-martini/martini"
-	"github.com/scylladb/go-set"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"projja_api/model"
 	"strings"
 	"time"
+
+	"github.com/go-martini/martini"
+	"github.com/scylladb/go-set"
 )
 
 func (c *Controller) Register(w http.ResponseWriter, r *http.Request) (int, string) {
-	if r.Header.Get("Content-Type") != "application/json" {
-		return 500, "unsupportable content-type"
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
 	}
 	jsonUser, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -68,6 +72,12 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 		return 500, err.Error()
 	}
 
+	if err == sql.ErrNoRows {
+		noUserErr := fmt.Errorf("no such user with username %s", username)
+		log.Println(noUserErr)
+		return 500, noUserErr.Error()
+	}
+
 	skills, err := c.getSkillsByUser(username)
 	if err != nil {
 		log.Println("error in getting skills:", err)
@@ -80,8 +90,11 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 }
 
 func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w http.ResponseWriter) (int, string) {
-	if r.Header.Get("Content-Type") != "application/json" {
-		return 500, "unsupportable content-type"
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
 	}
 	jsonSkills, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -96,10 +109,27 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		log.Println("error during unmarshalling:", err)
 		return 500, err.Error()
 	}
+
+	uniqueSkills := make([]string, 0)
+	for _, s := range skills.Skills {
+		skip := false
+		for _, u := range uniqueSkills {
+			if s == u {
+				skip = true
+				break
+			}
+		}
+		if !skip {
+			uniqueSkills = append(uniqueSkills, s)
+		}
+	}
+
+	skills.Skills = uniqueSkills
+
 	username := params["uname"]
 
 	row := c.DB.QueryRow("select id from users where username = ?", username)
-	var userId int
+	var userId int64
 	err = row.Scan(&userId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting user id:", err)
@@ -109,10 +139,12 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	rows, err := c.DB.Query(
 		"select s.skill from skill s",
 	)
+
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting skills:", err)
 		return 500, err.Error()
 	}
+
 	skillsSet := set.NewStringSet()
 	for rows.Next() {
 		var skill string
@@ -123,12 +155,12 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 		}
 		skillsSet.Add(skill)
 	}
-	newSkills := []string{}
+	newSkills := make([]string, 0)
 	newUserSkills := make([]string, len(skills.Skills))
 	for i, skill := range skills.Skills {
 		skill := strings.ToLower(skill)
 		if !skillsSet.Has(skill) {
-			newSkills = append(newSkills, fmt.Sprintf("('%v')", strings.ToLower(skill)))
+			newSkills = append(newSkills, fmt.Sprintf("('%v')", skill))
 		}
 		newUserSkills[i] = fmt.Sprintf("(%v, (select s.id from skill s where s.skill = '%v'))",
 			userId,
@@ -137,7 +169,9 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	}
 
 	if len(newSkills) != 0 {
-		_, err := c.DB.Exec("insert into skill (skill) values " + strings.Join(newSkills, ", "))
+		_, err := c.DB.Exec("insert ignore into skill (skill) values " +
+			strings.Join(newSkills, ", "),
+		)
 		if err != nil {
 			log.Println("error in creating new skills:", err)
 			return 500, err.Error()
@@ -159,6 +193,44 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	)
 	if err != nil {
 		log.Println("error in creating new users_skill:", err)
+		return 500, err.Error()
+	}
+
+	rows, err = c.DB.Query(
+		"select p.id, p.name, p.status from project p "+
+			"left join (select project, users from member) m on m.project = p.id "+
+			"where m.users = ? and p.status = ?",
+		userId,
+		"opened",
+	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
+	projects, err := c.scanProjects(rows, nil)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	projectsIds := make([]int64, len(projects))
+	for i, v := range projects {
+		projectsIds[i] = v.Id
+	}
+
+	_, err = c.sendDataToStream("exec", "skills", struct {
+		UserId      int64
+		Skills      []string
+		ProjectsIds []int64
+	}{
+		userId,
+		skills.Skills,
+		projectsIds,
+	})
+	if err != nil {
+		log.Println(err)
 		return 500, err.Error()
 	}
 
@@ -228,34 +300,77 @@ func (c *Controller) GetAllUserProjects(params martini.Params, w http.ResponseWr
 	return c.makeContentResponse(200, "projects", projects)
 }
 
-func (c *Controller) ChangeUserName(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	username := params["uname"]
-	body, err := ioutil.ReadAll(r.Body)
+	userDataJson, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("error in reading body:", err)
 		return 500, err.Error()
 	}
 	defer r.Body.Close()
 
-	nameStruct := &struct {
-		Name string
-	}{}
-	err = json.Unmarshal(body, nameStruct)
+	newUserInfo := &model.User{}
+	err = json.Unmarshal(userDataJson, newUserInfo)
 	if err != nil {
 		log.Println("error in unmarshalling:", err)
 		return 500, err.Error()
 	}
 
-	result, err := c.DB.Exec("update users set name = ? where username = ?", nameStruct.Name, username)
+	row := c.DB.QueryRow("select id from user where username = ?", username)
+	var userId int64
+	err = row.Scan(&userId)
+
+	result, err := c.DB.Exec("update users set name = ?, username = ?, telegram_id = ? where id = ?",
+		newUserInfo.Name, newUserInfo.Username, newUserInfo.TelegramId, userId)
 	if err != nil {
-		log.Println("error in updating name:", err)
+		log.Println("error in updating info:", err)
 		return 500, err.Error()
 	}
+
+	rows, err := c.DB.Query(
+		"select p.id, p.name, p.status from project p "+
+			"left join (select project, users from member) m on m.project = p.id "+
+			"where m.users = ? and p.status = ?",
+		userId,
+		"opened",
+	)
+
+	if err != nil {
+		log.Println("error in getting opened projects:", err)
+		return 500, err.Error()
+	}
+
+	newUserInfo.Id = userId
+
+	projects, err := c.scanProjects(rows, nil)
+	if err != nil {
+		log.Println("error in scanning rows:", err)
+		return 500, err.Error()
+	}
+
+	projectsIds := make([]int64, len(projects))
+	for i, v := range projects {
+		projectsIds[i] = v.Id
+	}
+
+	_, err = c.sendDataToStream("exec", "info", struct {
+		NewUserInfo *model.User
+		ProjectsIds []int64
+	}{
+		newUserInfo,
+		projectsIds,
+	})
 
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Name changed", struct {
+	return c.makeContentResponse(200, "Info updated", struct {
 		Name    string
 		Content interface{}
 	}{

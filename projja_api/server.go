@@ -3,11 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-martini/martini"
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-redis/redis/v8"
 	"log"
 	"os"
 	"projja_api/controller"
+
+	"github.com/go-martini/martini"
+	_ "github.com/go-sql-driver/mysql"
 
 	_ "github.com/lib/pq"
 )
@@ -42,6 +44,11 @@ func main() {
 	m := martini.Classic()
 	c := &controller.Controller{
 		DB: db,
+		Rds: redis.NewClient(&redis.Options{
+			Addr:     "redis:6379",
+			Password: "",
+			DB:       0,
+		}),
 	}
 	m.Group("/api", func(router martini.Router) {
 		router.Group("/user", func(r martini.Router) {
@@ -50,7 +57,7 @@ func main() {
 			r.Post("/:uname/skills", c.SetSkillsToUser)
 			r.Get("/:uname/owner/open", c.GetOpenUserProjects)
 			r.Get("/:uname/owner/all", c.GetAllUserProjects)
-			r.Post("/:uname/change", c.ChangeUserName)
+			r.Post("/:uname/update", c.UpdateUserData)
 			r.Get("/:uname/member/opened", c.GetOpenProjectsWhereMember)
 			r.Get("/:uname/member/all", c.GetAllProjectsWhereMember)
 			r.Get("/:uname/executor", c.GetExecuteTasks)
@@ -58,7 +65,8 @@ func main() {
 		router.Group("/project", func(r martini.Router) {
 			r.Post("/create", c.CreateProject)
 			r.Post("/:id/change/name", c.ChangeProjectName)
-			r.Post("/:id/change/status", c.ChangeProjectStatus)
+			r.Get("/:id/close", c.CloseProject)
+			r.Get("/:id/open", c.OpenProject)
 			r.Get("/:id/members", c.GetProjectMembers)
 			r.Get("/:id/add/member/:uname", c.AddMemberToProject)
 			r.Get("/:id/remove/member/:uname", c.RemoveMemberFromProject)

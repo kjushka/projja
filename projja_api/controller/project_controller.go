@@ -3,16 +3,24 @@ package controller
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/go-martini/martini"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"projja_api/model"
 	"strconv"
 	"time"
+
+	"github.com/go-martini/martini"
 )
 
 func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	jsonProject, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -49,6 +57,22 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow("select id from users where username = ?", project.Owner.Username)
+	var ownerId int64
+	err = row.Scan(&ownerId)
+	if err != nil {
+		log.Println("error in getting owner id: ", err)
+		return 500, err.Error()
+	}
+
+	project.Id = lastInsertId
+	project.Owner.Id = ownerId
+	_, err = c.sendDataToStream("project", "new", project)
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
@@ -62,6 +86,12 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 }
 
 func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -105,48 +135,64 @@ func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWri
 	})
 }
 
-func (c *Controller) ChangeProjectStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *Controller) CloseProject(params martini.Params, w http.ResponseWriter) (int, string) {
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
 		return 500, err.Error()
 	}
 
-	jsonStatus, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
+	rowsAffected, err := c.changeProjectStatus(projectId, "closed")
 	if err != nil {
-		log.Println("error in reading body", err)
 		return 500, err.Error()
 	}
-	projectStatus := &struct {
-		Status string
-	}{}
-	err = json.Unmarshal(jsonStatus, projectStatus)
-	if err != nil {
-		log.Println("error in unmarshalling")
-		return 500, err.Error()
-	}
-
-	result, err := c.DB.Exec(
-		"update project set status = ? where id = ?",
-		projectStatus.Status,
-		projectId,
-	)
-	if err != nil {
-		log.Println("error in updating status:", err)
-		return 500, err.Error()
-	}
-
-	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Project status updated", struct {
+	return c.makeContentResponse(200, "Project closed", struct {
 		Name    string
 		Content interface{}
 	}{
 		Name:    "Rows affected",
 		Content: rowsAffected,
 	})
+}
+
+func (c *Controller) OpenProject(params martini.Params, w http.ResponseWriter) (int, string) {
+	projectId, err := strconv.ParseInt(params["id"], 10, 64)
+	if err != nil {
+		log.Println("error in parsing projectId", err)
+		return 500, err.Error()
+	}
+
+	rowsAffected, err := c.changeProjectStatus(projectId, "opened")
+	if err != nil {
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Project closed", struct {
+		Name    string
+		Content interface{}
+	}{
+		Name:    "Rows affected",
+		Content: rowsAffected,
+	})
+}
+
+func (c *Controller) changeProjectStatus(id int64, status string) (int64, error) {
+	result, err := c.DB.Exec(
+		"update project set status = ? where id = ?",
+		status,
+		id,
+	)
+	if err != nil {
+		log.Println("error in updating status:", err)
+		return 0, err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+
+	return rowsAffected, err
 }
 
 func (c *Controller) GetProjectMembers(params martini.Params, w http.ResponseWriter) (int, string) {
@@ -203,6 +249,31 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	rowsAffected, _ := result.RowsAffected()
 
+	row := c.DB.QueryRow("select id, name, username, telegram_id from user where username = ?", memberUsername)
+	member := &model.User{}
+	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
+	if err != nil {
+		log.Println("error in getting new member info: ", err)
+		return 500, err.Error()
+	}
+	skills, err := c.getSkillsByUser(memberUsername)
+	if err != nil {
+		log.Println("error in getting new member skills: ", err)
+		return 500, err.Error()
+	}
+	member.Skills = skills
+
+	_, err = c.sendDataToStream("project", "add-member", struct {
+		ProjectId int64
+		Member    *model.User
+	}{projectId,
+		member,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(202, "Member added", struct {
 		Name    string
@@ -232,6 +303,18 @@ func (c *Controller) RemoveMemberFromProject(params martini.Params, w http.Respo
 		return 500, err.Error()
 	}
 
+	_, err = c.sendDataToStream("project", "remove-member", struct {
+		ProjectId      int64
+		MemberUsername string
+	}{
+		projectId,
+		memberUsername,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
@@ -245,6 +328,12 @@ func (c *Controller) RemoveMemberFromProject(params martini.Params, w http.Respo
 }
 
 func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -264,7 +353,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 		return 500, err.Error()
 	}
 
-	result, err := c.DB.Exec(
+	_, err = c.DB.Exec(
 		"update task_status set level = level + 1 where level >= ? and project = ?",
 		taskStatus.Level,
 		projectId,
@@ -273,7 +362,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 		log.Println("error in updating status:", err)
 		return 500, err.Error()
 	}
-	result, err = c.DB.Exec(
+	result, err := c.DB.Exec(
 		"insert into task_status (status, level, project) values (?, ?, ?)",
 		taskStatus.Status,
 		taskStatus.Level,
@@ -297,6 +386,12 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 }
 
 func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -384,6 +479,12 @@ func (c *Controller) GetProjectStatuses(params martini.Params, w http.ResponseWr
 }
 
 func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		err := fmt.Sprintf("Unsupportable Content-Type header: %s", contentType)
+		log.Println(err)
+		return 500, err
+	}
 	projectId, err := strconv.ParseInt(params["id"], 10, 64)
 	if err != nil {
 		log.Println("error in parsing projectId", err)
@@ -433,6 +534,29 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 		if err != nil {
 			log.Println("error in adding skills")
 		}
+	}
+
+	row := c.DB.QueryRow("select id from users where username = ?", task.Executor.Username)
+	var executorId int64
+	err = row.Scan(&executorId)
+	if err != nil {
+		log.Println("error in getting executor id: ", err)
+		return 500, err.Error()
+	}
+
+	task.Id = lastInsertId
+	task.Executor.Id = executorId
+	_, err = c.sendDataToStream("project", "task", struct {
+		ProjectId int64
+		Task      *model.Task
+	}{
+		projectId,
+		task,
+	})
+
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
 	}
 
 	rowsAffected, _ := result.RowsAffected()

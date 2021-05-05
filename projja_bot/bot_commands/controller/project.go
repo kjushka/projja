@@ -9,6 +9,7 @@ import (
 	"projja_bot/betypes"
 	"projja_bot/logger"
 	"strings"
+	"strconv"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -54,11 +55,6 @@ func CreateProject(userName string, projectName string) string {
 
 // Возвращаемые параметры ссылка на клавиатуру и количетво сообщений
 func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
-	// if (userName == "") {
-	//  	logger.LogCommandResult("Получено пустое имя пользователя для функции GetAllProjects")
-	// 	 return fmt.Errorf("Error")
-	// } 
-
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/user/%s/owner/all", userName))
 	logger.ForError(err)
 	fmt.Println(resp.Status)
@@ -71,13 +67,14 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 	if err := json.Unmarshal(gettingProjects, &projects); err != nil {
     logger.ForError(err)
 	}
-
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
 	for i := 0; i < len(projects.Content); i++ {
+		text := fmt.Sprintf("select_project %s %s", projects.Content[i].Name, strconv.FormatInt(projects.Content[i].Id, 10))
+
 		var row []tgbotapi.InlineKeyboardButton
-		btn := tgbotapi.NewInlineKeyboardButtonData(projects.Content[i].Name, "select_project " + projects.Content[i].Name)
-		
+		btn := tgbotapi.NewInlineKeyboardButtonData(projects.Content[i].Name, text)
+
 		row = append(row, btn)
 		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 	}
@@ -86,20 +83,28 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 }
 
 func AddMemberToProject(userName string) string {
-	addedUser, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member",userName))
+	addedMember, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member", userName))
 	if err != nil {
 		logger.ForError(err)
 		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
 
-	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject",userName))
+	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", userName))
 	if err != nil {
 		logger.ForError(err)
 		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
+	
+	member := string(addedMember.Value)
+	projectId := string(projectForAdd.Value)
+	fmt.Println(member)
+	fmt.Println(projectId)
 
-	fmt.Println(addedUser)
-	fmt.Println(projectForAdd)
+	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/0/add/member/kjushka"))
+
+	logger.ForError(err)
+	fmt.Println(resp.Status)
+	fmt.Println(resp.Body)
 
 	return "test"
 }

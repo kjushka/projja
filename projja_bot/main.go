@@ -77,7 +77,9 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 			case "select_project":
 				// Тут находится логика, которую можно выполнить после выбора проекта
 				selectedProject := args[0]
-				msg := view.SelectProject(message, selectedProject)
+				projectId := args[1]
+
+				msg := view.SelectProject(message, selectedProject, projectId)
 				Bot.Send(msg)
 				msg = view.ChosePrjectAction(message);
 				Bot.Send(msg)

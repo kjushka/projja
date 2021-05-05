@@ -32,7 +32,7 @@ func RegiserUser(from *tgbotapi.User) string {
 	logger.ForError(err)
 
 	// 500 ошибка может возвращаться, если ты пытаешься зарегать юзера, который уже есть в бд
-	fmt.Print(resp.Status)
+	fmt.Println(resp.Status)
 	logger.LogCommandResult(resp.Status)
 
 	if(resp.StatusCode >= 500) {
@@ -63,6 +63,10 @@ func GetUser(userName string) (*betypes.User) {
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + "api/user/get/" + userName);
 	logger.ForError(err)
 
+	if resp.StatusCode == 500 {
+		return nil 
+	}
+
 	getUserInfo, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	logger.ForError(err)
@@ -71,10 +75,6 @@ func GetUser(userName string) (*betypes.User) {
 	var userAns *betypes.GetUserAnswer
 	if err := json.Unmarshal(getUserInfo, &userAns); err != nil {
     logger.ForError(err)
-	}
-
-	if userAns.IsEmpty == true {
-		return nil 
 	}
 	
 	return userAns.Content

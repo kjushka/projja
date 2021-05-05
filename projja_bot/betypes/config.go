@@ -13,6 +13,7 @@ var (
 	TelegramUrl        = "https://api.telegram.org/bot"
 	MySqlAddress 			 = "localhost"
 	MySqlPort 				 = "8080"	
+	ExecPort					 = "8090"
 )
 
 // Агрумент http - вернет путь по http протоколу
@@ -24,5 +25,14 @@ func GetPathToMySQl(protType string) string {
 	
 	return fmt.Sprintf("https://%s:%s/", MySqlAddress, MySqlPort);
 }
+
+func GetPathToExec(protType string) string {
+	if(protType == "http") {
+		return fmt.Sprintf("http://%s:%s/", MySqlAddress, ExecPort);
+	}
+	
+	return fmt.Sprintf("https://%s:%s/", MySqlAddress, ExecPort);
+}
+
 
 

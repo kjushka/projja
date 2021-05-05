@@ -143,11 +143,11 @@ func SetSkills(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(message.Chat.ID, ans)
 }
 
-func SelectProject(message *tgbotapi.Message, projectName string) tgbotapi.MessageConfig {	
+func SelectProject(message *tgbotapi.Message, projectName string, projectId string) tgbotapi.MessageConfig {	
 	text := fmt.Sprintf("Вы выбрали проект %s\n", projectName) 	
 	// Кешируем выбранный проект
 	key := fmt.Sprintf("%s_poject", message.From.UserName)
-	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectName), Expiration: 600})
+	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectId), Expiration: 600})
 	
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }

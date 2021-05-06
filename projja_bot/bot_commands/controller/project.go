@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"projja_bot/services/memcached"
 	"projja_bot/betypes"
 	"projja_bot/logger"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -24,7 +25,6 @@ func CreateProject(userName string, projectName string) string {
 	if projectName == "" {
 		return "Вы не указали название проекта!" 
 	}
-	_projectName := strings.Split(projectName, " ")[0]
 
 	user := GetUser(userName)
 	if	user == nil {
@@ -32,7 +32,7 @@ func CreateProject(userName string, projectName string) string {
 	}
 
 	project := &betypes.Project{
-		Name:   _projectName,
+		Name:   projectName,
 		Owner: user,
 		Status: "opened",
 	}
@@ -47,7 +47,7 @@ func CreateProject(userName string, projectName string) string {
 	fmt.Println(resp.Status)
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return fmt.Sprintf("Проект %s, с владельцем %s был создан", _projectName, userName)
+		return fmt.Sprintf("Проект %s, с владельцем %s был создан", projectName, userName)
 	}
 
 	return "Что-то пошло не так..."
@@ -70,7 +70,7 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
 	for i := 0; i < len(projects.Content); i++ {
-		text := fmt.Sprintf("select_project %s %s", projects.Content[i].Name, strconv.FormatInt(projects.Content[i].Id, 10))
+		text := fmt.Sprintf("select_project %s %s", strconv.FormatInt(projects.Content[i].Id, 10), projects.Content[i].Name)
 
 		var row []tgbotapi.InlineKeyboardButton
 		btn := tgbotapi.NewInlineKeyboardButtonData(projects.Content[i].Name, text)
@@ -83,22 +83,17 @@ func GetAllProjects(userName string) (tgbotapi.InlineKeyboardMarkup, int) {
 }
 
 func AddMemberToProject(userName string) string {
-	addedMember, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member", userName))
+	projectId, projectName, err := memcached.GetSelectedProject(userName)
 	if err != nil {
 		logger.ForError(err)
 		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
 
-	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", userName))
+	member, err := memcached.GetSelectedMember(userName)
 	if err != nil {
 		logger.ForError(err)
-		return "Истекло время ожидания, заново выберите проект и пользователя!"
+		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
-	
-	member := string(addedMember.Value)
-	args := strings.Split(string(projectForAdd.Value), " ")
-	projectId := args[0]
-	projectName := args[1]
 
 	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/%s/add/member/%s", projectId, member))
 	logger.ForError(err)
@@ -140,30 +135,21 @@ func GetProjectMembers(projectId string) (string, int) {
 	return answer, len(members.Content)
 }
 
-func RemoveMemberFromProject(userName string) {
-	addedMember, err := betypes.MemCashed.Get(fmt.Sprintf("%s_member", userName))
+func RemoveMemberFromProject(projectOwner string, projectExecuter string) string {
+	projectId, projectName, err := memcached.GetSelectedProject(projectOwner)
 	if err != nil {
 		logger.ForError(err)
 		return "Истекло время ожидания, заново выберете проект и пользователя!"
 	}
+	logger.LogCommandResult(fmt.Sprintf("Remove %s from %s", projectExecuter, projectName) );
 
-	projectForAdd, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", userName))
-	if err != nil {
-		logger.ForError(err)
-		return "Истекло время ожидания, заново выберите проект и пользователя!"
-	}
-	
-	member := string(addedMember.Value)
-	args := strings.Split(string(projectForAdd.Value), " ")
-	projectId := args[0]
-	projectName := args[1]
-
-	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/$s/remove/member/%s", projectId, member))
+	fmt.Println(projectExecuter)
+	resp, err := http.Get(betypes.GetPathToMySQl("http") + fmt.Sprintf("api/project/%s/remove/member/%s", projectId, projectExecuter))
 	logger.ForError(err)
 	fmt.Println(resp.Status)
 
-
+	text := fmt.Sprintf("Пользователь %s был удален из проекта %s", projectExecuter, projectName)
+	return text
 }
 
 
-// TODO перенести логику выбора пользователя в одну функцию!!!

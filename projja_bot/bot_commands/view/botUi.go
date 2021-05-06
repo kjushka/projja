@@ -2,12 +2,12 @@ package view
 
 import (
 	"fmt"
-	"projja_bot/logger"
-	"projja_bot/betypes"
+	"projja_bot/services/memcached"
 	"projja_bot/bot_commands/controller"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/bradfitz/gomemcache/memcache"
+	"projja_bot/logger"
 	"strings"
+
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 	// "net/http"
 	// "strings"
 )
@@ -60,21 +60,22 @@ func ChosePrjectAction(message *tgbotapi.Message) tgbotapi.MessageConfig  {
 
 func MembersManagment(message *tgbotapi.Message) tgbotapi.MessageConfig  {
 	text := "Выберите нужное действие:\n" +
-				 	"/add_member \"имя пользователя\" - добавить участника проекта"
+				 	"/add_member \"имя пользователя\" - добавить участника проекта\n" +
+					"/remove_member \"имя пользователя\" - удалить участника из проекта"
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
 	var row1 []tgbotapi.InlineKeyboardButton
-	var row2 []tgbotapi.InlineKeyboardButton
+	// var row2 []tgbotapi.InlineKeyboardButton
 	addMemberBtn := tgbotapi.NewInlineKeyboardButtonData("Просмотреть участников проекта", "get_members")
-	removememberBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
+	// removememberBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
 
 	row1 = append(row1, addMemberBtn)
-	row2 = append(row2, removememberBtn)
+	// row2 = append(row2, removememberBtn)
 
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
+	// keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
 	msg.ReplyMarkup = keyboard
 	return msg
 }
@@ -118,7 +119,9 @@ func Register(message *tgbotapi.Message) (tgbotapi.MessageConfig, tgbotapi.Messa
 
 func CreateProject(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	logger.LogCommandResult("Create project");
-	var ans string = controller.CreateProject(message.From.UserName, message.CommandArguments())
+	projectName := strings.Split(message.CommandArguments(), " ")[0]
+
+	var ans string = controller.CreateProject(message.From.UserName, projectName)
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, ans)
 	msg.ReplyToMessageID = message.MessageID
@@ -143,12 +146,9 @@ func SetSkills(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(message.Chat.ID, ans)
 }
 
-func SelectProject(message *tgbotapi.Message, projectName string, projectId string) tgbotapi.MessageConfig {	
+func SelectProject(message *tgbotapi.Message, projectId string, projectName string) tgbotapi.MessageConfig {	
 	text := fmt.Sprintf("Вы выбрали проект %s\n", projectName) 	
-	// Кешируем выбранный проект
-	// TODO переделать так, чтобы два аргумента не были одной строкой
-	key := fmt.Sprintf("%s_poject", message.From.UserName)
-	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(projectId + " " + projectName), Expiration: 600})
+	memcached.CacheProject(message.From.UserName, projectId, projectName)
 	
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
@@ -165,11 +165,7 @@ func AddMemberToProject(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 		text := fmt.Sprintf("Пользоватль с именем %s не зарегистрирован!", userName)
 		return tgbotapi.NewMessage(message.Chat.ID, text)
 	}
-
-	// Кешируем выбраного пользователя, данные хранятся следующим образом
-	// ключ: имяПользователяРаботающегоСботом_member значение: имя выбранного пользователя_
-	key := fmt.Sprintf("%s_member", message.From.UserName)
-	betypes.MemCashed.Set(&memcache.Item{Key: key, Value: []byte(user.Username), Expiration: 600})
+	memcached.CacheMember(message.From.UserName, user.Username)
 	
 	text := fmt.Sprintf("Вы хотите дабавить пользователя %s, с навыками %s?", user.Username, user.Skills)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
@@ -200,22 +196,18 @@ func AddMemberNo(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
 
-func GetProjectMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
+func GetProjectMembers(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	logger.LogCommandResult("Get all project members");
-	project, err := betypes.MemCashed.Get(fmt.Sprintf("%s_poject", message.From.UserName))
-	
 	var text string
+
+	projectId, projectName, err := memcached.GetSelectedProject(message.From.UserName)
 	if err != nil {
 		logger.ForError(err)
 		text = "Истекло время ожидания, выберите проект заново!"
 		return tgbotapi.NewMessage(message.Chat.ID, text);
 	}
 	
-	projectArg := strings.Split(string(project.Value), " ")
-	projectId := projectArg[0]
-	projectName := projectArg[1]
 	text, membersCount := controller.GetProjectMembers(projectId)
-
 	if	membersCount == 0 {
 		text = fmt.Sprintf("В проекте %s нет ни одного исполнителя:(", projectName)
 		return tgbotapi.NewMessage(message.Chat.ID, "")	
@@ -225,9 +217,8 @@ func GetProjectMembers(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	return msg
 }
 
-func RemoveMemberFromProject(message *tgbotapi.Message) tgbotapi.MessageConfig {
-	logger.LogCommandResult("Remove member from project");
-	controller.RemoveMemberFromProject(message.From.UserName)
-	
-
+func RemoveMemberFromProject(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+	projectExecuter := strings.Split(message.CommandArguments(), " ")[0]
+	var text string = controller.RemoveMemberFromProject(message.From.UserName, projectExecuter)
+	return tgbotapi.NewMessage(message.Chat.ID, text)
 }

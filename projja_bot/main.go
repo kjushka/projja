@@ -23,8 +23,6 @@ func setWebhook(bot *tgbotapi.BotAPI) {
 }
 
 func checkUpdates(updates <-chan tgbotapi.Update) {
-	// fmt.Println("check updates");
-	
 	for update := range updates {
 		message := update.Message
 		var command string
@@ -76,10 +74,11 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				Bot.Send(msg)				
 			case "select_project":
 				// Тут находится логика, которую можно выполнить после выбора проекта
-				selectedProject := args[0]
-				projectId := args[1]
+				projectId := args[0]
+				selectedProject := args[1]
+				
 
-				msg := view.SelectProject(message, selectedProject, projectId)
+				msg := view.SelectProject(message, projectId, selectedProject)
 				Bot.Send(msg)
 				msg = view.ChosePrjectAction(message);
 				Bot.Send(msg)

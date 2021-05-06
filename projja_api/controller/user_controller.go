@@ -322,7 +322,7 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 		return 500, err.Error()
 	}
 
-	row := c.DB.QueryRow("select id from user where username = ?", username)
+	row := c.DB.QueryRow("select id from users where username = ?", username)
 	var userId int64
 	err = row.Scan(&userId)
 

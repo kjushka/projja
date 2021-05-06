@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"projja_bot/services/memcached"
 	"projja_bot/betypes"
 	"projja_bot/logger"
+	"projja_bot/services/memcached"
 	"strconv"
 	"strings"
 
@@ -175,4 +175,25 @@ func ChangeProjectName(projectOwner string) string {
 
 
 	return "Изменено название проекта!"
+}
+
+func Execute() {
+
+	project := &betypes.Task{
+		Description:   "first js project",
+		Deadline: "2021-08-12",
+		Skills: []string{ "js", "JavaScript" },
+	}
+	projectBytes, err := json.Marshal(project)
+	logger.LogCommandResult(string(projectBytes))
+	logger.ForError(err)
+
+	resp, err := http.Post("http://localhost:8090/exec/project/1/calc/task", "application/json", bytes.NewBuffer(projectBytes))
+	fmt.Println(resp.Status)
+
+	ans, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	logger.ForError(err)
+	fmt.Println(string(ans))
+
 }

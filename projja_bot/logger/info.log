@@ -250,3 +250,44 @@ Get all projects
 {"Id":0,"Name":"new","Owner":null,"Status":""}
 {"Id":0,"Name":"new","Owner":null,"Status":""}
 Remove выв from new
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":null}
+500 Internal Server Error
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":null}
+500 Internal Server Error
+Get all projects
+{"Id":0,"Description":"first","Project":null,"Deadline":"2021-08-12","Priority":"","Status":null,"IsClosed":false,"Executor":null,"Skills":["js"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Id":0,"Description":"first","Project":null,"Deadline":"2021-08-12","Priority":"","Status":null,"IsClosed":false,"Executor":null,"Skills":["js"]}
+{"Description":"Current user:","Content":{"Id":2,"Name":"Fedor ","Username":"fedor_sche","TelegramId":"1355003317","Skills":[]}}
+{"Skills":["js","vue","JavaScript"]}
+202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Id":0,"Description":"first","Project":null,"Deadline":"2021-08-12","Priority":"","Status":null,"IsClosed":false,"Executor":null,"Skills":["js"]}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Id":0,"Description":"first js project","Project":null,"Deadline":"2021-08-12","Priority":"","Status":null,"IsClosed":false,"Executor":null,"Skills":["JavaScript"]}
+{"Id":0,"Description":"first js project","Project":null,"Deadline":"2021-08-12","Priority":"","Status":null,"IsClosed":false,"Executor":null,"Skills":["js","JavaScript"]}
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":null}
+202 Accepted
+{"Skills":["c#",".net","js","react"]}
+202 Accepted
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["c#",".net","js","react"]}}
+{"Id":0,"Name":"project1","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":["c#",".net","js","react"]},"Status":"opened"}
+202 Accepted
+{"Id":0,"name":"Fedor ","username":"teo_inc","telegramId":"1355003317","Skills":null}
+202 Accepted
+{"Skills":["delphi","cpp"]}
+202 Accepted
+Get all projects
+Get all project members
+{"Description":"Current user:","Content":{"Id":2,"Name":"Fedor ","Username":"teo_inc","TelegramId":"1355003317","Skills":["delphi","cpp"]}}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["c#",".net","js","react"]}}
+Get all projects
+Get all project members
+Remove eew from project1
+Remove teo_inc from project1
+Get all project members

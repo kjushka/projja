@@ -222,8 +222,11 @@ func RemoveMemberFromProject(message *tgbotapi.Message) (tgbotapi.MessageConfig)
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
 
-
 func ChangeProjectName(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	text := controller.ChangeProjectName(message.From.UserName)
 	return tgbotapi.NewMessage(message.Chat.ID, text)
+}
+
+func Execute() {
+	controller.Execute()
 }

@@ -40,7 +40,6 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 		} else if message.IsCommand() {
 			command = message.Command()
 		}
-
 		fmt.Println(command)
 
 		switch command {
@@ -76,7 +75,6 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				// Тут находится логика, которую можно выполнить после выбора проекта
 				projectId := args[0]
 				selectedProject := args[1]
-				
 
 				msg := view.SelectProject(message, projectId, selectedProject)
 				Bot.Send(msg)
@@ -98,11 +96,27 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				msg := view.GetProjectMembers(message)
 				Bot.Send(msg)	
 			case "remove_member":
+				// TODO сделать проверку статусов при запросе на удаление юзера
 				msg := view.RemoveMemberFromProject(message)
 				Bot.Send(msg)		
 			case "change_project_name":
+				// TODO пока тут заглушка. переделать
 				msg := view.ChangeProjectName(message)
 				Bot.Send(msg)	
+			// case "change_tasks_statuses":
+			// 	// пока тут тестирую Экзигьютера, кек
+			// 	view.Execute()
+			case "add_task":
+				// тут будет алгоритм дабавления задачи 
+				// TODO 
+				// Введите описание пректа
+				// ввод
+				// введите дедлайн
+				// ввод
+				// введите навыки
+				// ввод
+				// все это должно крутиться в одной проверке
+				
 			}
 	
 	}	

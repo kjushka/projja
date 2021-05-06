@@ -4,12 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/go-redis/redis/v8"
 	"log"
 	"projja-exec/graph"
 	"projja-exec/model"
 	"strconv"
-
-	"github.com/go-redis/redis/v8"
+	"time"
 )
 
 func (c *controller) ListenExecStream(ctx context.Context) {
@@ -154,11 +154,36 @@ func (c *controller) removeMember(jsonRemovingMember interface{}) {
 func (c *controller) createTask(jsonTask interface{}) {
 	if strJsonTask, ok := jsonTask.(string); ok {
 		task := &newTaskData{}
-		err := json.Unmarshal([]byte(strJsonTask), task)
+		taskDTO := &struct {
+			ProjectId int64
+			Task      *struct {
+				Id          int64
+				Description string
+				Deadline    string
+				Executor    *model.User
+				Skills      []string
+			}
+		}{}
+		err := json.Unmarshal([]byte(strJsonTask), taskDTO)
 		if err != nil {
 			log.Println("error in unmarshalling:", err)
 			return
 		}
+
+		deadline, err := time.Parse("2006-01-02", taskDTO.Task.Deadline)
+		if err != nil {
+			log.Println("error in parsing date: ", err)
+			return
+		}
+		task.ProjectId = taskDTO.ProjectId
+		task.Task = &model.Task{
+			Id:          taskDTO.Task.Id,
+			Description: taskDTO.Task.Description,
+			Deadline:    deadline,
+			Executor:    taskDTO.Task.Executor,
+			Skills:      taskDTO.Task.Skills,
+		}
+
 		err = c.createTaskInGraph(task)
 		if err != nil {
 			log.Println("error in creating task: ", err)
@@ -252,11 +277,27 @@ func (c *controller) closeTask(jsonCloseData interface{}) {
 func (c *controller) changeTaskDeadline(jsonChangeDeadlineData interface{}) {
 	if strJsonChangeDeadlineData, ok := jsonChangeDeadlineData.(string); ok {
 		changeDeadline := &changeDeadlineData{}
-		err := json.Unmarshal([]byte(strJsonChangeDeadlineData), changeDeadline)
+		changeDeadlineDTO := &struct {
+			TaskId    int64
+			Deadline  string
+			ProjectId int64
+		}{}
+		err := json.Unmarshal([]byte(strJsonChangeDeadlineData), changeDeadlineDTO)
 		if err != nil {
 			log.Println("error in unmarshalling:", err)
 			return
 		}
+
+		deadline, err := time.Parse("2006-01-02", changeDeadlineDTO.Deadline)
+		if err != nil {
+			log.Println("error in parsing date: ", err)
+			return
+		}
+
+		changeDeadline.TaskId = changeDeadlineDTO.TaskId
+		changeDeadline.Deadline = deadline
+		changeDeadline.ProjectId = changeDeadlineDTO.ProjectId
+
 		err = c.changeTaskDeadlineInGraph(changeDeadline)
 		if err != nil {
 			log.Println("error in change deadline: ", err)
@@ -306,7 +347,6 @@ func (c *controller) readData(id int64) (*graph.Project, error) {
 		return nil, err
 	}
 
-	log.Println(val)
 	g := &graph.Graph{}
 	err = json.Unmarshal([]byte(val), g)
 	if err != nil {

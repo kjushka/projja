@@ -335,7 +335,7 @@ func (c *Controller) SetSkillsToTask(params martini.Params, w http.ResponseWrite
 
 	rowsAffected, _ := result.RowsAffected()
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "skills set", struct {
+	return c.makeContentResponse(201, "skills set", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -416,7 +416,7 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 	var message string
 	if count == 0 {
 		result, err = c.DB.Exec(
-			"update task set isClosed = ? where id = ?",
+			"update task set is_closed = ? where id = ?",
 			true,
 			taskId,
 		)
@@ -588,12 +588,12 @@ func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWr
 	}
 
 	_, err = c.sendDataToStream("task", "deadline", struct {
-		TaskId       int64
-		TaskDeadline time.Time
-		ProjectId    int64
+		TaskId    int64
+		Deadline  string
+		ProjectId int64
 	}{
 		taskId,
-		timeDeadline,
+		deadline.Deadline,
 		projectId,
 	})
 	if err != nil {

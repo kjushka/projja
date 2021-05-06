@@ -124,7 +124,7 @@ func (c *controller) CalculateTaskExecutor(params martini.Params, w http.Respons
 	return c.makeContentResponse(200, "Task with executor", task)
 }
 
-func (c *controller) GetRedisData(params martini.Params) (int, string) {
+func (c *controller) GetRedisData(params martini.Params, w http.ResponseWriter) (int, string) {
 	id := params["id"]
 	intId, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
@@ -136,10 +136,13 @@ func (c *controller) GetRedisData(params martini.Params) (int, string) {
 		log.Println(err.Error())
 		return 500, err.Error()
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(200, "project", project)
 }
 
 func (c *controller) setSkillsToUserInGraph(skillsData *userSkillsData) error {
+	log.Println("set skills to user")
 	var err error = nil
 	for _, projectId := range skillsData.ProjectsIds {
 		err = c.setSkillsToUserInProject(projectId, skillsData.UserId, skillsData.Skills)
@@ -165,9 +168,10 @@ func (c *controller) setSkillsToUserInProject(projectId int64, userId int64, ski
 }
 
 func (c *controller) updateUserInfoInGraph(userInfo *updateUserData) error {
+	log.Println("update user info")
 	var err error = nil
 	for _, projectId := range userInfo.ProjectsIds {
-		err = c.changeUserData(projectId, userInfo.NewUserInfo)
+		err = c.updateUserInfoInProject(projectId, userInfo.NewUserInfo)
 		if err != nil {
 			return err
 		}
@@ -176,13 +180,13 @@ func (c *controller) updateUserInfoInGraph(userInfo *updateUserData) error {
 	return err
 }
 
-func (c *controller) changeUserData(projectId int64, newUserInfo *model.User) error {
+func (c *controller) updateUserInfoInProject(projectId int64, newUserInfo *model.User) error {
 	project, err := c.getProject(projectId)
 	if err != nil {
 		return err
 	}
 
-	project.Graph.ChangeUserData(newUserInfo)
+	project.Graph.UpdateUserInfo(newUserInfo)
 
 	err = c.closeProjectWork(project, projectId)
 
@@ -190,11 +194,13 @@ func (c *controller) changeUserData(projectId int64, newUserInfo *model.User) er
 }
 
 func (c *controller) addProject(newProject *model.Project) error {
+	log.Println("add project")
 	err := c.saveNewProject(newProject)
 	return err
 }
 
 func (c *controller) addMemberInGraph(newMemberData *addingMemberData) error {
+	log.Println("add member")
 	project, err := c.getProject(newMemberData.ProjectId)
 	if err != nil {
 		return err
@@ -208,6 +214,7 @@ func (c *controller) addMemberInGraph(newMemberData *addingMemberData) error {
 }
 
 func (c *controller) removeMemberInGraph(removingMember *removingMemberData) error {
+	log.Println("remove member")
 	project, err := c.getProject(removingMember.ProjectId)
 	if err != nil {
 		return err
@@ -221,6 +228,7 @@ func (c *controller) removeMemberInGraph(removingMember *removingMemberData) err
 }
 
 func (c *controller) createTaskInGraph(taskData *newTaskData) error {
+	log.Println("create task")
 	project, err := c.getProject(taskData.ProjectId)
 	if err != nil {
 		return err
@@ -234,6 +242,7 @@ func (c *controller) createTaskInGraph(taskData *newTaskData) error {
 }
 
 func (c *controller) changeTaskExecutorInGraph(changeTaskExecutor *changeExecutorData) error {
+	log.Println("change task executor")
 	project, err := c.getProject(changeTaskExecutor.ProjectId)
 	if err != nil {
 		return err
@@ -251,6 +260,7 @@ func (c *controller) changeTaskExecutorInGraph(changeTaskExecutor *changeExecuto
 }
 
 func (c *controller) changeTaskDescriptionInGraph(changeDescription *changeDescriptionData) error {
+	log.Println("change task description")
 	project, err := c.getProject(changeDescription.ProjectId)
 	if err != nil {
 		return err
@@ -264,6 +274,7 @@ func (c *controller) changeTaskDescriptionInGraph(changeDescription *changeDescr
 }
 
 func (c *controller) closeTaskInGraph(closeTask *closeTaskData) error {
+	log.Println("close task")
 	project, err := c.getProject(closeTask.ProjectId)
 	if err != nil {
 		return err
@@ -277,6 +288,7 @@ func (c *controller) closeTaskInGraph(closeTask *closeTaskData) error {
 }
 
 func (c *controller) changeTaskDeadlineInGraph(changeDeadline *changeDeadlineData) error {
+	log.Println("change task deadline")
 	project, err := c.getProject(changeDeadline.ProjectId)
 	if err != nil {
 		return err

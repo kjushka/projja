@@ -28,7 +28,7 @@ func (g *Graph) SetSkillsToUser(userId int64, skills []string) {
 	g.Users[userId] = executor
 }
 
-func (g *Graph) ChangeUserData(newUserInfo *model.User) {
+func (g *Graph) UpdateUserInfo(newUserInfo *model.User) {
 	g.Users[newUserInfo.Id] = newUserInfo
 }
 

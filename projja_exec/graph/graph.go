@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"projja-exec/model"
@@ -30,10 +31,18 @@ type rating struct {
 	UsersRating map[int64]*userRating
 }
 
+func (r *rating) String() string {
+	return fmt.Sprintf("{UserRating: %v}", r.UsersRating)
+}
+
 type userRating struct {
 	User         *model.User
 	TimeRating   float32
 	SkillsRating float32
+}
+
+func (r *userRating) String() string {
+	return fmt.Sprintf("{%s, %v, %v}", r.User.Username, r.SkillsRating, r.TimeRating)
 }
 
 func MakeNewProject(newProject *model.Project) *Project {
@@ -56,6 +65,7 @@ func MakeNewProject(newProject *model.Project) *Project {
 func (g *Graph) CalculateNewTaskExecutor(task *model.Task) *model.User {
 	ratio := g.calculateRatingBySkills(task.Skills)
 	g.calculateRatingByTime(task.Deadline, ratio)
+	log.Println(ratio)
 	executor := g.selectExecutorByRating(ratio)
 	go g.checkCorrectWork()
 
@@ -63,7 +73,7 @@ func (g *Graph) CalculateNewTaskExecutor(task *model.Task) *model.User {
 }
 
 func (g *Graph) calculateRatingBySkills(taskSkills []string) *rating {
-	ratingStruct := &rating{UsersRating: make(map[int64]*userRating, len(g.Users))}
+	ratingStruct := &rating{UsersRating: make(map[int64]*userRating, 0)}
 
 	for userId, user := range g.Users {
 		ratio := g.checkSkillsSimilarity(user.Skills, taskSkills)
@@ -90,7 +100,7 @@ func (g *Graph) checkSkillsSimilarity(userSkills []string, taskSkills []string) 
 			}
 		}
 		if contains {
-			ratio += float32(1 / count)
+			ratio += 1.0 / float32(count)
 		}
 	}
 
@@ -102,6 +112,7 @@ func (g *Graph) calculateRatingByTime(deadline time.Time, ratio *rating) {
 		rate := g.checkTime(userId, deadline)
 		ratio.UsersRating[userId].TimeRating = rate
 	}
+	log.Println(ratio)
 }
 
 func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
@@ -114,7 +125,8 @@ func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
 	}
 
 	sort.Ints(tasksDeadlines)
-	ratio := float32(0)
+	log.Println(tasksDeadlines)
+	ratio := float32(0.0)
 	daysToTaskDeadline := int(math.Ceil(time.Until(deadline).Hours()))
 	prev := 0
 	count := len(tasksDeadlines) + 1
@@ -123,13 +135,18 @@ func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
 		if days > daysToTaskDeadline {
 			break
 		}
-		intervalDateRate := float32((days - prev) / daysToTaskDeadline)
-		intervalTaskRate := float32(1 / count)
+		intervalDateRate := float32(days-prev) / float32(daysToTaskDeadline)
+		intervalTaskRate := 1.0 / float32(count)
 		ratio += intervalTaskRate * intervalDateRate
 
 		prev = days
 		count--
 	}
+
+	intervalDateRate := float32(daysToTaskDeadline-prev) / float32(daysToTaskDeadline)
+	intervalTaskRate := 1.0 / float32(count)
+	log.Println(intervalDateRate, intervalTaskRate)
+	ratio += intervalTaskRate * intervalDateRate
 
 	return ratio
 }
@@ -139,6 +156,7 @@ func (g *Graph) selectExecutorByRating(ratio *rating) *model.User {
 	var bestRating float32 = -1
 	for _, userRatio := range ratio.UsersRating {
 		userRate := userRatio.TimeRating*timeCoefficient + userRatio.SkillsRating*skillsCoefficient
+		log.Println(userRatio.User.Username, userRate, userRatio.SkillsRating, userRatio.TimeRating)
 		if userRate > bestRating {
 			bestUser = userRatio.User
 			bestRating = userRate

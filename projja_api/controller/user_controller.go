@@ -45,7 +45,7 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) (int, stri
 	}
 	rowsAffected, _ := result.RowsAffected()
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "user registered", struct {
+	return c.makeContentResponse(201, "user registered", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -75,7 +75,7 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 	if err == sql.ErrNoRows {
 		noUserErr := fmt.Errorf("no such user with username %s", username)
 		log.Println(noUserErr)
-		return 500, noUserErr.Error()
+		return 404, noUserErr.Error()
 	}
 
 	skills, err := c.getSkillsByUser(username)
@@ -236,7 +236,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 
 	rowsAffected, _ := result.RowsAffected()
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "skills set", struct {
+	return c.makeContentResponse(201, "skills set", struct {
 		Name    string
 		Content interface{}
 	}{

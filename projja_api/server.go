@@ -10,8 +10,6 @@ import (
 
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
-
-	_ "github.com/lib/pq"
 )
 
 const (

@@ -106,7 +106,7 @@ func (c *Controller) setSkillsToTask(skills []string, id int64) (int64, error) {
 	query := "insert into task_skill (task, skill) values "
 	queryArr := make([]string, len(skills))
 	for i := range skills {
-		queryArr[i] = fmt.Sprintf("(%v, (select id from skill where skill = %v))", id, skills[i])
+		queryArr[i] = fmt.Sprintf("(%v, (select id from skill where skill = '%v'))", id, skills[i])
 	}
 	query += strings.Join(queryArr, ", ")
 	result, err := c.DB.Exec(

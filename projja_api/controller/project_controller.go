@@ -56,7 +56,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		log.Println("error in creating task status 'new':", err)
 		return 500, err.Error()
 	}
-	
+
 	_, err = c.DB.Exec(
 		"insert into member (project, users) values (?, (select id from users where username = ?))",
 		lastInsertId,
@@ -82,7 +82,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		log.Println("error in getting owner skills: ", err)
 		return 500, err.Error()
 	}
-	
+
 	project.Id = lastInsertId
 	project.Owner.Id = ownerId
 	project.Owner.Name = ownerName
@@ -97,7 +97,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "Project created", struct {
+	return c.makeContentResponse(201, "Project created", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -234,7 +234,7 @@ func (c *Controller) GetProjectMembers(params martini.Params, w http.ResponseWri
 		return 500, err.Error()
 	}
 
-	members := []*model.User{}
+	members := make([]*model.User, 0)
 	for rows.Next() {
 		member := &model.User{}
 		err = rows.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
@@ -296,7 +296,7 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "Member added", struct {
+	return c.makeContentResponse(201, "Member added", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -324,6 +324,15 @@ func (c *Controller) RemoveMemberFromProject(params martini.Params, w http.Respo
 		return 500, err.Error()
 	}
 
+	_, err = c.DB.Exec(
+		"delete from task where executor = (select id from users where username = ?)",
+		memberUsername,
+	)
+	if err != nil {
+		log.Println("error in deleting member:", err)
+		return 500, err.Error()
+	}
+
 	_, err = c.sendDataToStream("project", "remove-member", struct {
 		ProjectId      int64
 		MemberUsername string
@@ -339,7 +348,7 @@ func (c *Controller) RemoveMemberFromProject(params martini.Params, w http.Respo
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "Member deleted", struct {
+	return c.makeContentResponse(200, "Member deleted", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -397,7 +406,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Project status updated", struct {
+	return c.makeContentResponse(201, "Project status updated", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -458,7 +467,7 @@ func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.Respo
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(202, "Task status deleted", struct {
+	return c.makeContentResponse(200, "Task status deleted", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -553,7 +562,7 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 	if len(task.Skills) != 0 {
 		_, err = c.setSkillsToTask(task.Skills, lastInsertId)
 		if err != nil {
-			log.Println("error in adding skills")
+			log.Println("error in adding skills: ", err)
 		}
 	}
 
@@ -583,7 +592,7 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 	rowsAffected, _ := result.RowsAffected()
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "Project status updated", struct {
+	return c.makeContentResponse(201, "New task created successfully", struct {
 		Name    string
 		Content interface{}
 	}{
@@ -684,7 +693,7 @@ func (c *Controller) GetProcessProjectTasks(params martini.Params, w http.Respon
 		return 500, err.Error()
 	}
 
-	tasks := []*model.Task{}
+	tasks := make([]*model.Task, 0)
 
 	for rows.Next() {
 		task := &model.Task{}

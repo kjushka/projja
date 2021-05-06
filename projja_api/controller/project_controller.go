@@ -134,6 +134,23 @@ func (c *Controller) ChangeProjectName(params martini.Params, w http.ResponseWri
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow(
+		"select count(name) from project where id = ?",
+		projectId,
+	)
+	var count int
+	err = row.Scan(&count)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in checking project being: ", err)
+		return 500, err.Error()
+	}
+
+	if count == 0 {
+		err = fmt.Errorf("no such project with id %v", projectId)
+		log.Println(err)
+		return 404, err.Error()
+	}
+
 	result, err := c.DB.Exec(
 		"update project set name = ? where id = ?",
 		projectName.Name,
@@ -258,6 +275,23 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	memberUsername := params["uname"]
 
+	row := c.DB.QueryRow(
+		"select count(id) from users where username = ?",
+		memberUsername,
+	)
+	var count int
+	err = row.Scan(&count)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in checking user being: ", err)
+		return 500, err.Error()
+	}
+
+	if count == 0 {
+		err = fmt.Errorf("no such user with username %v", memberUsername)
+		log.Println(err)
+		return 404, err.Error()
+	}
+
 	result, err := c.DB.Exec(
 		"insert into member (project, users) values (?, (select id from users where username = ?))",
 		projectId,
@@ -270,7 +304,7 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	rowsAffected, _ := result.RowsAffected()
 
-	row := c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", memberUsername)
+	row = c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", memberUsername)
 	member := &model.User{}
 	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
 	if err != nil {

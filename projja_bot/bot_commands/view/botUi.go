@@ -2,9 +2,9 @@ package view
 
 import (
 	"fmt"
-	"projja_bot/services/memcached"
 	"projja_bot/bot_commands/controller"
 	"projja_bot/logger"
+	"projja_bot/services/memcached"
 	"strings"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -149,7 +149,6 @@ func SetSkills(message *tgbotapi.Message) tgbotapi.MessageConfig {
 func SelectProject(message *tgbotapi.Message, projectId string, projectName string) tgbotapi.MessageConfig {	
 	text := fmt.Sprintf("Вы выбрали проект %s\n", projectName) 	
 	memcached.CacheProject(message.From.UserName, projectId, projectName)
-	
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }
 
@@ -219,6 +218,12 @@ func GetProjectMembers(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 
 func RemoveMemberFromProject(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
 	projectExecuter := strings.Split(message.CommandArguments(), " ")[0]
-	var text string = controller.RemoveMemberFromProject(message.From.UserName, projectExecuter)
+	text := controller.RemoveMemberFromProject(message.From.UserName, projectExecuter)
+	return tgbotapi.NewMessage(message.Chat.ID, text)
+}
+
+
+func ChangeProjectName(message *tgbotapi.Message) (tgbotapi.MessageConfig) {
+	text := controller.ChangeProjectName(message.From.UserName)
 	return tgbotapi.NewMessage(message.Chat.ID, text)
 }

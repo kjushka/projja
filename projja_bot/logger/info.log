@@ -216,3 +216,37 @@ parse "http://localhost:8080/api/project/$s/remove/member/1%!(EXTRA string=fedor
 Remove fedor_sche from test
 parse "http://localhost:8080/api/project/$s/remove/member/1%!(EXTRA string=fedor_sche)": invalid URL escape "%!("
 Remove ew from test
+{"Id":0,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":null}
+202 Accepted
+{"Skills":["js"]}
+202 Accepted
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+{"Id":0,"Name":"test","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":["js"]},"Status":"opened"}
+202 Accepted
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+Get all project members
+{"Id":0,"name":"Fedor ","username":"fedor_sche","telegramId":"1355003317","Skills":null}
+202 Accepted
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":2,"Name":"Fedor ","Username":"fedor_sche","TelegramId":"1355003317","Skills":[]}}
+Create project
+Create project
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+{"Id":0,"Name":"test2","Owner":{"Id":1,"name":"Evgen Schemelinin","username":"Evgeniy_sch","telegramId":"647628159","Skills":["js"]},"Status":"opened"}
+202 Accepted
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Id":0,"Name":"new","Owner":null,"Status":""}
+{"Id":0,"Name":"new","Owner":null,"Status":""}
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Description":"Current user:","Content":{"Id":1,"Name":"Evgen Schemelinin","Username":"Evgeniy_sch","TelegramId":"647628159","Skills":["js"]}}
+Get all projects
+{"Id":0,"Name":"new","Owner":null,"Status":""}
+{"Id":0,"Name":"new","Owner":null,"Status":""}
+Remove выв from new

@@ -153,3 +153,26 @@ func RemoveMemberFromProject(projectOwner string, projectExecuter string) string
 }
 
 
+func ChangeProjectName(projectOwner string) string {	
+	projectId, _, err := memcached.GetSelectedProject(projectOwner)
+	if err != nil {
+		logger.ForError(err)
+		return "Истекло время ожидания, заново выберете проект и пользователя!"
+	}
+
+	project := &betypes.Project{
+		Name:   "new",
+	}
+	projectBytes, err := json.Marshal(project)
+	logger.LogCommandResult(string(projectBytes))
+	logger.ForError(err)
+
+	fmt.Println(projectId)
+	requestUrl := fmt.Sprintf("%sapi/project/14/change/name", betypes.GetPathToMySQl("http"))
+	fmt.Println(requestUrl)
+	resp, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(projectBytes))
+	fmt.Println(resp.Status)
+
+
+	return "Изменено название проекта!"
+}

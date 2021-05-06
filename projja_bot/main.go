@@ -100,6 +100,9 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 			case "remove_member":
 				msg := view.RemoveMemberFromProject(message)
 				Bot.Send(msg)		
+			case "change_project_name":
+				msg := view.ChangeProjectName(message)
+				Bot.Send(msg)	
 			}
 	
 	}	

@@ -10,8 +10,16 @@ var (
 	LogFile    = log.New(outfile, "", 0)
 )
 
-func ForError(er error) {
-	if er != nil {
-		LogFile.Fatalln(er)
+func ForError(err error) {
+	if err != nil {
+		LogFile.Println(err)
+		// LogFile.Fatalln(er)
+	}
+}
+
+func LogCommandResult(str string){
+	if str != "" {
+		LogFile.Println(str)
+		// LogFile.Fatalln(er)
 	}
 }

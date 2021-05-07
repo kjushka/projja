@@ -1,14 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"projja_bot/betypes"
+	"projja_bot/bot_commands/view"
 	"projja_bot/logger"
+	"strings"
+
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var (
@@ -22,33 +22,114 @@ func setWebhook(bot *tgbotapi.BotAPI) {
 	logger.ForError(err)
 }
 
+func checkUpdates(updates <-chan tgbotapi.Update) {
+	for update := range updates {
+		message := update.Message
+		var command string
+		var args[] string
+
+		if update.CallbackQuery != nil { 
+			// Если произошло нажатие на inlain кнопку, то отделяем команду от её аргументов
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+			args = response[1: len(response)]
+
+			// Подменяем from bota на from пользователя нажавшего кнопку
+			message = update.CallbackQuery.Message
+			message.From = update.CallbackQuery.From
+		} else if message.IsCommand() {
+			command = message.Command()
+		}
+		fmt.Println(command)
+
+		switch command {
+			case "start":
+				msg := view.Start(message)
+				Bot.Send(msg)
+			case "register_user":
+				msg1, msg2 := view.Register(message)
+				Bot.Send(msg1)
+				Bot.Send(msg2)
+			case "set_skills":
+				msg := view.SetSkills(message)
+				Bot.Send(msg)
+				msg = view.ChooseProjjaAction(message)
+				Bot.Send(msg)
+			case "create_project":	
+				msg := view.CreateProject(message);
+				Bot.Send(msg)
+				msg = view.ChooseProjjaAction(message)
+				Bot.Send(msg)
+			case "change_profile":
+				// var text string;
+				// text = "Для изменения настроек пользователя вы можете использовать следующие команды\n"
+				// +	"/set_skills навык1 навык2 ... навыкN - изменить навыки пользователя\n" 
+				// + "/change_name новое имя - " 
+				// TODO 
+
+			case "project_control":
+				// Тут обрабатывается логика, выбора проекта с которым хочет работать пользователь
+				msg := view.GetAllProjects(message);
+				Bot.Send(msg)				
+			case "select_project":
+				// Тут находится логика, которую можно выполнить после выбора проекта
+				projectId := args[0]
+				selectedProject := args[1]
+
+				msg := view.SelectProject(message, projectId, selectedProject)
+				Bot.Send(msg)
+				msg = view.ChosePrjectAction(message);
+				Bot.Send(msg)
+			case "members_management":
+				msg := view.MembersManagment(message)
+				Bot.Send(msg)	
+			case "add_member":
+				msg := view.AddMemberToProject(message)	
+				Bot.Send(msg)	
+			case "add_member_yes":
+				msg := view.AddMemberYes(message)
+				Bot.Send(msg)	
+			case "add_member_no":
+				msg := view.AddMemberNo(message)
+				Bot.Send(msg)	
+			case "get_members":
+				msg := view.GetProjectMembers(message)
+				Bot.Send(msg)	
+			case "remove_member":
+				// TODO сделать проверку статусов при запросе на удаление юзера
+				msg := view.RemoveMemberFromProject(message)
+				Bot.Send(msg)		
+			case "change_project_name":
+				// TODO пока тут заглушка. переделать
+				msg := view.ChangeProjectName(message)
+				Bot.Send(msg)	
+			// case "change_tasks_statuses":
+			// 	// пока тут тестирую Экзигьютера, кек
+			// 	view.Execute()
+			case "add_task":
+				// тут будет алгоритм дабавления задачи 
+				// TODO 
+				// Введите описание пректа
+				// ввод
+				// введите дедлайн
+				// ввод
+				// введите навыки
+				// ввод
+				// все это должно крутиться в одной проверке
+				
+			}
+	
+	}	
+}
+
 func main() {
-	// log.Printf("Autorized on account %s", Bot.Self.UserName)
 	logger.ForError(BotErr)
 	setWebhook(Bot)
+	
+	updates := Bot.ListenForWebhook("/")
 
-	message := func(w http.ResponseWriter, r *http.Request) {
-		text, err := ioutil.ReadAll(r.Body)
-		logger.ForError(err)
-
-		var botText betypes.BotMessage
-		err = json.Unmarshal(text, &botText)
-		logger.ForError(err)
-
-		fmt.Println(fmt.Sprintf("%s", text))
-		logger.LogFile.Println(fmt.Sprintf("%s", text))
-
-		firstName := botText.Message.From.First_name
-		// userName := botText.Message.From.Username
-		chatGroup := botText.Message.Chat.Id
-		// mText := botText.Message.Text
-		msg := tgbotapi.NewMessage(chatGroup, fmt.Sprintf("Привет, %s", firstName))
-
-		Bot.Send(msg)
-	}
-
-	http.HandleFunc("/", message)
 	fmt.Println("Server is working!")
-	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf("%s:%s", betypes.BotInternalAddress, betypes.BotInternalPort),
-		betypes.CertPath, betypes.KeyPath, nil))
+	go http.ListenAndServeTLS(fmt.Sprintf("%s:%s", betypes.BotInternalAddress, betypes.BotInternalPort), betypes.CertPath, betypes.KeyPath, nil)
+
+	checkUpdates(updates)
 }

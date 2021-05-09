@@ -307,7 +307,7 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 		log.Println(err)
 		return 500, err
 	}
-	username := params["uname"]
+	telegramId := params["tgid"]
 	userDataJson, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		log.Println("error in reading body:", err)
@@ -322,7 +322,7 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 		return 500, err.Error()
 	}
 
-	row := c.DB.QueryRow("select id from users where username = ?", username)
+	row := c.DB.QueryRow("select id from users where telegram_id = ?", telegramId)
 	var userId int64
 	err = row.Scan(&userId)
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
+	"projja_telegram/command/projects"
 	rootc "projja_telegram/command/root/controller"
 	"projja_telegram/command/util"
 	"strings"
@@ -39,7 +40,7 @@ func ListenRootCommands(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		case "set_skills":
 			ChangeSkills(messageData, bot, updates)
 		case "project_management":
-			log.Println("da suka")
+			projects.SelectProject(messageData, bot, updates)
 		default:
 			SendUnknownMessage(messageData, command, bot)
 		}

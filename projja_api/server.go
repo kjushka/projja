@@ -55,7 +55,7 @@ func main() {
 			r.Post("/:uname/skills", c.SetSkillsToUser)
 			r.Get("/:uname/owner/open", c.GetOpenUserProjects)
 			r.Get("/:uname/owner/all", c.GetAllUserProjects)
-			r.Post("/:uname/update", c.UpdateUserData)
+			r.Post("/:tgid/update", c.UpdateUserData)
 			r.Get("/:uname/member/opened", c.GetOpenProjectsWhereMember)
 			r.Get("/:uname/member/all", c.GetAllProjectsWhereMember)
 			r.Get("/:uname/executor", c.GetExecuteTasks)

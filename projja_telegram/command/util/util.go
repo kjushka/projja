@@ -6,6 +6,18 @@ import (
 	"strconv"
 )
 
+type MessageData struct {
+	From *tgbotapi.User
+	Chat *tgbotapi.Chat
+}
+
+func MessageToMessageData(message *tgbotapi.Message) *MessageData {
+	return &MessageData{
+		From: message.From,
+		Chat: message.Chat,
+	}
+}
+
 func TgUserToModelUser(tgUser *tgbotapi.User) *model.User {
 	name := tgUser.FirstName
 	if tgUser.LastName != "" {

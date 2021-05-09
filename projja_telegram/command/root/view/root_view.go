@@ -5,6 +5,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
 	rootc "projja_telegram/command/root/controller"
+	"projja_telegram/command/util"
 	"strings"
 )
 
@@ -27,24 +28,25 @@ func ListenRootCommands(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 
 		log.Println(command)
 		//log.Printf("[%s] %s\n", update.Message.From.UserName, update.Message.Text)
+		messageData := util.MessageToMessageData(message)
 
 		switch command {
 		case "start":
-			msg := Start(message)
+			msg := Start(messageData)
 			bot.Send(msg)
 		case "register":
-			Register(message, bot, updates)
+			Register(messageData, bot, updates)
 		case "set_skills":
-			ChangeSkills(message, bot, updates)
+			ChangeSkills(messageData, bot, updates)
 		case "project_management":
 			log.Println("da suka")
 		default:
-			SendUnknownMessage(message, bot)
+			SendUnknownMessage(messageData, command, bot)
 		}
 	}
 }
 
-func Start(message *tgbotapi.Message) tgbotapi.MessageConfig {
+func Start(message *util.MessageData) tgbotapi.MessageConfig {
 	isRegister := rootc.GetUser(message.From.UserName)
 	var text string
 
@@ -56,7 +58,7 @@ func Start(message *tgbotapi.Message) tgbotapi.MessageConfig {
 	}
 }
 
-func getRegisterMessage(message *tgbotapi.Message, text string) tgbotapi.MessageConfig {
+func getRegisterMessage(message *util.MessageData, text string) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
@@ -71,7 +73,7 @@ func getRegisterMessage(message *tgbotapi.Message, text string) tgbotapi.Message
 	return msg
 }
 
-func Register(message *tgbotapi.Message, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+func Register(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	status, text := rootc.RegisterUser(message.From)
 
 	if !status {
@@ -90,7 +92,7 @@ func Register(message *tgbotapi.Message, bot *tgbotapi.BotAPI, updates tgbotapi.
 	bot.Send(msg)
 }
 
-func SetSkills(message *tgbotapi.Message, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+func SetSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	text := "Давайте теперь узнаем, что вы умеете\n" +
 		"Для этого перечислите через пробел навыки, которыми вы обладаете\n" +
 		"Пример: \n" +
@@ -133,8 +135,8 @@ func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, bool) {
 	return nil, false
 }
 
-func ChangeSkills(message *tgbotapi.Message, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
-	defer func(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
+func ChangeSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
 		msg := GetRootMenu(message)
 		bot.Send(msg)
 	}(message, bot)
@@ -166,8 +168,8 @@ func ChangeSkills(message *tgbotapi.Message, bot *tgbotapi.BotAPI, updates tgbot
 	bot.Send(msg)
 }
 
-func SendUnknownMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
-	text := fmt.Sprintf("Я не знаю команды '%s'", message.Text)
+func SendUnknownMessage(message *util.MessageData, command string, bot *tgbotapi.BotAPI) {
+	text := fmt.Sprintf("Я не знаю команды '%s'", command)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 	bot.Send(msg)
 
@@ -175,7 +177,7 @@ func SendUnknownMessage(message *tgbotapi.Message, bot *tgbotapi.BotAPI) {
 	bot.Send(msg)
 }
 
-func GetRootMenu(message *tgbotapi.Message) tgbotapi.MessageConfig {
+func GetRootMenu(message *util.MessageData) tgbotapi.MessageConfig {
 	text := fmt.Sprintf("%s, что вы хотите сделать?\n", message.From.UserName)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 

@@ -39,6 +39,8 @@ func ListenRootCommands(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			Register(messageData, bot, updates)
 		case "set_skills":
 			ChangeSkills(messageData, bot, updates)
+		case "update_data":
+			UpdateData(messageData, bot)
 		case "project_management":
 			projects.SelectProject(messageData, bot, updates)
 		default:
@@ -142,6 +144,27 @@ func ChangeSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbot
 		bot.Send(msg)
 	}(message, bot)
 
+	SetSkills(message, bot, updates)
+
+	msg := getUserData(message)
+
+	bot.Send(msg)
+}
+
+func UpdateData(message *util.MessageData, bot *tgbotapi.BotAPI) {
+	_, text := rootc.UpdateUserData(message.From)
+
+	msg := tgbotapi.NewMessage(message.Chat.ID, text)
+	bot.Send(msg)
+
+	msg = getUserData(message)
+	bot.Send(msg)
+
+	msg = GetRootMenu(message)
+	bot.Send(msg)
+}
+
+func getUserData(message *util.MessageData) tgbotapi.MessageConfig {
 	user := rootc.GetUser(message.From.UserName)
 
 	var text string
@@ -150,12 +173,9 @@ func ChangeSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbot
 		text = "К сожалению, я не смог получить ваши данные\n" +
 			"Давайте попробуем в другой раз"
 		msg := tgbotapi.NewMessage(message.Chat.ID, text)
-		bot.Send(msg)
 
-		return
+		return msg
 	}
-
-	SetSkills(message, bot, updates)
 
 	text = fmt.Sprintf("Сейчас ваш профиль выглядит так:\n"+
 		"Имя: %s\n"+
@@ -166,7 +186,8 @@ func ChangeSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbot
 		strings.Join(user.Skills, ", "),
 	)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+
+	return msg
 }
 
 func SendUnknownMessage(message *util.MessageData, command string, bot *tgbotapi.BotAPI) {
@@ -184,13 +205,17 @@ func GetRootMenu(message *util.MessageData) tgbotapi.MessageConfig {
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
-	var row []tgbotapi.InlineKeyboardButton
+	var row1 []tgbotapi.InlineKeyboardButton
+	var row2 []tgbotapi.InlineKeyboardButton
 	skillsBtn := tgbotapi.NewInlineKeyboardButtonData("Изменить навыки", "set_skills")
 	projectsManageBtn := tgbotapi.NewInlineKeyboardButtonData("Управлять проектами", "project_management")
+	updateBtn := tgbotapi.NewInlineKeyboardButtonData("Обновить данные профиля", "update_data")
 
-	row = append(row, skillsBtn)
-	row = append(row, projectsManageBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	row1 = append(row1, skillsBtn)
+	row1 = append(row1, projectsManageBtn)
+	row2 = append(row2, updateBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
 
 	msg.ReplyMarkup = keyboard
 	return msg

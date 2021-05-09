@@ -69,7 +69,7 @@ func RegisterUser(tgUser *tgbotapi.User) (bool, string) {
 	)
 
 	if err != nil {
-		log.Println("error in sending register query: ", err)
+		log.Println("error in sending register request: ", err)
 		return false, returnText
 	}
 
@@ -107,4 +107,33 @@ func SetSkills(username string, skills []string) bool {
 	}
 
 	return true
+}
+
+func UpdateUserData(tgUser *tgbotapi.User) (bool, string) {
+	user := util.TgUserToModelUser(tgUser)
+	jsonUser, err := json.Marshal(user)
+
+	returnText := "Возникла ошибка, попробуйте ещё раз через некоторое время"
+
+	if err != nil {
+		log.Println("error in marshalling user: ", err)
+		return false, returnText
+	}
+
+	response, err := http.Post(config.GetAPIAddr()+fmt.Sprintf("/user/%s/update", user.TelegramId),
+		"application/json",
+		bytes.NewBuffer(jsonUser),
+	)
+
+	if err != nil {
+		log.Println("error in sending update request: ", err)
+		return false, returnText
+	}
+
+	if response.StatusCode == http.StatusInternalServerError {
+		log.Println("error in update")
+		return false, returnText
+	}
+
+	return true, "Данные профиля были успешно обновлены"
 }

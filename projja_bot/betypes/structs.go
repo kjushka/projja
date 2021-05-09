@@ -125,4 +125,3 @@ type TaskStatus struct {
 type Skills struct {
 	Skills []string
 }
-

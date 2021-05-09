@@ -98,13 +98,13 @@ func Start(message *tgbotapi.Message) tgbotapi.MessageConfig {
 		msg.ReplyMarkup = keyboard
 		return msg
 	} else {
-		return ChooseProjjaAction(message);
+		return ChooseProjjaAction(message)
 	}
 	// Проверка указаны ли скилы
 }
 
 func Register(message *tgbotapi.Message) (tgbotapi.MessageConfig, tgbotapi.MessageConfig) {
-	var ans string = controller.RegiserUser(message.From)
+	var ans = controller.RegiserUser(message.From)
 
 	msg := tgbotapi.NewMessage(message.Chat.ID, ans)
 	msg.ReplyToMessageID = message.MessageID

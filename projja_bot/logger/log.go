@@ -13,13 +13,13 @@ var (
 func ForError(err error) {
 	if err != nil {
 		LogFile.Println(err)
-		// LogFile.Fatalln(er)
+		// LogFile.Fatal(err)
 	}
 }
 
 func LogCommandResult(str string){
 	if str != "" {
 		LogFile.Println(str)
-		// LogFile.Fatalln(er)
+		// LogFile.Fatal(err)
 	}
 }

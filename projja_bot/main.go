@@ -29,12 +29,12 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 		var args[] string
 
 		if update.CallbackQuery != nil { 
-			// Если произошло нажатие на inlain кнопку, то отделяем команду от её аргументов
+			// Если произошло нажатие на inline кнопку, то отделяем команду от её аргументов
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-			args = response[1: len(response)]
+			args = response[1:]
 
-			// Подменяем from bota на from пользователя нажавшего кнопку
+			// Подменяем from bot на from пользователя, нажавшего кнопку
 			message = update.CallbackQuery.Message
 			message.From = update.CallbackQuery.From
 		} else if message.IsCommand() {
@@ -56,7 +56,7 @@ func checkUpdates(updates <-chan tgbotapi.Update) {
 				msg = view.ChooseProjjaAction(message)
 				Bot.Send(msg)
 			case "create_project":	
-				msg := view.CreateProject(message);
+				msg := view.CreateProject(message)
 				Bot.Send(msg)
 				msg = view.ChooseProjjaAction(message)
 				Bot.Send(msg)

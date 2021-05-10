@@ -4,8 +4,9 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
-	"projja_telegram/command/projects"
+	"projja_telegram/command/projects/view"
 	rootc "projja_telegram/command/root/controller"
+	"projja_telegram/command/root/menu"
 	"projja_telegram/command/util"
 	"strings"
 )
@@ -42,7 +43,7 @@ func ListenRootCommands(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		case "update_data":
 			UpdateData(messageData, bot)
 		case "project_management":
-			projects.SelectProject(messageData, bot, updates)
+			view.SelectProject(messageData, bot, updates)
 		default:
 			SendUnknownMessage(messageData, command, bot)
 		}
@@ -57,7 +58,7 @@ func Start(message *util.MessageData) tgbotapi.MessageConfig {
 		text = fmt.Sprintf("Привет %s, давайте зарегистрируемся в системе", message.From.UserName)
 		return getRegisterMessage(message, text)
 	} else {
-		return GetRootMenu(message)
+		return menu.GetRootMenu(message)
 	}
 }
 
@@ -91,7 +92,7 @@ func Register(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.
 
 	SetSkills(message, bot, updates)
 
-	msg = GetRootMenu(message)
+	msg = menu.GetRootMenu(message)
 	bot.Send(msg)
 }
 
@@ -140,7 +141,7 @@ func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, bool) {
 
 func ChangeSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
-		msg := GetRootMenu(message)
+		msg := menu.GetRootMenu(message)
 		bot.Send(msg)
 	}(message, bot)
 
@@ -160,7 +161,7 @@ func UpdateData(message *util.MessageData, bot *tgbotapi.BotAPI) {
 	msg = getUserData(message)
 	bot.Send(msg)
 
-	msg = GetRootMenu(message)
+	msg = menu.GetRootMenu(message)
 	bot.Send(msg)
 }
 
@@ -195,28 +196,6 @@ func SendUnknownMessage(message *util.MessageData, command string, bot *tgbotapi
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 	bot.Send(msg)
 
-	msg = GetRootMenu(message)
+	msg = menu.GetRootMenu(message)
 	bot.Send(msg)
-}
-
-func GetRootMenu(message *util.MessageData) tgbotapi.MessageConfig {
-	text := fmt.Sprintf("%s, что вы хотите сделать?\n", message.From.UserName)
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	var row1 []tgbotapi.InlineKeyboardButton
-	var row2 []tgbotapi.InlineKeyboardButton
-	skillsBtn := tgbotapi.NewInlineKeyboardButtonData("Изменить навыки", "set_skills")
-	projectsManageBtn := tgbotapi.NewInlineKeyboardButtonData("Управлять проектами", "project_management")
-	updateBtn := tgbotapi.NewInlineKeyboardButtonData("Обновить данные профиля", "update_data")
-
-	row1 = append(row1, skillsBtn)
-	row1 = append(row1, projectsManageBtn)
-	row2 = append(row2, updateBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
-
-	msg.ReplyMarkup = keyboard
-	return msg
 }

@@ -9,7 +9,7 @@ type User struct {
 }
 
 type Project struct {
-	Id     int64
+	Id     int64 `json:"id,omitempty"`
 	Name   string
 	Owner  *User
 	Status string

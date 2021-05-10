@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"projja_api/model"
+	"strconv"
 	"strings"
 	"time"
 
@@ -245,44 +246,53 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 	})
 }
 
-func (c *Controller) GetOpenUserProjects(params martini.Params, w http.ResponseWriter) (int, string) {
+func (c *Controller) GetUserProjectsCount(params martini.Params, w http.ResponseWriter) (int, string) {
 	user, err := c.getUserByUsername(params)
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()
 	}
 
-	rows, err := c.DB.Query(
-		"select p.id, p.name, p.status from project p where p.owner = ? and p.status = ?",
+	row := c.DB.QueryRow(
+		"select count(p.id) from project p where p.owner = ?",
 		user.Id,
-		"opened",
 	)
 
+	count := 0
+	err = row.Scan(&count)
 	if err != nil {
-		log.Println("error in getting opened projects:", err)
-		return 500, err.Error()
-	}
-
-	projects, err := c.scanProjects(rows, user)
-	if err != nil {
-		log.Println("error in scanning rows:", err)
+		log.Println("error in getting projects count: ", err)
 		return 500, err.Error()
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, "projects", projects)
+	return c.makeContentResponse(200, "projects", count)
 }
 
-func (c *Controller) GetAllUserProjects(params martini.Params, w http.ResponseWriter) (int, string) {
+func (c *Controller) GetUserProjects(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
 	user, err := c.getUserByUsername(params)
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()
 	}
 
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		log.Println("error in casting page")
+		return 500, err.Error()
+	}
+
+	count, err := strconv.Atoi(r.URL.Query().Get("count"))
+	if err != nil {
+		log.Println("error in casting page")
+		return 500, err.Error()
+	}
+
 	rows, err := c.DB.Query(
-		"select p.id, p.name, p.status from project p where p.owner = ?",
+		"select p.id, p.name, p.status from project p where p.owner = ? order by p.status asc, id desc limit ?, ?",
 		user.Id,
+		10*(page-1),
+		count,
 	)
 
 	if err != nil {

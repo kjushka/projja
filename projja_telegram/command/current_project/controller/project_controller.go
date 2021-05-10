@@ -1,20 +1,42 @@
 package controller
 
 import (
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"projja_telegram/command/projects/menu"
-	"projja_telegram/command/util"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"projja_telegram/config"
 	"projja_telegram/model"
 )
 
-func WorkWithProject(message *util.MessageData,
-	bot *tgbotapi.BotAPI,
-	updates tgbotapi.UpdatesChannel,
-	project *model.Project) {
+func ChangeProjectName(project *model.Project, newName string) (string, bool) {
+	nameStruct := &struct {
+		Name string
+	}{newName}
 
-	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
-		msg, _, _ := menu.MakeProjectsMenu(message, 1, 10)
-		bot.Send(msg)
-	}(message, bot)
-	return
+	errorText := "Во время смены названия проекта произошла ошибка\nПопробуйте позже ещё раз"
+
+	jsonNameStruct, err := json.Marshal(nameStruct)
+	if err != nil {
+		log.Println("error in marshalling name: ", err)
+		return errorText, false
+	}
+
+	resp, err := http.Post(config.GetAPIAddr()+fmt.Sprintf("/project/%d/change/name", project.Id),
+		"application/json",
+		bytes.NewBuffer(jsonNameStruct),
+	)
+	if err != nil {
+		log.Println("error in request for changing project name: ", err)
+		return errorText, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in request for changing project name")
+		return errorText, false
+	}
+
+	project.Name = newName
+	return "Название проекта успешно изменено", true
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
-	controller2 "projja_telegram/command/current_project/controller"
+	"projja_telegram/command/current_project/view"
 	"projja_telegram/command/projects/controller"
 	projectsmenu "projja_telegram/command/projects/menu"
 	"projja_telegram/command/root/menu"
@@ -68,38 +68,22 @@ func SelectProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 				bot.Send(msg)
 				return
 			}
-
-			msg, projects, status = projectsmenu.MakeProjectsMenu(message, page, projectsCount)
-			bot.Send(msg)
-			if !status {
-				return
-			}
 		case "prev_page":
 			page--
-			msg, projects, status = projectsmenu.MakeProjectsMenu(message, page, projectsCount)
-			bot.Send(msg)
-			if !status {
-				return
-			}
 		case "next_page":
 			page++
-			msg, projects, status = projectsmenu.MakeProjectsMenu(message, page, projectsCount)
-			bot.Send(msg)
-			if !status {
-				return
-			}
 		default:
 			msg, index, status := IsProjectId(message, command, len(projects))
 			bot.Send(msg)
-			if !status {
-				msg, projects, status = projectsmenu.MakeProjectsMenu(message, page, projectsCount)
-				bot.Send(msg)
-				if !status {
-					return
-				}
-			} else {
-				controller2.WorkWithProject(message, bot, updates, projects[index])
+			if status {
+				view.WorkWithProject(message, bot, updates, projects[index])
 			}
+		}
+
+		msg, projects, status = projectsmenu.MakeProjectsMenu(message, page, projectsCount)
+		bot.Send(msg)
+		if !status {
+			return
 		}
 	}
 
@@ -122,7 +106,8 @@ func CreateProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 		break
 	}
 
-	msg = getCreateProjectAcceptingMessage(message, projectName)
+	acceptingString := fmt.Sprintf("Вы действительно хотите создать проект с именем '%s'?", projectName)
+	msg = util.GetAcceptingMessage(message, acceptingString)
 	bot.Send(msg)
 
 	for update := range updates {
@@ -153,31 +138,13 @@ func CreateProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 			msg = tgbotapi.NewMessage(message.Chat.ID, text)
 			bot.Send(msg)
 
-			msg = getCreateProjectAcceptingMessage(message, projectName)
+			msg = util.GetAcceptingMessage(message, acceptingString)
 			bot.Send(msg)
 		}
 	}
 
 LOOP:
 	msg = tgbotapi.NewMessage(message.Chat.ID, text)
-	return msg
-}
-
-func getCreateProjectAcceptingMessage(message *util.MessageData, projectName string) tgbotapi.MessageConfig {
-	text := fmt.Sprintf("Вы действительно хотите создать проект с именем '%s'?", projectName)
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	var row []tgbotapi.InlineKeyboardButton
-	yesBtn := tgbotapi.NewInlineKeyboardButtonData("Да", "yes")
-	noBtn := tgbotapi.NewInlineKeyboardButtonData("Нет", "no")
-	row = append(row, yesBtn)
-	row = append(row, noBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-
-	msg.ReplyMarkup = keyboard
-
 	return msg
 }
 

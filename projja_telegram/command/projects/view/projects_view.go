@@ -4,7 +4,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"log"
-	"projja_telegram/command/current_project"
+	controller2 "projja_telegram/command/current_project/controller"
 	"projja_telegram/command/projects/controller"
 	projectsmenu "projja_telegram/command/projects/menu"
 	"projja_telegram/command/root/menu"
@@ -98,7 +98,7 @@ func SelectProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 					return
 				}
 			} else {
-				current_project.WorkWithProject(message, bot, updates, projects[index])
+				controller2.WorkWithProject(message, bot, updates, projects[index])
 			}
 		}
 	}

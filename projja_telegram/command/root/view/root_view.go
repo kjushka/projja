@@ -95,21 +95,45 @@ func Register(botUtil *util.BotUtil) {
 	botUtil.Bot.Send(msg)
 }
 
+func ChangeSkills(botUtil *util.BotUtil) {
+	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
+		msg := menu.GetRootMenu(message)
+		bot.Send(msg)
+	}(botUtil.Message, botUtil.Bot)
+
+	SetSkills(botUtil)
+
+	msg := getUserData(botUtil.Message)
+
+	botUtil.Bot.Send(msg)
+}
+
 func SetSkills(botUtil *util.BotUtil) {
 	text := "Давайте теперь узнаем, что вы умеете\n" +
 		"Для этого перечислите через пробел навыки, которыми вы обладаете\n" +
 		"Пример: \n" +
 		"frontend js angular"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-	botUtil.Bot.Send(msg)
 
-	status := false
+	keyboard := tgbotapi.InlineKeyboardMarkup{}
+	row := make([]tgbotapi.InlineKeyboardButton, 0)
+	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel")
+
+	row = append(row, cancelBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	msg.ReplyMarkup = keyboard
+
+	var st string
 	var skills []string
-	for !status {
-		skills, status = ListenForSkills(botUtil.Updates)
+	for st != "success" {
+		botUtil.Bot.Send(msg)
+		skills, st = ListenForSkills(botUtil.Updates)
+		if st == "cancel" {
+			return
+		}
 	}
 
-	status = rootc.SetSkills(botUtil.Message.From.UserName, skills)
+	status := rootc.SetSkills(botUtil.Message.From.UserName, skills)
 	if !status {
 		text = "Во время регистрации навыков произошла ошибка\n" +
 			"Попробуйте ввести навыки ещё раз"
@@ -123,32 +147,35 @@ func SetSkills(botUtil *util.BotUtil) {
 	botUtil.Bot.Send(msg)
 }
 
-func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, bool) {
+func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, string) {
 	for update := range updates {
-		message := update.Message
-		if message != nil {
-			skillsString := message.Text
-			if skillsString == "" {
-				return nil, false
+		mes := update.Message
+		var command string
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+
+			mes = update.CallbackQuery.Message
+			mes.From = update.CallbackQuery.From
+		} else if mes.IsCommand() {
+			command = mes.Command()
+		} else if mes.Text != "" {
+			command = mes.Text
+		}
+
+		switch command {
+		case "cancel":
+			return nil, "cancel"
+		default:
+			if command == "" {
+				return nil, "error"
 			}
-			skills := strings.Split(skillsString, " ")
-			return skills, true
+			skills := strings.Split(command, " ")
+			return skills, "success"
 		}
 	}
-	return nil, false
-}
-
-func ChangeSkills(botUtil *util.BotUtil) {
-	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
-		msg := menu.GetRootMenu(message)
-		bot.Send(msg)
-	}(botUtil.Message, botUtil.Bot)
-
-	SetSkills(botUtil)
-
-	msg := getUserData(botUtil.Message)
-
-	botUtil.Bot.Send(msg)
+	return nil, "error"
 }
 
 func UpdateData(botUtil *util.BotUtil) {

@@ -6,6 +6,12 @@ import (
 	"strconv"
 )
 
+type BotUtil struct {
+	Message *MessageData
+	Bot     *tgbotapi.BotAPI
+	Updates tgbotapi.UpdatesChannel
+}
+
 type MessageData struct {
 	From *tgbotapi.User
 	Chat *tgbotapi.Chat

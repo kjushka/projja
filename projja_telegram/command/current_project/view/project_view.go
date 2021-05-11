@@ -5,26 +5,16 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"projja_telegram/command/current_project/controller"
 	projectmenu "projja_telegram/command/current_project/menu"
-	"projja_telegram/command/projects/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
 	"strings"
 )
 
-func WorkWithProject(message *util.MessageData,
-	bot *tgbotapi.BotAPI,
-	updates tgbotapi.UpdatesChannel,
-	project *model.Project,
-) {
-	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
-		msg, _, _ := menu.MakeProjectsMenu(message, 1, 10)
-		bot.Send(msg)
-	}(message, bot)
+func WorkWithProject(botUtil *util.BotUtil, project *model.Project) {
+	msg := projectmenu.MakeProjectMenu(botUtil.Message, project)
+	botUtil.Bot.Send(msg)
 
-	msg := projectmenu.MakeProjectMenu(message, project)
-	bot.Send(msg)
-
-	for update := range updates {
+	for update := range botUtil.Updates {
 		mes := update.Message
 		var command string
 
@@ -42,27 +32,22 @@ func WorkWithProject(message *util.MessageData,
 
 		switch command {
 		case "change_name":
-			msg = ChangeProjectName(message, bot, updates, project)
+			msg = ChangeProjectName(botUtil, project)
+		case "projects_menu":
+			return
 		}
-
-		msg = projectmenu.MakeProjectMenu(message, project)
-		bot.Send(msg)
+		msg = projectmenu.MakeProjectMenu(botUtil.Message, project)
+		botUtil.Bot.Send(msg)
 	}
-
-	return
 }
 
-func ChangeProjectName(message *util.MessageData,
-	bot *tgbotapi.BotAPI,
-	updates tgbotapi.UpdatesChannel,
-	project *model.Project,
-) tgbotapi.MessageConfig {
+func ChangeProjectName(botUtil *util.BotUtil, project *model.Project) tgbotapi.MessageConfig {
 	text := fmt.Sprintf("Введите новое название для проекта '%s'", project.Name)
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
 	projectName := ""
-	for update := range updates {
+	for update := range botUtil.Updates {
 		mes := update.Message
 		if mes == nil {
 			continue
@@ -73,10 +58,10 @@ func ChangeProjectName(message *util.MessageData,
 	}
 
 	acceptingString := fmt.Sprintf("Вы действительно хотите изменить название проекта на '%s'?", projectName)
-	msg = util.GetAcceptingMessage(message, acceptingString)
-	bot.Send(msg)
+	msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+	botUtil.Bot.Send(msg)
 
-	for update := range updates {
+	for update := range botUtil.Updates {
 		mes := update.Message
 		var command string
 
@@ -101,15 +86,15 @@ func ChangeProjectName(message *util.MessageData,
 			goto LOOP
 		default:
 			text = "Неизвестная команда"
-			msg = tgbotapi.NewMessage(message.Chat.ID, text)
-			bot.Send(msg)
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			botUtil.Bot.Send(msg)
 
-			msg = util.GetAcceptingMessage(message, acceptingString)
-			bot.Send(msg)
+			msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+			botUtil.Bot.Send(msg)
 		}
 	}
 
 LOOP:
-	msg = tgbotapi.NewMessage(message.Chat.ID, text)
+	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 	return msg
 }

@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-func ListenRootCommands(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
-	for update := range updates {
+func ListenRootCommands(botUtil *util.BotUtil) {
+	for update := range botUtil.Updates {
 		message := update.Message
 		var command string
 
@@ -29,23 +29,22 @@ func ListenRootCommands(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		}
 
 		log.Println(command)
-		//log.Printf("[%s] %s\n", update.Message.From.UserName, update.Message.Text)
-		messageData := util.MessageToMessageData(message)
+		botUtil.Message = util.MessageToMessageData(message)
 
 		switch command {
 		case "start":
-			msg := Start(messageData)
-			bot.Send(msg)
+			msg := Start(botUtil.Message)
+			botUtil.Bot.Send(msg)
 		case "register":
-			Register(messageData, bot, updates)
+			Register(botUtil)
 		case "set_skills":
-			ChangeSkills(messageData, bot, updates)
+			ChangeSkills(botUtil)
 		case "update_data":
-			UpdateData(messageData, bot)
+			UpdateData(botUtil)
 		case "project_management":
-			view.SelectProject(messageData, bot, updates)
+			view.SelectProject(botUtil)
 		default:
-			SendUnknownMessage(messageData, command, bot)
+			SendUnknownMessage(botUtil, command)
 		}
 	}
 }
@@ -77,51 +76,51 @@ func getRegisterMessage(message *util.MessageData, text string) tgbotapi.Message
 	return msg
 }
 
-func Register(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
-	status, text := rootc.RegisterUser(message.From)
+func Register(botUtil *util.BotUtil) {
+	status, text := rootc.RegisterUser(botUtil.Message.From)
 
 	if !status {
-		msg := getRegisterMessage(message, text)
-		bot.Send(msg)
+		msg := getRegisterMessage(botUtil.Message, text)
+		botUtil.Bot.Send(msg)
 
 		return
 	}
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
-	SetSkills(message, bot, updates)
+	SetSkills(botUtil)
 
-	msg = menu.GetRootMenu(message)
-	bot.Send(msg)
+	msg = menu.GetRootMenu(botUtil.Message)
+	botUtil.Bot.Send(msg)
 }
 
-func SetSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+func SetSkills(botUtil *util.BotUtil) {
 	text := "Давайте теперь узнаем, что вы умеете\n" +
 		"Для этого перечислите через пробел навыки, которыми вы обладаете\n" +
 		"Пример: \n" +
 		"frontend js angular"
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
 	status := false
 	var skills []string
 	for !status {
-		skills, status = ListenForSkills(updates)
+		skills, status = ListenForSkills(botUtil.Updates)
 	}
 
-	status = rootc.SetSkills(message.From.UserName, skills)
+	status = rootc.SetSkills(botUtil.Message.From.UserName, skills)
 	if !status {
 		text = "Во время регистрации навыков произошла ошибка\n" +
 			"Попробуйте ввести навыки ещё раз"
-		msg = tgbotapi.NewMessage(message.Chat.ID, text)
-		bot.Send(msg)
-		SetSkills(message, bot, updates)
+		msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+		botUtil.Bot.Send(msg)
+		SetSkills(botUtil)
 	}
 
-	text = fmt.Sprintf("%s, поздравляем, ваши навыки были успешно установлены!", message.From.UserName)
-	msg = tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	text = fmt.Sprintf("%s, поздравляем, ваши навыки были успешно установлены!", botUtil.Message.From.UserName)
+	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 }
 
 func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, bool) {
@@ -139,30 +138,30 @@ func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, bool) {
 	return nil, false
 }
 
-func ChangeSkills(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+func ChangeSkills(botUtil *util.BotUtil) {
 	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
 		msg := menu.GetRootMenu(message)
 		bot.Send(msg)
-	}(message, bot)
+	}(botUtil.Message, botUtil.Bot)
 
-	SetSkills(message, bot, updates)
+	SetSkills(botUtil)
 
-	msg := getUserData(message)
+	msg := getUserData(botUtil.Message)
 
-	bot.Send(msg)
+	botUtil.Bot.Send(msg)
 }
 
-func UpdateData(message *util.MessageData, bot *tgbotapi.BotAPI) {
-	_, text := rootc.UpdateUserData(message.From)
+func UpdateData(botUtil *util.BotUtil) {
+	_, text := rootc.UpdateUserData(botUtil.Message.From)
 
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
-	msg = getUserData(message)
-	bot.Send(msg)
+	msg = getUserData(botUtil.Message)
+	botUtil.Bot.Send(msg)
 
-	msg = menu.GetRootMenu(message)
-	bot.Send(msg)
+	msg = menu.GetRootMenu(botUtil.Message)
+	botUtil.Bot.Send(msg)
 }
 
 func getUserData(message *util.MessageData) tgbotapi.MessageConfig {
@@ -191,11 +190,11 @@ func getUserData(message *util.MessageData) tgbotapi.MessageConfig {
 	return msg
 }
 
-func SendUnknownMessage(message *util.MessageData, command string, bot *tgbotapi.BotAPI) {
+func SendUnknownMessage(botUtil *util.BotUtil, command string) {
 	text := fmt.Sprintf("Я не знаю команды '%s'", command)
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
-	msg = menu.GetRootMenu(message)
-	bot.Send(msg)
+	msg = menu.GetRootMenu(botUtil.Message)
+	botUtil.Bot.Send(msg)
 }

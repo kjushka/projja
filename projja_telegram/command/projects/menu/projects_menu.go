@@ -7,6 +7,7 @@ import (
 	"projja_telegram/command/projects/controller"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
+	"strconv"
 	"strings"
 )
 
@@ -55,6 +56,27 @@ func MakeProjectsMenu(message *util.MessageData, page int, count int) (tgbotapi.
 			prevNextBntRow = append(prevNextBntRow, nextBnt)
 		}
 		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, prevNextBntRow)
+
+		upperProjectRow := make([]tgbotapi.InlineKeyboardButton, 0)
+		upperRowCount := len(projects)
+		if len(projects) > 5 {
+			upperRowCount = 5
+		}
+		for i := 0; i < upperRowCount; i++ {
+			projectIndexBtn := tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(i+1), strconv.Itoa(i+1))
+			upperProjectRow = append(upperProjectRow, projectIndexBtn)
+		}
+		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, upperProjectRow)
+
+		if len(projects) > 5 {
+			lowerProjectRow := make([]tgbotapi.InlineKeyboardButton, 0)
+			lowerRowCount := len(projects)
+			for i := 5; i < lowerRowCount; i++ {
+				projectIndexBtn := tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(i+1), strconv.Itoa(i+1))
+				lowerProjectRow = append(lowerProjectRow, projectIndexBtn)
+			}
+			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, lowerProjectRow)
+		}
 	}
 
 	msg.ReplyMarkup = keyboard

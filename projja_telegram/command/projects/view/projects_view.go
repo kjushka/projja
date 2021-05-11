@@ -13,30 +13,30 @@ import (
 	"strings"
 )
 
-func SelectProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+func SelectProject(botUtil *util.BotUtil) {
 	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
 		msg := menu.GetRootMenu(message)
 		bot.Send(msg)
-	}(message, bot)
+	}(botUtil.Message, botUtil.Bot)
 
-	projectsCount, status := controller.GetProjectsCount(message.From)
+	projectsCount, status := controller.GetProjectsCount(botUtil.Message.From)
 	if !status {
 		errorText := "Не удалось получить список проектов\n" +
 			"Попробуйте позже"
-		msg := tgbotapi.NewMessage(message.Chat.ID, errorText)
-		bot.Send(msg)
+		msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, errorText)
+		botUtil.Bot.Send(msg)
 		return
 	}
 
 	page := 1
 
-	msg, projects, status := projectsmenu.MakeProjectsMenu(message, page, projectsCount)
-	bot.Send(msg)
+	msg, projects, status := projectsmenu.MakeProjectsMenu(botUtil.Message, page, projectsCount)
+	botUtil.Bot.Send(msg)
 	if !status {
 		return
 	}
 
-	for update := range updates {
+	for update := range botUtil.Updates {
 		mes := update.Message
 		var command string
 
@@ -57,15 +57,15 @@ func SelectProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 			return
 		case "create_project":
 			page = 1
-			msg = CreateProject(message, bot, updates)
-			bot.Send(msg)
+			msg = CreateProject(botUtil)
+			botUtil.Bot.Send(msg)
 
-			projectsCount, status = controller.GetProjectsCount(message.From)
+			projectsCount, status = controller.GetProjectsCount(botUtil.Message.From)
 			if !status {
 				errorText := "Не удалось получить список проектов\n" +
 					"Попробуйте позже"
-				msg = tgbotapi.NewMessage(message.Chat.ID, errorText)
-				bot.Send(msg)
+				msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, errorText)
+				botUtil.Bot.Send(msg)
 				return
 			}
 		case "prev_page":
@@ -73,15 +73,15 @@ func SelectProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 		case "next_page":
 			page++
 		default:
-			msg, index, status := IsProjectId(message, command, len(projects))
-			bot.Send(msg)
+			msg, index, status := IsProjectId(botUtil.Message, command, len(projects))
+			botUtil.Bot.Send(msg)
 			if status {
-				view.WorkWithProject(message, bot, updates, projects[index])
+				view.WorkWithProject(botUtil, projects[index])
 			}
 		}
 
-		msg, projects, status = projectsmenu.MakeProjectsMenu(message, page, projectsCount)
-		bot.Send(msg)
+		msg, projects, status = projectsmenu.MakeProjectsMenu(botUtil.Message, page, projectsCount)
+		botUtil.Bot.Send(msg)
 		if !status {
 			return
 		}
@@ -90,13 +90,13 @@ func SelectProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 	log.Println(projects)
 }
 
-func CreateProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) tgbotapi.MessageConfig {
+func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 	text := "Введите имя нового проекта"
-	msg := tgbotapi.NewMessage(message.Chat.ID, text)
-	bot.Send(msg)
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
 	projectName := ""
-	for update := range updates {
+	for update := range botUtil.Updates {
 		mes := update.Message
 		if mes == nil {
 			continue
@@ -107,10 +107,10 @@ func CreateProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 	}
 
 	acceptingString := fmt.Sprintf("Вы действительно хотите создать проект с именем '%s'?", projectName)
-	msg = util.GetAcceptingMessage(message, acceptingString)
-	bot.Send(msg)
+	msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+	botUtil.Bot.Send(msg)
 
-	for update := range updates {
+	for update := range botUtil.Updates {
 		mes := update.Message
 		var command string
 
@@ -128,23 +128,23 @@ func CreateProject(message *util.MessageData, bot *tgbotapi.BotAPI, updates tgbo
 
 		switch command {
 		case "yes":
-			text, _ = controller.CreateNewProject(message.From, projectName)
+			text, _ = controller.CreateNewProject(botUtil.Message.From, projectName)
 			goto LOOP
 		case "no":
 			text = "Отмена создания проекта"
 			goto LOOP
 		default:
 			text = "Неизвестная команда"
-			msg = tgbotapi.NewMessage(message.Chat.ID, text)
-			bot.Send(msg)
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			botUtil.Bot.Send(msg)
 
-			msg = util.GetAcceptingMessage(message, acceptingString)
-			bot.Send(msg)
+			msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+			botUtil.Bot.Send(msg)
 		}
 	}
 
 LOOP:
-	msg = tgbotapi.NewMessage(message.Chat.ID, text)
+	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 	return msg
 }
 

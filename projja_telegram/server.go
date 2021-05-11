@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	rootv "projja_telegram/command/root/view"
+	"projja_telegram/command/util"
 )
 
 //1854133506:AAFi2RLmybsgjAuNQtB207xsXaRqiIaipm8
@@ -25,5 +26,11 @@ func main() {
 
 	updates, err := bot.GetUpdatesChan(u)
 
-	rootv.ListenRootCommands(bot, updates)
+	botUtil := &util.BotUtil{
+		Message: nil,
+		Bot:     bot,
+		Updates: updates,
+	}
+
+	rootv.ListenRootCommands(botUtil)
 }

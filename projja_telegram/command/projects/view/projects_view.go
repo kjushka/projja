@@ -178,7 +178,7 @@ LOOP:
 	return msg
 }
 
-func IsProjectId(message *util.MessageData, command string, projectsCount int) (tgbotapi.MessageConfig, int, bool) {
+func IsProjectId(message *util.MessageData, command string, count int) (tgbotapi.MessageConfig, int, bool) {
 	id, err := strconv.Atoi(command)
 	if err != nil {
 		log.Println("error in casting command: ", err)
@@ -186,9 +186,9 @@ func IsProjectId(message *util.MessageData, command string, projectsCount int) (
 		msg := tgbotapi.NewMessage(message.Chat.ID, text)
 		return msg, 0, false
 	}
-	if id > projectsCount || id < 1 {
-		log.Println(fmt.Sprintf("id not in range 1-%d", projectsCount))
-		text := fmt.Sprintf("Номер проекта должен быть в интервале от 1 до %d", projectsCount)
+	if id > count || id < 1 {
+		log.Println(fmt.Sprintf("id not in range 1-%d", count))
+		text := fmt.Sprintf("Номер проекта должен быть в интервале от 1 до %d", count)
 		msg := tgbotapi.NewMessage(message.Chat.ID, text)
 		return msg, id, false
 	}

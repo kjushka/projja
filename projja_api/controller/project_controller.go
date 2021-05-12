@@ -243,7 +243,7 @@ func (c *Controller) GetProjectMembers(params martini.Params, w http.ResponseWri
 	rows, err := c.DB.Query(
 		"select u.id, u.name, u.username, u.telegram_id from member m "+
 			"right join project p on p.id = m.project "+
-			"inner join users u on u.id = m.users where p.id = ?;",
+			"inner join users u on u.id = m.users where p.id = ? order by u.name asc",
 		projectId,
 	)
 	if err != nil {

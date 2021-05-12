@@ -3,10 +3,12 @@ package view
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"log"
 	"projja_telegram/command/current_project/controller"
 	"projja_telegram/command/current_project/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
+	"strconv"
 	"strings"
 )
 
@@ -37,6 +39,9 @@ func ChangeProjectMembers(botUtil *util.BotUtil, project *model.Project) {
 		switch command {
 		case "add_member":
 			msg = AddMember(botUtil, project, members)
+			botUtil.Bot.Send(msg)
+		case "remove_member":
+			msg = RemoveMember(botUtil, project, members)
 			botUtil.Bot.Send(msg)
 		case "prev_page":
 			page--
@@ -146,4 +151,123 @@ func AddMember(botUtil *util.BotUtil, project *model.Project, members []*model.U
 LOOP:
 	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 	return msg
+}
+
+func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*model.User) tgbotapi.MessageConfig {
+	page := 1
+	count := len(members) - (page-1)*10
+	if count > 10 {
+		count = 10
+	}
+	msg := menu.MakeMembersRemovingMenu(botUtil.Message, project, members, page, count)
+	botUtil.Bot.Send(msg)
+
+	memberIndex := -1
+
+	for update := range botUtil.Updates {
+		mes := update.Message
+		var command string
+
+		exit := false
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+
+			mes = update.CallbackQuery.Message
+			mes.From = update.CallbackQuery.From
+		} else if mes.IsCommand() {
+			command = mes.Command()
+		} else if mes.Text != "" {
+			command = mes.Text
+		}
+
+		switch command {
+		case "cancel_btn":
+			text := "Отмена удаления участника"
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			return msg
+		case "prev_page":
+			page--
+		case "next_page":
+			page++
+		default:
+			text, index, status := IsMemberId(command, len(members), page)
+			memberIndex = index
+			if !status {
+				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				botUtil.Bot.Send(msg)
+			} else {
+				exit = true
+			}
+		}
+
+		if exit && memberIndex != -1 {
+			break
+		}
+		botUtil.Bot.Send(msg)
+	}
+
+	member := members[memberIndex]
+
+	acceptingString := fmt.Sprintf("Вы хотите удалить участника '%s'", member.Name)
+
+	msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+	botUtil.Bot.Send(msg)
+
+	var text string
+	for update := range botUtil.Updates {
+		mes := update.Message
+		var command string
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+
+			mes = update.CallbackQuery.Message
+			mes.From = update.CallbackQuery.From
+		} else if mes.IsCommand() {
+			command = mes.Command()
+		} else if mes.Text != "" {
+			command = mes.Text
+		}
+
+		switch command {
+		case "yes_btn":
+			text, _ = controller.RemoveMember(project, member)
+			goto LOOP
+		case "no_btn":
+			text = "Отмена удаления участника"
+			goto LOOP
+		default:
+			text = "Неизвестная команда"
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			botUtil.Bot.Send(msg)
+
+			msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+			botUtil.Bot.Send(msg)
+		}
+	}
+
+LOOP:
+	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	return msg
+}
+
+func IsMemberId(command string, count int, page int) (string, int, bool) {
+	id, err := strconv.Atoi(command)
+	if err != nil {
+		log.Println("error in casting command: ", err)
+		text := "Вы ввели не номер участника в списке, а '" + command + "'"
+		return text, -1, false
+	}
+	if id > count || id < 1 {
+		log.Println(fmt.Sprintf("id not in range 1-%d", count))
+		text := fmt.Sprintf("Номер участника должен быть в интервале от 1 до %d", count)
+		return text, -1, false
+	}
+
+	id = (page-1)*10 + id
+
+	return "", id - 1, true
 }

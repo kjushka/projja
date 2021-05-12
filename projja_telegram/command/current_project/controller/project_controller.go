@@ -142,7 +142,7 @@ func GetUser(username string) (*model.User, string) {
 func AddMember(project *model.Project, member *model.User) (string, bool) {
 	resp, err := http.Get(config.GetAPIAddr() +
 		fmt.Sprintf("/project/%d/add/member/%s", project.Id, member.Username))
-	textError := "Возникла ошибка получения информации об участнике"
+	textError := "При добавлении участника возникла ошибка"
 
 	if err != nil {
 		log.Println("error in adding member by username: ", err)
@@ -155,4 +155,22 @@ func AddMember(project *model.Project, member *model.User) (string, bool) {
 	}
 
 	return "Участник успешно добавлен в проект", true
+}
+
+func RemoveMember(project *model.Project, member *model.User) (string, bool) {
+	resp, err := http.Get(config.GetAPIAddr() +
+		fmt.Sprintf("/project/%d/remove/member/%s", project.Id, member.Username))
+	textError := "При удалении участника возникла ошибка"
+
+	if err != nil {
+		log.Println("error in removing member by username: ", err)
+		return textError, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in removing member by username")
+		return textError, false
+	}
+
+	return "Участник успешно удален из проекта", true
 }

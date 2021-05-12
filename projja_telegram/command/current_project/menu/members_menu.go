@@ -38,7 +38,7 @@ func MakeMembersMenu(
 	row1 := make([]tgbotapi.InlineKeyboardButton, 0)
 	row2 := make([]tgbotapi.InlineKeyboardButton, 0)
 	addBtn := tgbotapi.NewInlineKeyboardButtonData("Добавить участника", "add_member")
-	removeBtn := tgbotapi.NewInlineKeyboardButtonData("Добавить участника", "remove_member")
+	removeBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
 	projectMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Меню управления проектом", "project_menu")
 	row1 = append(row1, addBtn)
 	row1 = append(row1, removeBtn)

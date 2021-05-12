@@ -100,3 +100,59 @@ func GetMembers(project *model.Project) ([]*model.User, bool) {
 
 	return respData.Content, true
 }
+
+func GetUser(username string) (*model.User, string) {
+	response, err := http.Get(config.GetAPIAddr() + "/user/get/" + username)
+
+	textError := "Возникла ошибка информации об участнике"
+
+	if err != nil {
+		log.Println("error in getting user by username: ", err)
+		return nil, textError
+	}
+	if response.StatusCode == http.StatusInternalServerError {
+		log.Println("error in getting user by username")
+		return nil, textError
+	}
+	if response.StatusCode == http.StatusNotFound {
+		log.Println("no such user with username: ", username)
+		return nil, fmt.Sprintf("Человек с username '%s' не зарегистрирован", username)
+	}
+
+	jsonBody, err := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+	if err != nil {
+		log.Println("error in reading response body: ", err)
+		return nil, textError
+	}
+	responseStruct := &struct {
+		Description string
+		Content     *model.User
+	}{}
+
+	err = json.Unmarshal(jsonBody, responseStruct)
+	if err != nil {
+		log.Println("error in unmarshalling: ", err)
+		return nil, textError
+	}
+
+	return responseStruct.Content, ""
+}
+
+func AddMember(project *model.Project, member *model.User) (string, bool) {
+	resp, err := http.Get(config.GetAPIAddr() +
+		fmt.Sprintf("/project/%d/add/member/%s", project.Id, member.Username))
+	textError := "Возникла ошибка получения информации об участнике"
+
+	if err != nil {
+		log.Println("error in adding member by username: ", err)
+		return textError, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in adding member by username")
+		return textError, false
+	}
+
+	return "Участник успешно добавлен в проект", true
+}

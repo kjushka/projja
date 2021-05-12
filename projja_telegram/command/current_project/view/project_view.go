@@ -34,6 +34,9 @@ func WorkWithProject(botUtil *util.BotUtil, project *model.Project) {
 			ChangeProjectMembers(botUtil, project)
 		case "projects_menu":
 			return
+		default:
+			msg = util.GetUnknownMessage(botUtil, command)
+			botUtil.Bot.Send(msg)
 		}
 
 		msg = projectmenu.MakeProjectMenu(botUtil.Message, project)

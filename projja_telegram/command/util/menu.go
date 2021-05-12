@@ -10,8 +10,8 @@ func GetAcceptingMessage(message *MessageData, acceptingString string) tgbotapi.
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
 	var row []tgbotapi.InlineKeyboardButton
-	yesBtn := tgbotapi.NewInlineKeyboardButtonData("Да", "yes")
-	noBtn := tgbotapi.NewInlineKeyboardButtonData("Нет", "no")
+	yesBtn := tgbotapi.NewInlineKeyboardButtonData("Да", "yes_btn")
+	noBtn := tgbotapi.NewInlineKeyboardButtonData("Нет", "no_btn")
 	row = append(row, yesBtn)
 	row = append(row, noBtn)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)

@@ -25,7 +25,7 @@ func MakeProjectsMenu(message *util.MessageData, page int, count int) (tgbotapi.
 	if len(projects) != 0 {
 		textStrings := make([]string, len(projects))
 		for i, project := range projects {
-			textStrings[i] = fmt.Sprintf("%d. %s %s", i+1, project.Name, project.Status)
+			textStrings[i] = fmt.Sprintf("%d. '%s' статус: %s", i+1, project.Name, project.Status)
 		}
 		text := fmt.Sprintf("Ваши проекты:\n%s\n"+
 			"Для работы с проектом введите его номер в списке или создайте новый проект", strings.Join(textStrings, "\n"))

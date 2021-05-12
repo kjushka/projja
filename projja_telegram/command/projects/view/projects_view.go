@@ -93,17 +93,49 @@ func SelectProject(botUtil *util.BotUtil) {
 func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 	text := "Введите имя нового проекта"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+
+	keyboard := tgbotapi.InlineKeyboardMarkup{}
+	row := make([]tgbotapi.InlineKeyboardButton, 0)
+	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row = append(row, cancelBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+
+	msg.ReplyMarkup = keyboard
+
 	botUtil.Bot.Send(msg)
 
 	projectName := ""
 	for update := range botUtil.Updates {
 		mes := update.Message
-		if mes == nil {
-			continue
+		var command string
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+
+			mes = update.CallbackQuery.Message
+			mes.From = update.CallbackQuery.From
+		} else if mes.IsCommand() {
+			command = mes.Command()
+		} else if mes.Text != "" {
+			command = mes.Text
 		}
 
-		projectName = mes.Text
-		break
+		switch command {
+		case "cancel_btn":
+			text = "Отмена создания проекта"
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			return msg
+		default:
+			if command == "" {
+				continue
+			}
+			projectName = command
+		}
+
+		if projectName != "" {
+			break
+		}
 	}
 
 	acceptingString := fmt.Sprintf("Вы действительно хотите создать проект с именем '%s'?", projectName)
@@ -127,10 +159,10 @@ func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 		}
 
 		switch command {
-		case "yes":
+		case "yes_btn":
 			text, _ = controller.CreateNewProject(botUtil.Message.From, projectName)
 			goto LOOP
-		case "no":
+		case "no_btn":
 			text = "Отмена создания проекта"
 			goto LOOP
 		default:

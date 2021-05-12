@@ -89,7 +89,8 @@ func Register(botUtil *util.BotUtil) {
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 	botUtil.Bot.Send(msg)
 
-	SetSkills(botUtil)
+	msg = SetSkills(botUtil, true)
+	botUtil.Bot.Send(msg)
 
 	msg = menu.GetRootMenu(botUtil.Message)
 	botUtil.Bot.Send(msg)
@@ -101,27 +102,29 @@ func ChangeSkills(botUtil *util.BotUtil) {
 		bot.Send(msg)
 	}(botUtil.Message, botUtil.Bot)
 
-	SetSkills(botUtil)
+	msg := SetSkills(botUtil, false)
+	botUtil.Bot.Send(msg)
 
-	msg := getUserData(botUtil.Message)
-
+	msg = getUserData(botUtil.Message)
 	botUtil.Bot.Send(msg)
 }
 
-func SetSkills(botUtil *util.BotUtil) {
+func SetSkills(botUtil *util.BotUtil, isFirst bool) tgbotapi.MessageConfig {
 	text := "Давайте теперь узнаем, что вы умеете\n" +
 		"Для этого перечислите через пробел навыки, которыми вы обладаете\n" +
 		"Пример: \n" +
 		"frontend js angular"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel")
+	if !isFirst {
+		keyboard := tgbotapi.InlineKeyboardMarkup{}
+		row := make([]tgbotapi.InlineKeyboardButton, 0)
+		cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
 
-	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
-	msg.ReplyMarkup = keyboard
+		row = append(row, cancelBtn)
+		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+		msg.ReplyMarkup = keyboard
+	}
 
 	var st string
 	var skills []string
@@ -129,7 +132,9 @@ func SetSkills(botUtil *util.BotUtil) {
 		botUtil.Bot.Send(msg)
 		skills, st = ListenForSkills(botUtil.Updates)
 		if st == "cancel" {
-			return
+			text = "Отмена обновления навыков"
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			return msg
 		}
 	}
 
@@ -139,12 +144,12 @@ func SetSkills(botUtil *util.BotUtil) {
 			"Попробуйте ввести навыки ещё раз"
 		msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 		botUtil.Bot.Send(msg)
-		SetSkills(botUtil)
+		return SetSkills(botUtil, isFirst)
 	}
 
 	text = fmt.Sprintf("%s, поздравляем, ваши навыки были успешно установлены!", botUtil.Message.From.UserName)
 	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-	botUtil.Bot.Send(msg)
+	return msg
 }
 
 func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, string) {
@@ -165,7 +170,7 @@ func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, string) {
 		}
 
 		switch command {
-		case "cancel":
+		case "cancel_btn":
 			return nil, "cancel"
 		default:
 			if command == "" {

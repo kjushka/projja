@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	timeCoefficient   float32 = 1
-	skillsCoefficient float32 = 1
+	timeCoefficient   float32 = 1.2
+	skillsCoefficient float32 = 0.8
 )
 
 type Project struct {

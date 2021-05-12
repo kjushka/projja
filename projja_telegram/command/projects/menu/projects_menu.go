@@ -39,7 +39,7 @@ func MakeProjectsMenu(message *util.MessageData, page int, count int) (tgbotapi.
 
 	row := make([]tgbotapi.InlineKeyboardButton, 0)
 	createBtn := tgbotapi.NewInlineKeyboardButtonData("Создать новый проект", "create_project")
-	rootBtn := tgbotapi.NewInlineKeyboardButtonData("В главное меню", "root")
+	rootBtn := tgbotapi.NewInlineKeyboardButtonData("Главное меню", "root")
 	row = append(row, createBtn)
 	row = append(row, rootBtn)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)

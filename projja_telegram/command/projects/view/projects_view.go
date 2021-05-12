@@ -86,8 +86,6 @@ func SelectProject(botUtil *util.BotUtil) {
 			return
 		}
 	}
-
-	log.Println(projects)
 }
 
 func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {

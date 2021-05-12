@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"projja_telegram/config"
@@ -64,4 +65,38 @@ func ChangeProjectStatus(project *model.Project, newStatus string) (string, bool
 
 	project.Status = newStatus
 	return "Статус проекта успешно изменен", true
+}
+
+func GetMembers(project *model.Project) ([]*model.User, bool) {
+	resp, err := http.Get(config.GetAPIAddr() +
+		fmt.Sprintf("/project/%d/members", project.Id),
+	)
+
+	if err != nil {
+		log.Println("error in getting members: ", err)
+		return nil, false
+	}
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in getting members")
+		return nil, false
+	}
+
+	respData := &struct {
+		Description string
+		Content     []*model.User
+	}{}
+	jsonBody, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Println("error in reading response body: ", err)
+		return nil, false
+	}
+
+	err = json.Unmarshal(jsonBody, respData)
+	if err != nil {
+		log.Println("error in unmarshalling members: ", err)
+		return nil, false
+	}
+
+	return respData.Content, true
 }

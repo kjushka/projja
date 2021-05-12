@@ -30,6 +30,8 @@ func WorkWithProject(botUtil *util.BotUtil, project *model.Project) {
 		switch command {
 		case "settings":
 			ChangeProjectSetting(botUtil, project)
+		case "members":
+			ChangeProjectMembers(botUtil, project)
 		case "projects_menu":
 			return
 		}

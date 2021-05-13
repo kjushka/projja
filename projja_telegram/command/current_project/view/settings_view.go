@@ -21,9 +21,6 @@ func ChangeProjectSetting(botUtil *util.BotUtil, project *model.Project) {
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -68,9 +65,6 @@ func ChangeProjectName(botUtil *util.BotUtil, project *model.Project) tgbotapi.M
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -106,9 +100,6 @@ func ChangeProjectName(botUtil *util.BotUtil, project *model.Project) tgbotapi.M
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -158,9 +149,6 @@ func ChangeProjectStatus(botUtil *util.BotUtil, project *model.Project) tgbotapi
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -172,7 +160,7 @@ func ChangeProjectStatus(botUtil *util.BotUtil, project *model.Project) tgbotapi
 			text, _ = controller.ChangeProjectStatus(project, newStatus)
 			goto LOOP
 		case "no_btn":
-			text = "Отмена смены названия проекта"
+			text = "Отмена смены статуса проекта"
 			goto LOOP
 		default:
 			text = "Неизвестная команда"

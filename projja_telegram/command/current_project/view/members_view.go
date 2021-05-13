@@ -27,9 +27,6 @@ func ChangeProjectMembers(botUtil *util.BotUtil, project *model.Project) {
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -122,9 +119,6 @@ func AddMember(botUtil *util.BotUtil, project *model.Project, members []*model.U
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -173,9 +167,6 @@ func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*mode
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {
@@ -223,9 +214,6 @@ func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*mode
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {

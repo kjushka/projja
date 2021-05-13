@@ -26,11 +26,36 @@ func main() {
 
 	updates, err := bot.GetUpdatesChan(u)
 
-	botUtil := &util.BotUtil{
-		Message: nil,
-		Bot:     bot,
-		Updates: updates,
-	}
+	usersChan := make(map[string]*util.BotUtil)
 
-	rootv.ListenRootCommands(botUtil)
+	for update := range updates {
+		var from *tgbotapi.User
+		var chat *tgbotapi.Chat
+		if update.Message != nil {
+			from = update.Message.From
+			chat = update.Message.Chat
+
+			log.Println(update.Message.Text)
+		} else if update.CallbackQuery != nil {
+			from = update.CallbackQuery.From
+			chat = update.CallbackQuery.Message.Chat
+
+			log.Println(update.CallbackQuery)
+		}
+
+		if _, ok := usersChan[from.UserName]; !ok {
+			usersChan[from.UserName] = &util.BotUtil{
+				Message: &util.MessageData{
+					From: from,
+					Chat: chat,
+				},
+				Bot:     bot,
+				Updates: make(chan tgbotapi.Update),
+			}
+
+			go rootv.ListenRootCommands(usersChan[from.UserName])
+		}
+
+		usersChan[from.UserName].Updates <- update
+	}
 }

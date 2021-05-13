@@ -9,7 +9,7 @@ import (
 type BotUtil struct {
 	Message *MessageData
 	Bot     *tgbotapi.BotAPI
-	Updates tgbotapi.UpdatesChannel
+	Updates chan tgbotapi.Update
 }
 
 type MessageData struct {

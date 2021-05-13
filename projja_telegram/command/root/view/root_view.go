@@ -19,9 +19,6 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			message = update.CallbackQuery.Message
-			message.From = update.CallbackQuery.From
 		} else if message.IsCommand() {
 			command = message.Command()
 		} else if message.Text != "" {
@@ -160,9 +157,6 @@ func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, string) {
 		if update.CallbackQuery != nil {
 			response := strings.Split(update.CallbackQuery.Data, " ")
 			command = response[0]
-
-			mes = update.CallbackQuery.Message
-			mes.From = update.CallbackQuery.From
 		} else if mes.IsCommand() {
 			command = mes.Command()
 		} else if mes.Text != "" {

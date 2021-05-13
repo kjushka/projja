@@ -104,9 +104,11 @@ func AddMember(botUtil *util.BotUtil, project *model.Project, members []*model.U
 
 	acceptingString := fmt.Sprintf("Вы хотите добавить:\n"+
 		"Имя: %s\n"+
-		"Username: %s\n",
+		"Username: %s\n"+
+		"Навыки: %s\n",
 		member.Name,
 		member.Username,
+		strings.Join(member.Skills, ", "),
 	)
 	msg := util.GetAcceptingMessage(botUtil.Message, acceptingString)
 

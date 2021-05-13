@@ -26,7 +26,7 @@ func main() {
 
 	updates, err := bot.GetUpdatesChan(u)
 
-	usersChan := make(map[string]*util.BotUtil)
+	usersChan := make(map[int]*util.BotUtil)
 
 	for update := range updates {
 		var from *tgbotapi.User
@@ -43,8 +43,8 @@ func main() {
 			log.Println(update.CallbackQuery)
 		}
 
-		if _, ok := usersChan[from.UserName]; !ok {
-			usersChan[from.UserName] = &util.BotUtil{
+		if _, ok := usersChan[from.ID]; !ok {
+			usersChan[from.ID] = &util.BotUtil{
 				Message: &util.MessageData{
 					From: from,
 					Chat: chat,
@@ -53,9 +53,9 @@ func main() {
 				Updates: make(chan tgbotapi.Update),
 			}
 
-			go rootv.ListenRootCommands(usersChan[from.UserName])
+			go rootv.ListenRootCommands(usersChan[from.ID])
 		}
 
-		usersChan[from.UserName].Updates <- update
+		usersChan[from.ID].Updates <- update
 	}
 }

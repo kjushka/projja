@@ -3,7 +3,6 @@ package view
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"log"
 	"projja_telegram/command/projects/view"
 	rootc "projja_telegram/command/root/controller"
 	"projja_telegram/command/root/menu"
@@ -24,9 +23,6 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 		} else if message.Text != "" {
 			command = message.Text
 		}
-
-		log.Println(command)
-		botUtil.Message = util.MessageToMessageData(message)
 
 		switch command {
 		case "start":

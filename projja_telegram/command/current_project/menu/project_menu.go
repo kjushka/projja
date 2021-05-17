@@ -21,7 +21,7 @@ func MakeProjectMenu(message *util.MessageData, project *model.Project) tgbotapi
 	projectsMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
 
 	if project.Status == "opened" {
-		addTaskBtn := tgbotapi.NewInlineKeyboardButtonData("Создать задачу", "add_task")
+		addTaskBtn := tgbotapi.NewInlineKeyboardButtonData("Управление задачами", "tasks")
 		checkAnswersBtn := tgbotapi.NewInlineKeyboardButtonData("Ответы на задачи", "answers")
 
 		var row2 []tgbotapi.InlineKeyboardButton

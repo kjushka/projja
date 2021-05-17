@@ -28,7 +28,7 @@ func MakeProjectsMenu(message *util.MessageData, page int, count int) (tgbotapi.
 			textStrings[i] = fmt.Sprintf("%d. '%s' статус: %s", i+1, project.Name, project.Status)
 		}
 		text := fmt.Sprintf("Ваши проекты:\n%s\n"+
-			"Для работы с проектом введите его номер в списке или создайте новый проект", strings.Join(textStrings, "\n"))
+			"Выберите проект для работы", strings.Join(textStrings, "\n"))
 		msg = tgbotapi.NewMessage(message.Chat.ID, text)
 	} else {
 		text := "Вы ещё не создали ни одного проекта"
@@ -36,13 +36,6 @@ func MakeProjectsMenu(message *util.MessageData, page int, count int) (tgbotapi.
 	}
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	createBtn := tgbotapi.NewInlineKeyboardButtonData("Создать новый проект", "create_project")
-	rootBtn := tgbotapi.NewInlineKeyboardButtonData("Главное меню", "root")
-	row = append(row, createBtn)
-	row = append(row, rootBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
 	if len(projects) != 0 {
 		pagesCount := int(math.Ceil(float64(count) / 10.0))
@@ -57,27 +50,29 @@ func MakeProjectsMenu(message *util.MessageData, page int, count int) (tgbotapi.
 		}
 		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, prevNextBntRow)
 
-		upperProjectRow := make([]tgbotapi.InlineKeyboardButton, 0)
-		upperRowCount := len(projects)
-		if len(projects) > 5 {
-			upperRowCount = 5
-		}
-		for i := 0; i < upperRowCount; i++ {
-			projectIndexBtn := tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(i+1), strconv.Itoa(i+1))
-			upperProjectRow = append(upperProjectRow, projectIndexBtn)
-		}
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, upperProjectRow)
+		i := 0
+		for i < len(projects) {
+			projectsRow := make([]tgbotapi.InlineKeyboardButton, 0)
+			firstRowProjectBtn := tgbotapi.NewInlineKeyboardButtonData(projects[i].Name, strconv.Itoa(i+1))
+			projectsRow = append(projectsRow, firstRowProjectBtn)
+			i++
 
-		if len(projects) > 5 {
-			lowerProjectRow := make([]tgbotapi.InlineKeyboardButton, 0)
-			lowerRowCount := len(projects)
-			for i := 5; i < lowerRowCount; i++ {
-				projectIndexBtn := tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(i+1), strconv.Itoa(i+1))
-				lowerProjectRow = append(lowerProjectRow, projectIndexBtn)
+			if i != len(projects) {
+				secondRowProjectBtn := tgbotapi.NewInlineKeyboardButtonData(projects[i].Name, strconv.Itoa(i+1))
+				projectsRow = append(projectsRow, secondRowProjectBtn)
+				i++
 			}
-			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, lowerProjectRow)
+
+			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, projectsRow)
 		}
 	}
+
+	row := make([]tgbotapi.InlineKeyboardButton, 0)
+	createBtn := tgbotapi.NewInlineKeyboardButtonData("Создать новый проект", "create_project")
+	rootBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
+	row = append(row, createBtn)
+	row = append(row, rootBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
 	msg.ReplyMarkup = keyboard
 

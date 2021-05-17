@@ -14,7 +14,7 @@ import (
 
 func ChangeProjectMembers(botUtil *util.BotUtil, project *model.Project) {
 	page := 1
-	members, msg, status := ShowMemberMenu(botUtil, project, page)
+	members, msg, status := ShowMembersMenu(botUtil, project, page)
 	botUtil.Bot.Send(msg)
 	if !status {
 		return
@@ -44,14 +44,14 @@ func ChangeProjectMembers(botUtil *util.BotUtil, project *model.Project) {
 			page--
 		case "next_page":
 			page++
-		case "project_menu":
+		case "back_btn":
 			return
 		default:
 			msg = util.GetUnknownMessage(botUtil, command)
 			botUtil.Bot.Send(msg)
 		}
 
-		members, msg, status = ShowMemberMenu(botUtil, project, page)
+		members, msg, status = ShowMembersMenu(botUtil, project, page)
 		botUtil.Bot.Send(msg)
 		if !status {
 			return
@@ -59,7 +59,7 @@ func ChangeProjectMembers(botUtil *util.BotUtil, project *model.Project) {
 	}
 }
 
-func ShowMemberMenu(botUtil *util.BotUtil, project *model.Project, page int) ([]*model.User, tgbotapi.MessageConfig, bool) {
+func ShowMembersMenu(botUtil *util.BotUtil, project *model.Project, page int) ([]*model.User, tgbotapi.MessageConfig, bool) {
 	members, status := controller.GetMembers(project)
 	if !status {
 		errorText := "Не удалось получить список участников\n" +

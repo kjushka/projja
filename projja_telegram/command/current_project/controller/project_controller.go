@@ -116,7 +116,7 @@ func GetUser(username string) (*model.User, string) {
 	}
 	if response.StatusCode == http.StatusNotFound {
 		log.Println("no such user with username: ", username)
-		return nil, fmt.Sprintf("Человек с username '%s' не зарегистрирован", username)
+		return nil, fmt.Sprintf("Пользователь с username '%s' не зарегистрирован", username)
 	}
 
 	jsonBody, err := ioutil.ReadAll(response.Body)
@@ -173,4 +173,90 @@ func RemoveMember(project *model.Project, member *model.User) (string, bool) {
 	}
 
 	return "Участник успешно удален из проекта", true
+}
+
+func GetStatuses(project *model.Project) ([]*model.TaskStatus, bool) {
+	resp, err := http.Get(config.GetAPIAddr() +
+		fmt.Sprintf("/project/%d/statuses", project.Id),
+	)
+
+	if err != nil {
+		log.Println("error in getting statuses: ", err)
+		return nil, false
+	}
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in getting statuses")
+		return nil, false
+	}
+
+	respData := &struct {
+		Description string
+		Content     []*model.TaskStatus
+	}{}
+	jsonBody, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Println("error in reading response body: ", err)
+		return nil, false
+	}
+
+	err = json.Unmarshal(jsonBody, respData)
+	if err != nil {
+		log.Println("error in unmarshalling statuses: ", err)
+		return nil, false
+	}
+
+	return respData.Content, true
+}
+
+func CreateTaskStatus(project *model.Project, status *model.TaskStatus) (string, bool) {
+	errorText := "Во время добавления статуса задач произошла ошибка\nПопробуйте позже ещё раз"
+
+	jsonTaskStatus, err := json.Marshal(status)
+	if err != nil {
+		log.Println("error in marshalling task status: ", err)
+		return errorText, false
+	}
+
+	resp, err := http.Post(config.GetAPIAddr()+fmt.Sprintf("/project/%d/create/status", project.Id),
+		"application/json",
+		bytes.NewBuffer(jsonTaskStatus),
+	)
+	if err != nil {
+		log.Println("error in request for creating task status: ", err)
+		return errorText, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in request for creating task status")
+		return errorText, false
+	}
+
+	return "Статус задач успешно создан", true
+}
+
+func RemoveTaskStatus(project *model.Project, status *model.TaskStatus) (string, bool) {
+	errorText := "Во время удаления статуса задач произошла ошибка\nПопробуйте позже ещё раз"
+
+	jsonTaskStatus, err := json.Marshal(status)
+	if err != nil {
+		log.Println("error in marshalling task status: ", err)
+		return errorText, false
+	}
+
+	resp, err := http.Post(config.GetAPIAddr()+fmt.Sprintf("/project/%d/remove/status", project.Id),
+		"application/json",
+		bytes.NewBuffer(jsonTaskStatus),
+	)
+	if err != nil {
+		log.Println("error in request for removing task status: ", err)
+		return errorText, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in request for removing task status")
+		return errorText, false
+	}
+
+	return "Статус задач успешно удален", true
 }

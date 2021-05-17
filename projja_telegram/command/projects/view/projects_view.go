@@ -9,6 +9,7 @@ import (
 	projectsmenu "projja_telegram/command/projects/menu"
 	"projja_telegram/command/root/menu"
 	"projja_telegram/command/util"
+	"projja_telegram/model"
 	"strconv"
 	"strings"
 )
@@ -50,7 +51,7 @@ func SelectProject(botUtil *util.BotUtil) {
 		}
 
 		switch command {
-		case "root":
+		case "back_btn":
 			return
 		case "create_project":
 			page = 1
@@ -70,7 +71,7 @@ func SelectProject(botUtil *util.BotUtil) {
 		case "next_page":
 			page++
 		default:
-			msg, index, status := IsProjectId(botUtil.Message, command, len(projects))
+			msg, index, status := IsProjectId(botUtil.Message, command, projects)
 			botUtil.Bot.Send(msg)
 			if status {
 				view.WorkWithProject(botUtil, projects[index])
@@ -169,7 +170,7 @@ LOOP:
 	return msg
 }
 
-func IsProjectId(message *util.MessageData, command string, count int) (tgbotapi.MessageConfig, int, bool) {
+func IsProjectId(message *util.MessageData, command string, projects []*model.Project) (tgbotapi.MessageConfig, int, bool) {
 	id, err := strconv.Atoi(command)
 	if err != nil {
 		log.Println("error in casting command: ", err)
@@ -177,6 +178,7 @@ func IsProjectId(message *util.MessageData, command string, count int) (tgbotapi
 		msg := tgbotapi.NewMessage(message.Chat.ID, text)
 		return msg, 0, false
 	}
+	count := len(projects)
 	if id > count || id < 1 {
 		log.Println(fmt.Sprintf("id not in range 1-%d", count))
 		text := fmt.Sprintf("Номер проекта должен быть в интервале от 1 до %d", count)
@@ -184,7 +186,7 @@ func IsProjectId(message *util.MessageData, command string, count int) (tgbotapi
 		return msg, id, false
 	}
 
-	text := fmt.Sprintf("Выбран проект под номером %d", id)
+	text := fmt.Sprintf("Выбран проект '%s'", projects[id-1].Name)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
 	return msg, id - 1, true

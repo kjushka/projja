@@ -34,7 +34,11 @@ func ChangeProjectSetting(botUtil *util.BotUtil, project *model.Project) {
 		case "change_status":
 			msg = ChangeProjectStatus(botUtil, project)
 			botUtil.Bot.Send(msg)
-		case "project_menu":
+		case "change_members":
+			ChangeProjectMembers(botUtil, project)
+		case "change_statuses":
+			ChangeProjectStatuses(botUtil, project)
+		case "back_btn":
 			return
 		}
 

@@ -18,14 +18,21 @@ func MakeSettingsMenu(message *util.MessageData, project *model.Project) tgbotap
 	changeStatusBtn := tgbotapi.NewInlineKeyboardButtonData("Открыть/закрыть проект", "change_status")
 
 	row2 := make([]tgbotapi.InlineKeyboardButton, 0)
-	projectMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Меню управления проектом", "project_menu")
+	changeMembersBtn := tgbotapi.NewInlineKeyboardButtonData("Участники проекта", "change_members")
+	changeTaskStatusesBtn := tgbotapi.NewInlineKeyboardButtonData("Статусы задач", "change_statuses")
+
+	row3 := make([]tgbotapi.InlineKeyboardButton, 0)
+	projectMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
 
 	row = append(row, changeNameBtn)
 	row = append(row, changeStatusBtn)
-	row2 = append(row2, projectMenuBtn)
+	row2 = append(row2, changeMembersBtn)
+	row2 = append(row2, changeTaskStatusesBtn)
+	row3 = append(row3, projectMenuBtn)
 
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row3)
 
 	msg.ReplyMarkup = keyboard
 

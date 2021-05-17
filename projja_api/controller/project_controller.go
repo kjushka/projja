@@ -49,7 +49,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 	_, err = c.DB.Exec(
 		"insert into task_status (status, level, project) values (?, ?, ?)",
 		"new",
-		0,
+		1,
 		lastInsertId,
 	)
 	if err != nil {
@@ -527,7 +527,7 @@ func (c *Controller) GetProjectStatuses(params martini.Params, w http.ResponseWr
 		return 500, err.Error()
 	}
 
-	taskStatuses := []*model.TaskStatus{}
+	taskStatuses := make([]*model.TaskStatus, 0)
 	for rows.Next() {
 		taskStatus := &model.TaskStatus{}
 		err = rows.Scan(&taskStatus.Status, &taskStatus.Level)

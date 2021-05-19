@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"projja-exec/model"
+	"projja_exec/model"
 	"time"
 )
 

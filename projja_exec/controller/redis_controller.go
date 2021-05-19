@@ -6,8 +6,8 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"log"
-	"projja-exec/graph"
-	"projja-exec/model"
+	"projja_exec/graph"
+	"projja_exec/model"
 	"strconv"
 	"time"
 )

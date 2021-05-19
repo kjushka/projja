@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"projja-exec/controller"
+	"projja_exec/controller"
 
 	"github.com/go-martini/martini"
 	"github.com/go-redis/redis/v8"

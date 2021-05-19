@@ -260,3 +260,37 @@ func RemoveTaskStatus(project *model.Project, status *model.TaskStatus) (string,
 
 	return "Статус задач успешно удален", true
 }
+
+func GetProjectTasks(project *model.Project) ([]*model.Task, bool) {
+	resp, err := http.Get(config.GetAPIAddr() +
+		fmt.Sprintf("/project/%d/get/tasks/process", project.Id),
+	)
+
+	if err != nil {
+		log.Println("error in getting tasks: ", err)
+		return nil, false
+	}
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in getting tasks")
+		return nil, false
+	}
+
+	respData := &struct {
+		Description string
+		Content     []*model.Task
+	}{}
+	jsonBody, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Println("error in reading response body: ", err)
+		return nil, false
+	}
+
+	err = json.Unmarshal(jsonBody, respData)
+	if err != nil {
+		log.Println("error in unmarshalling tasks: ", err)
+		return nil, false
+	}
+
+	return respData.Content, true
+}

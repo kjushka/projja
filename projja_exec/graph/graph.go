@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"projja-exec/model"
+	"projja_exec/model"
 	"sort"
 	"time"
 )

@@ -1,4 +1,4 @@
-module projja-exec
+module projja_exec
 
 go 1.16
 

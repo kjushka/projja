@@ -730,8 +730,7 @@ func (c *Controller) GetProcessProjectTasks(params martini.Params, w http.Respon
 			"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
 			"left join task_status ts on ts.id = t.status "+
 			"left join users e on t.executor = e.id "+
-			"where t.project = ? and t.is_closed = 0 and ts.level != ("+
-			"select max(ts.level) from task_status ts where ts.project = 4 group by ts.project)",
+			"where t.project = ? and t.is_closed = 0 and is_closed <> true",
 		projectId,
 	)
 	if err != nil && err != sql.ErrNoRows {

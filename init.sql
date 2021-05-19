@@ -143,11 +143,16 @@ CREATE TABLE IF NOT EXISTS `projja`.`task` (
   `description` VARCHAR(200) NOT NULL,
   `project` INT NOT NULL,
   `deadline` DATETIME NOT NULL,
-  `priority` ENUM('critical', 'high', 'medium', 'low') NOT NULL,
-  `status` INT NOT NULL,
-  `is_closed` TINYINT NOT NULL,
-  `executor` INT NOT NULL,
-  PRIMARY KEY (`id`),
+  `priority` ENUM (
+                      'critical',
+                      'high',
+                      'medium',
+                      'low'
+                  ) NOT NULL,
+    `status` INT DEFAULT 1,
+    `is_closed` TINYINT NOT NULL,
+    `executor` INT NOT NULL,
+    PRIMARY KEY (`id`),
   INDEX `fk_task_1_idx` (`project` ASC) VISIBLE,
   INDEX `fk_task_2_idx` (`status` ASC) VISIBLE,
   INDEX `fk_task_3_idx` (`executor` ASC) VISIBLE,
@@ -158,10 +163,13 @@ CREATE TABLE IF NOT EXISTS `projja`.`task` (
     ON UPDATE RESTRICT,
   CONSTRAINT `fk_task_2`
     FOREIGN KEY (`status`)
-    REFERENCES `projja`.`task_status` (`id`)
-    ON DELETE CASCADE
+    REFERENCES `projja`.`task_status`
+(
+    `id`
+)
+    ON DELETE SET NULL
     ON UPDATE RESTRICT,
-  CONSTRAINT `fk_task_3`
+    CONSTRAINT `fk_task_3`
     FOREIGN KEY (`executor`)
     REFERENCES `projja`.`users` (`id`)
     ON DELETE CASCADE

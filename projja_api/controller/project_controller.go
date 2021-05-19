@@ -494,6 +494,18 @@ func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.Respo
 		taskStatus.Status,
 	)
 	if err != nil {
+		log.Println("error in updating task_statuses:", err)
+		return 500, err.Error()
+	}
+
+	_, err = c.DB.Exec(
+		"update task set status = (select id from task_status where status_level = ? and project = ?) "+
+			"where status IS NULL and project = ?",
+		1,
+		projectId,
+		projectId,
+	)
+	if err != nil {
 		log.Println("error in updating task statuses:", err)
 		return 500, err.Error()
 	}

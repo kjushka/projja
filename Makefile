@@ -1,6 +1,6 @@
 install:
-	docker build --no-cache . -f ./backend-api -t backend-api
-	docker build --no-cache . -f ./backend-exec -t backend-exec
+	docker build . -f ./backend-api -t backend-api
+	docker build . -f ./backend-exec -t backend-exec
 
 run:
 	docker-compose up -d

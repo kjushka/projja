@@ -36,14 +36,35 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `projja`.`project`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `projja`.`project` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `owner` INT NOT NULL,
-  `status` ENUM('opened', 'closed') NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_project_1_idx` (`owner` ASC) VISIBLE,
-  CONSTRAINT `fk_project_1`
-    FOREIGN KEY (`owner`)
+                                                  `id`
+                                                  INT
+                                                  NOT
+                                                  NULL
+                                                  AUTO_INCREMENT,
+                                                  `name`
+                                                  VARCHAR
+(
+                                                  100
+) NOT NULL,
+    `owner` INT NOT NULL,
+    `status` ENUM
+(
+    'opened',
+    'closed'
+) NOT NULL,
+    PRIMARY KEY
+(
+    `id`
+),
+    INDEX `fk_project_1_idx`
+(
+    `owner` ASC
+) VISIBLE,
+    CONSTRAINT `fk_project_1`
+    FOREIGN KEY
+(
+    `owner`
+)
     REFERENCES `projja`.`users` (`id`)
     ON DELETE CASCADE
     ON UPDATE RESTRICT)
@@ -95,11 +116,14 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `projja`.`task_status`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `projja`.`task_status` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `status` VARCHAR(45) NOT NULL,
-  `level` INT NOT NULL,
-  `project` INT NOT NULL,
-  PRIMARY KEY (`id`),
+                                                      `id` INT NOT NULL AUTO_INCREMENT,
+                                                      `status` VARCHAR
+(
+                                                      45
+) NOT NULL,
+    `status_level` INT NOT NULL,
+    `project` INT NOT NULL,
+    PRIMARY KEY (`id`),
   INDEX `fk_task_status_1_idx` (`project` ASC) VISIBLE,
   CONSTRAINT `fk_task_status_1`
     FOREIGN KEY (`project`)

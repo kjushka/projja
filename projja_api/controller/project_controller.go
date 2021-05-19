@@ -47,7 +47,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 
 	lastInsertId, _ := result.LastInsertId()
 	_, err = c.DB.Exec(
-		"insert into task_status (status, level, project) values (?, ?, ?)",
+		"insert into task_status (status, status_level, project) values (?, ?, ?)",
 		"new",
 		1,
 		lastInsertId,
@@ -418,7 +418,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 	}
 
 	_, err = c.DB.Exec(
-		"update task_status set level = level + 1 where level >= ? and project = ?",
+		"update task_status set status_level = status_level + 1 where status_level >= ? and project = ?",
 		taskStatus.Level,
 		projectId,
 	)
@@ -427,7 +427,7 @@ func (c *Controller) CreateProjectTaskStatus(params martini.Params, w http.Respo
 		return 500, err.Error()
 	}
 	result, err := c.DB.Exec(
-		"insert into task_status (status, level, project) values (?, ?, ?)",
+		"insert into task_status (status, status_level, project) values (?, ?, ?)",
 		taskStatus.Status,
 		taskStatus.Level,
 		projectId,
@@ -476,7 +476,7 @@ func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.Respo
 	}
 
 	result, err := c.DB.Exec(
-		"delete from task_status where project = ? and status = ? and level = ?",
+		"delete from task_status where project = ? and status = ? and status_level = ?",
 		projectId,
 		taskStatus.Status,
 		taskStatus.Level,
@@ -487,8 +487,8 @@ func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.Respo
 	}
 
 	_, err = c.DB.Exec(
-		"update task_status set level = level-1 "+
-			"where level > ? and project = ? and status != ?",
+		"update task_status set status_level = status_level-1 "+
+			"where status_level > ? and project = ? and status != ?",
 		taskStatus.Level,
 		projectId,
 		taskStatus.Status,
@@ -518,8 +518,8 @@ func (c *Controller) GetProjectStatuses(params martini.Params, w http.ResponseWr
 	}
 
 	rows, err := c.DB.Query(
-		"select status, level from task_status "+
-			"where project = ? order by level",
+		"select status, status_level from task_status "+
+			"where project = ? order by status_level",
 		projectId,
 	)
 	if err != nil {
@@ -576,13 +576,13 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 
 	result, err := c.DB.Exec(
 		"insert into task (description, project, deadline, priority, status, is_closed, executor) "+
-			"values (?, ?, ?, ?, (select id from task_status where status = ? and project = ?), "+
+			"values (?, ?, ?, ?, (select id from task_status where status_level = ? and project = ?), "+
 			"?, (select id from users where username = ?))",
 		task.Description,
 		projectId,
 		deadline,
 		task.Priority,
-		"new",
+		0,
 		projectId,
 		0,
 		task.Executor.Username,

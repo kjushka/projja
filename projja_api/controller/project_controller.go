@@ -582,7 +582,7 @@ func (c *Controller) CreateTask(params martini.Params, w http.ResponseWriter, r 
 		projectId,
 		deadline,
 		task.Priority,
-		0,
+		1,
 		projectId,
 		0,
 		task.Executor.Username,

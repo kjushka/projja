@@ -13,3 +13,10 @@ down:
 
 logs:
 	docker-compose logs -f
+
+reload:
+	docker-compose down
+	docker build . -f ./backend-api -t backend-api
+	docker build . -f ./backend-exec -t backend-exec
+	docker-compose up -d
+	docker-compose logs -f

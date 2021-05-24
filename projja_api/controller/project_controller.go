@@ -498,10 +498,30 @@ func (c *Controller) RemoveStatusFromProject(params martini.Params, w http.Respo
 		return 500, err.Error()
 	}
 
+	row := c.DB.QueryRow(
+		"select count(id) from task_status where status_level = ? and project = ?",
+		taskStatus.Level,
+		projectId,
+	)
+	var countOfStatuses int
+	err = row.Scan(&countOfStatuses)
+
+	if err != nil {
+		log.Println("error in getting new task statuses count:", err)
+		return 500, err.Error()
+	}
+
+	var newLevel int
+	if countOfStatuses == 0 {
+		newLevel = taskStatus.Level - 1
+	} else {
+		newLevel = taskStatus.Level
+	}
+
 	_, err = c.DB.Exec(
 		"update task set status = (select id from task_status where status_level = ? and project = ?) "+
 			"where status IS NULL and project = ?",
-		1,
+		newLevel,
 		projectId,
 		projectId,
 	)

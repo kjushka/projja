@@ -353,9 +353,9 @@ func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.Respons
 
 	row := c.DB.QueryRow(
 		"select count(*) from task_status ts "+
-			"right join (select t.project, ts.level from task t "+
+			"right join (select t.project, ts.status_level from task t "+
 			"left join task_status ts on ts.id = t.status where t.id = ?) "+
-			"t on t.project = ts.project where ts.level <= t.level - 1;",
+			"t on t.project = ts.project where ts.status_level <= t.status_level - 1;",
 		taskId,
 	)
 	count := 0
@@ -369,9 +369,9 @@ func (c *Controller) SetPreviousTaskStatus(params martini.Params, w http.Respons
 	}
 	result, err := c.DB.Exec(
 		"update task set status = (select ts.id from task_status ts "+
-			"right join (select t.project, ts.level from task t "+
+			"right join (select t.project, ts.status_level from task t "+
 			"left join task_status ts on ts.id = t.status where t.id = ?) "+
-			"t on t.project = ts.project where ts.level = t.level - 1) where id = ?;",
+			"t on t.project = ts.project where ts.status_level = t.status_level - 1) where id = ?;",
 		taskId,
 		taskId,
 	)
@@ -401,9 +401,9 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 
 	row := c.DB.QueryRow(
 		"select count(*) from task_status ts "+
-			"right join (select t.project, ts.level from task t "+
+			"right join (select t.project, ts.status_level from task t "+
 			"left join task_status ts on ts.id = t.status where t.id = ?) "+
-			"t on t.project = ts.project where ts.level >= t.level + 1;",
+			"t on t.project = ts.project where ts.status_level >= t.status_level + 1;",
 		taskId,
 	)
 	count := 0
@@ -460,9 +460,9 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 	} else {
 		result, err = c.DB.Exec(
 			"update task set status = (select ts.id from task_status ts "+
-				"right join (select t.project, ts.level from task t "+
+				"right join (select t.project, ts.status_level from task t "+
 				"left join task_status ts on ts.id = t.status where t.id = ?) "+
-				"t on t.project = ts.project where ts.level = t.level + 1) where id = ?;",
+				"t on t.project = ts.project where ts.status_level = t.status_level + 1) where id = ?",
 			taskId,
 			taskId,
 		)

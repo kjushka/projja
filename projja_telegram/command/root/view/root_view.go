@@ -3,6 +3,7 @@ package view
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	view2 "projja_telegram/command/execute/view"
 	"projja_telegram/command/projects/view"
 	rootc "projja_telegram/command/root/controller"
 	"projja_telegram/command/root/menu"
@@ -36,6 +37,10 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 			UpdateData(botUtil)
 		case "project_management":
 			view.SelectProject(botUtil)
+		case "check_tasks":
+			view2.ExecuteTasks(botUtil)
+			msg := menu.GetRootMenu(botUtil.Message)
+			botUtil.Bot.Send(msg)
 		default:
 			SendUnknownMessage(botUtil, command)
 		}

@@ -15,14 +15,16 @@ func GetRootMenu(message *util.MessageData) tgbotapi.MessageConfig {
 	var row1 []tgbotapi.InlineKeyboardButton
 	var row2 []tgbotapi.InlineKeyboardButton
 	skillsBtn := tgbotapi.NewInlineKeyboardButtonData("Изменить навыки", "set_skills")
-	projectsManageBtn := tgbotapi.NewInlineKeyboardButtonData("Управлять проектами", "project_management")
 	updateBtn := tgbotapi.NewInlineKeyboardButtonData("Обновить данные профиля", "update_data")
+	projectsManageBtn := tgbotapi.NewInlineKeyboardButtonData("Управлять проектами", "project_management")
+	tasksBtn := tgbotapi.NewInlineKeyboardButtonData("Ваши задачи", "check_tasks")
 
 	row1 = append(row1, skillsBtn)
-	row1 = append(row1, projectsManageBtn)
-	row2 = append(row2, updateBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
+	row1 = append(row1, updateBtn)
+	row2 = append(row2, projectsManageBtn)
+	row2 = append(row2, tasksBtn)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
 
 	msg.ReplyMarkup = keyboard
 	return msg

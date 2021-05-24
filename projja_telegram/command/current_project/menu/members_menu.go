@@ -18,31 +18,28 @@ func MakeMembersMenu(
 	count int,
 ) tgbotapi.MessageConfig {
 	msg := tgbotapi.MessageConfig{}
-	if len(members) != 0 {
-		textStrings := make([]string, len(members))
-		for i, member := range members {
-			textStrings[i] = fmt.Sprintf("%d. %s aka %s", i+1, member.Name, member.Username)
-		}
-		text := fmt.Sprintf(
-			"Участники проекта '%s':\n%s\n",
-			project.Name,
-			strings.Join(textStrings, "\n"),
-		)
-		msg = tgbotapi.NewMessage(message.Chat.ID, text)
-	} else {
-		text := "Вы ещё не добавили ни одного участника"
-		msg = tgbotapi.NewMessage(message.Chat.ID, text)
+	textStrings := make([]string, len(members))
+	for i, member := range members {
+		textStrings[i] = fmt.Sprintf("%d. %s aka %s", i+1, member.Name, member.Username)
 	}
+	text := fmt.Sprintf(
+		"Участники проекта '%s':\n%s\n",
+		project.Name,
+		strings.Join(textStrings, "\n"),
+	)
+	msg = tgbotapi.NewMessage(message.Chat.ID, text)
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
 	row1 := make([]tgbotapi.InlineKeyboardButton, 0)
 	row2 := make([]tgbotapi.InlineKeyboardButton, 0)
 	addBtn := tgbotapi.NewInlineKeyboardButtonData("Добавить участника", "add_member")
-	removeBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
-	projectMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
 	row1 = append(row1, addBtn)
-	row1 = append(row1, removeBtn)
+	if len(members) == 1 {
+		removeBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
+		row1 = append(row1, removeBtn)
+	}
+	projectMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
 	row2 = append(row2, projectMenuBtn)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
 	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
@@ -74,21 +71,16 @@ func MakeMembersRemovingMenu(
 	count int,
 ) tgbotapi.MessageConfig {
 	msg := tgbotapi.MessageConfig{}
-	if len(members) != 0 {
-		textStrings := make([]string, len(members))
-		for i, member := range members {
-			textStrings[i] = fmt.Sprintf("%d. %s aka %s", i+1, member.Name, member.Username)
-		}
-		text := fmt.Sprintf(
-			"Выберите участника проекта '%s' для удаления:\n%s\n",
-			project.Name,
-			strings.Join(textStrings, "\n"),
-		)
-		msg = tgbotapi.NewMessage(message.Chat.ID, text)
-	} else {
-		text := "Вы ещё не добавили ни одного участника"
-		msg = tgbotapi.NewMessage(message.Chat.ID, text)
+	textStrings := make([]string, len(members))
+	for i, member := range members {
+		textStrings[i] = fmt.Sprintf("%d. %s aka %s", i+1, member.Name, member.Username)
 	}
+	text := fmt.Sprintf(
+		"Выберите участника проекта '%s' для удаления:\n%s\n",
+		project.Name,
+		strings.Join(textStrings, "\n"),
+	)
+	msg = tgbotapi.NewMessage(message.Chat.ID, text)
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 

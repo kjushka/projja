@@ -65,7 +65,6 @@ func MakeNewProject(newProject *model.Project) *Project {
 func (g *Graph) CalculateNewTaskExecutor(task *model.Task) *model.User {
 	ratio := g.calculateRatingBySkills(task.Skills)
 	g.calculateRatingByTime(task.Deadline, ratio)
-	log.Println(ratio)
 	executor := g.selectExecutorByRating(ratio)
 	go g.checkCorrectWork()
 
@@ -112,7 +111,6 @@ func (g *Graph) calculateRatingByTime(deadline time.Time, ratio *rating) {
 		rate := g.checkTime(userId, deadline)
 		ratio.UsersRating[userId].TimeRating = rate
 	}
-	log.Println(ratio)
 }
 
 func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
@@ -125,7 +123,6 @@ func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
 	}
 
 	sort.Ints(tasksDeadlines)
-	log.Println(tasksDeadlines)
 	ratio := float32(0.0)
 	daysToTaskDeadline := int(math.Ceil(time.Until(deadline).Hours()))
 	prev := 0
@@ -145,7 +142,6 @@ func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
 
 	intervalDateRate := float32(daysToTaskDeadline-prev) / float32(daysToTaskDeadline)
 	intervalTaskRate := 1.0 / float32(count)
-	log.Println(intervalDateRate, intervalTaskRate)
 	ratio += intervalTaskRate * intervalDateRate
 
 	return ratio

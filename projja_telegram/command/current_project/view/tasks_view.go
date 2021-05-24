@@ -16,7 +16,7 @@ import (
 
 func ManageProjectTasks(botUtil *util.BotUtil, project *model.Project) {
 	page := 1
-	_, msg, status := ShowTasksMenu(botUtil, project, page)
+	tasks, msg, status := ShowTasksMenu(botUtil, project, page)
 	botUtil.Bot.Send(msg)
 	if !status {
 		return
@@ -46,11 +46,15 @@ func ManageProjectTasks(botUtil *util.BotUtil, project *model.Project) {
 		case "back_btn":
 			return
 		default:
-			msg = util.GetUnknownMessage(botUtil, command)
+			text, index, status := IsTaskId(command, len(tasks), page)
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
+			if status {
+				ManageTask(botUtil, project, tasks[index])
+			}
 		}
 
-		_, msg, status = ShowTasksMenu(botUtil, project, page)
+		tasks, msg, status = ShowTasksMenu(botUtil, project, page)
 		botUtil.Bot.Send(msg)
 		if !status {
 			return
@@ -206,7 +210,7 @@ LOOP:
 			text, _ = controller.CreateTask(project, task)
 			goto BREAK
 		case "no_btn":
-			executor, text = listenForExecutor(botUtil, project)
+			executor, text = listenForExecutor(botUtil, project, cancelText)
 			if executor == nil {
 				return tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			}
@@ -412,7 +416,7 @@ func listenForPriority(botUtil *util.BotUtil) (string, bool) {
 	return result, true
 }
 
-func listenForExecutor(botUtil *util.BotUtil, project *model.Project) (*model.User, string) {
+func listenForExecutor(botUtil *util.BotUtil, project *model.Project, cancelString string) (*model.User, string) {
 	members, status := controller.GetMembers(project)
 	if !status {
 		errorText := "Не удалось получить список участников\n" +
@@ -445,7 +449,7 @@ func listenForExecutor(botUtil *util.BotUtil, project *model.Project) (*model.Us
 
 		switch command {
 		case "cancel_btn":
-			return nil, "Отмена создания задачи"
+			return nil, cancelString
 		case "prev_page":
 			page--
 		case "next_page":
@@ -522,4 +526,22 @@ func makeExecutorMenu(message *util.MessageData, members []*model.User, page int
 	msg.ReplyMarkup = keyboard
 
 	return msg
+}
+
+func IsTaskId(command string, count int, page int) (string, int, bool) {
+	id, err := strconv.Atoi(command)
+	if err != nil {
+		log.Println("error in casting command: ", err)
+		text := "Вы ввели не номер задачи в списке, а '" + command + "'"
+		return text, -1, false
+	}
+	if id > count || id < 1 {
+		log.Println(fmt.Sprintf("id not in range 1-%d", count))
+		text := fmt.Sprintf("Номер задачи должен быть в интервале от 1 до %d", count)
+		return text, -1, false
+	}
+
+	id = (page-1)*10 + id
+
+	return "", id - 1, true
 }

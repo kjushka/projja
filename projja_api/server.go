@@ -84,6 +84,7 @@ func main() {
 			r.Get("/:id/change/status/next", c.SetNextTaskStatus)
 			r.Post("/:id/change/priority", c.ChangeTaskPriority)
 			r.Post("/:id/change/deadline", c.ChangeTaskDeadline)
+			r.Get("/:id/close", c.CloseTask)
 		})
 	})
 	m.RunOnAddr(addr)

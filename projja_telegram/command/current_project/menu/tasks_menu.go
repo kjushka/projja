@@ -21,7 +21,7 @@ func MakeProjectTasksMenu(
 	if len(tasks) != 0 {
 		textStrings := make([]string, len(tasks))
 		for i, task := range tasks {
-			textStrings[i] = fmt.Sprintf("%d. %s", i+1, task.Description)
+			textStrings[i] = fmt.Sprintf("%d. %s до %s, %s", i+1, task.Description, task.Deadline, task.Priority)
 		}
 		text := fmt.Sprintf(
 			"Задачи проекта '%s':\n%s\n",

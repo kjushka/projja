@@ -612,3 +612,61 @@ func (c *Controller) ChangeTaskDeadline(params martini.Params, w http.ResponseWr
 		Content: rowsAffected,
 	})
 }
+
+func (c *Controller) CloseTask(params martini.Params, w http.ResponseWriter) (int, string) {
+	taskId, err := strconv.ParseInt(params["id"], 10, 64)
+	if err != nil {
+		log.Println("error in parsing taskId", err)
+		return 500, err.Error()
+	}
+
+	result, err := c.DB.Exec(
+		"update task set is_closed = ? where id = ?",
+		true,
+		taskId,
+	)
+	if err != nil {
+		log.Println("error in closing task")
+		return 500, err.Error()
+	}
+	rowsAffected, _ := result.RowsAffected()
+
+	row := c.DB.QueryRow("select executor from task where id = ?", taskId)
+	var executorId int64
+	err = row.Scan(&executorId)
+	if err != nil {
+		log.Println("error in getting userId: ", err)
+		return 500, err.Error()
+	}
+
+	row = c.DB.QueryRow("select project from task where id = ?", taskId)
+	var projectId int64
+	err = row.Scan(&projectId)
+	if err != nil {
+		log.Println("error in getting projectId: ", err)
+		return 500, err.Error()
+	}
+
+	_, err = c.sendDataToStream("task", "close", struct {
+		TaskId     int64
+		ExecutorId int64
+		ProjectId  int64
+	}{
+		taskId,
+		executorId,
+		projectId,
+	})
+	if err != nil {
+		log.Println(err)
+		return 500, err.Error()
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Project closed", struct {
+		Name    string
+		Content interface{}
+	}{
+		Name:    "Rows affected",
+		Content: rowsAffected,
+	})
+}

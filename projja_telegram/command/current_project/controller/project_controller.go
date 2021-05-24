@@ -54,12 +54,12 @@ func ChangeProjectStatus(project *model.Project, newStatus string) (string, bool
 
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println("error in request for changing project name: ", err)
+		log.Println("error in request for changing project status: ", err)
 		return errorText, false
 	}
 
 	if resp.StatusCode == http.StatusInternalServerError {
-		log.Println("error in request for changing project name")
+		log.Println("error in request for changing project status")
 		return errorText, false
 	}
 
@@ -293,66 +293,4 @@ func GetProjectTasks(project *model.Project) ([]*model.Task, bool) {
 	}
 
 	return respData.Content, true
-}
-
-func CalculateExecutor(project *model.Project, task *model.Task) (*model.User, error) {
-	jsonTask, err := json.Marshal(task)
-	if err != nil {
-		log.Println("error in marshalling task: ", err)
-		return nil, err
-	}
-
-	resp, err := http.Post(config.GetExecAddr()+fmt.Sprintf("/project/%d/calc/task", project.Id),
-		"application/json",
-		bytes.NewBuffer(jsonTask),
-	)
-	if err != nil {
-		log.Println("error in request for calculating task executor: ", err)
-		return nil, err
-	}
-
-	respData := &struct {
-		Description string
-		Content     *model.Task
-	}{}
-	jsonBody, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		log.Println("error in reading response body: ", err)
-		return nil, err
-	}
-
-	err = json.Unmarshal(jsonBody, respData)
-	if err != nil {
-		log.Println("error in unmarshalling user: ", err)
-		return nil, err
-	}
-
-	return respData.Content.Executor, nil
-}
-
-func CreateTask(project *model.Project, task *model.Task) (string, bool) {
-	errorText := "Во время создания задачи произошла ошибка\nПопробуйте позже ещё раз"
-
-	jsonTask, err := json.Marshal(task)
-	if err != nil {
-		log.Println("error in marshalling task: ", err)
-		return errorText, false
-	}
-
-	resp, err := http.Post(config.GetAPIAddr()+fmt.Sprintf("/project/%d/create/task", project.Id),
-		"application/json",
-		bytes.NewBuffer(jsonTask),
-	)
-	if err != nil {
-		log.Println("error in request for creating task: ", err)
-		return errorText, false
-	}
-
-	if resp.StatusCode == http.StatusInternalServerError {
-		log.Println("error in request for creating task")
-		return errorText, false
-	}
-
-	return "Задача успешно создана", true
 }

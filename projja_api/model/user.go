@@ -31,3 +31,12 @@ type TaskStatus struct {
 	Status string
 	Level  int
 }
+
+type Answer struct {
+	Id         int64
+	Task       *Task
+	Executor   *User
+	AnswerType string
+	Answer     string
+	Status     string
+}

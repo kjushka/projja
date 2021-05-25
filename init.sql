@@ -215,17 +215,100 @@ CREATE TABLE IF NOT EXISTS `projja`.`users_skill` (
     REFERENCES `projja`.`users` (`id`)
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
-  CONSTRAINT `fk_users_skill_2`
-    FOREIGN KEY (`skill`)
-    REFERENCES `projja`.`skill` (`id`)
+    CONSTRAINT `fk_users_skill_2`
+    FOREIGN KEY
+(
+    `skill`
+)
+    REFERENCES `projja`.`skill`
+(
+    `id`
+)
     ON DELETE CASCADE
     ON UPDATE RESTRICT)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
+
+-- ----------------------------------------------------
+-- Table `projja`.`answer`
+-- ----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `projja`.`answer`
+(
+    `id`
+    INT
+    NOT
+    NULL
+    AUTO_INCREMENT,
+    `task`
+    INT
+    NOT
+    NULL,
+    `executor`
+    INT
+    NOT
+    NULL,
+    `answer_type`
+    ENUM
+(
+    'message',
+    'image',
+    'file',
+) NOT NULL,
+    `answer` VARCHAR
+(
+    200
+) NOT NULL,
+    `status` ENUM
+(
+    'not checked',
+    'accepted',
+    'declined'
+) NOT NULL,
+    PRIMARY KEY
+(
+    `id`
+),
+    INDEX `fk_answer_1_idx`
+(
+    `task` ASC
+) VISIBLE,
+    INDEX `fk_answer_2_idx`
+(
+    `executor` ASC
+) VISIBLE,
+    CONSTRAINT `fk_answer_1`
+    FOREIGN KEY
+(
+    `task`
+)
+    REFERENCES `projja`.`task`
+(
+    `id`
+)
+    ON DELETE CASCADE
+    ON UPDATE RESTRICT,
+    CONSTRAINT `fk_answer_2`
+    FOREIGN KEY
+(
+    `executor`
+)
+    REFERENCES `projja`.`users`
+(
+    `id`
+)
+    ON DELETE CASCADE
+    ON UPDATE RESTRICT
+    )
+    ENGINE = InnoDB
+    DEFAULT CHARACTER SET = utf8mb4
+    COLLATE = utf8mb4_0900_ai_ci;
 
 
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+SET
+SQL_MODE=@OLD_SQL_MODE;
+SET
+FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET
+UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 

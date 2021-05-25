@@ -457,7 +457,7 @@ func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWrite
 
 	rows, err := c.DB.Query(
 		"select t.id, t.description, p.id, p.name, p.ow_id, p.ow_name, p.ow_username, "+
-			"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.level, "+
+			"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
 			"e.id, e.name, e.username, e.telegram_id from task t "+
 			"left join (select p.id, p.name, u.id ow_id, u.name ow_name, "+
 			"u.username ow_username, u.telegram_id ow_telegram_id, p.status "+

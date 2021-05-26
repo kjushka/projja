@@ -64,6 +64,7 @@ func (c *controller) CalculateTaskExecutor(params martini.Params, w http.Respons
 		Id          int64
 		Description string
 		Deadline    string
+		Priority    string
 		Executor    *model.User
 		Skills      []string
 	}{}
@@ -81,6 +82,7 @@ func (c *controller) CalculateTaskExecutor(params martini.Params, w http.Respons
 		Id:          taskDTO.Id,
 		Description: taskDTO.Description,
 		Deadline:    deadline,
+		Priority:    taskDTO.Priority,
 		Executor:    taskDTO.Executor,
 		Skills:      taskDTO.Skills,
 	}

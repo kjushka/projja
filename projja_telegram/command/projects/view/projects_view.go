@@ -7,7 +7,6 @@ import (
 	"projja_telegram/command/current_project/view"
 	"projja_telegram/command/projects/controller"
 	projectsmenu "projja_telegram/command/projects/menu"
-	"projja_telegram/command/root/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
 	"strconv"
@@ -15,11 +14,6 @@ import (
 )
 
 func SelectProject(botUtil *util.BotUtil) {
-	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
-		msg := menu.GetRootMenu(message)
-		bot.Send(msg)
-	}(botUtil.Message, botUtil.Bot)
-
 	projectsCount, status := controller.GetProjectsCount(botUtil.Message.From)
 	if !status {
 		errorText := "Не удалось получить список проектов\n" +

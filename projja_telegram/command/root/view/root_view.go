@@ -27,10 +27,8 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 
 		switch command {
 		case "start":
-			msg := Start(botUtil.Message)
+			msg := Start(botUtil)
 			botUtil.Bot.Send(msg)
-		case "register":
-			Register(botUtil)
 		case "set_skills":
 			ChangeSkills(botUtil)
 		case "update_data":
@@ -39,49 +37,80 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 			view.SelectProject(botUtil)
 		case "check_tasks":
 			view2.ExecuteTasks(botUtil)
-			msg := menu.GetRootMenu(botUtil.Message)
-			botUtil.Bot.Send(msg)
 		default:
-			SendUnknownMessage(botUtil, command)
+			SendUnknownMessage(botUtil)
 		}
+
+		msg := menu.GetRootMenu(botUtil.Message)
+		botUtil.Bot.Send(msg)
 	}
 }
 
-func Start(message *util.MessageData) tgbotapi.MessageConfig {
-	isRegister := rootc.GetUser(message.From.UserName)
-	var text string
+func Start(botUtil *util.BotUtil) tgbotapi.MessageConfig {
+	user := rootc.GetUser(botUtil.Message.From.UserName)
 
-	if isRegister == nil {
-		text = fmt.Sprintf("Привет %s, давайте зарегистрируемся в системе", message.From.UserName)
-		return getRegisterMessage(message, text)
-	} else {
-		return menu.GetRootMenu(message)
+	if user != nil {
+		return menu.GetRootMenu(botUtil.Message)
 	}
+
+	text := fmt.Sprintf("Привет %s, давайте зарегистрируемся в системе", botUtil.Message.From.UserName)
+	msg := getRegisterMessage(botUtil.Message, text)
+	botUtil.Bot.Send(msg)
+
+	ready := false
+	for update := range botUtil.Updates {
+		message := update.Message
+		var command string
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+		} else if message.IsCommand() {
+			command = message.Command()
+		} else if message.Text != "" {
+			command = message.Text
+		}
+
+		switch command {
+		case "Регистрация":
+			regMsg, status := Register(botUtil)
+			if !status {
+				botUtil.Bot.Send(regMsg)
+				continue
+			}
+			msg = regMsg
+			ready = true
+		default:
+			SendUnknownMessage(botUtil)
+		}
+
+		if ready {
+			break
+		}
+	}
+
+	return msg
 }
 
 func getRegisterMessage(message *util.MessageData, text string) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	var row []tgbotapi.InlineKeyboardButton
-	btn := tgbotapi.NewInlineKeyboardButtonData("Регистрация", "register")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	btn := tgbotapi.KeyboardButton{Text: "Регистрация"}
 	row = append(row, btn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 
 	msg.ReplyMarkup = keyboard
 
 	return msg
 }
 
-func Register(botUtil *util.BotUtil) {
+func Register(botUtil *util.BotUtil) (tgbotapi.MessageConfig, bool) {
 	status, text := rootc.RegisterUser(botUtil.Message)
 
 	if !status {
 		msg := getRegisterMessage(botUtil.Message, text)
-		botUtil.Bot.Send(msg)
-
-		return
+		return msg, false
 	}
 
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
@@ -91,18 +120,10 @@ func Register(botUtil *util.BotUtil) {
 	botUtil.Bot.Send(msg)
 
 	msg = getUserData(botUtil.Message)
-	botUtil.Bot.Send(msg)
-
-	msg = menu.GetRootMenu(botUtil.Message)
-	botUtil.Bot.Send(msg)
+	return msg, true
 }
 
 func ChangeSkills(botUtil *util.BotUtil) {
-	defer func(message *util.MessageData, bot *tgbotapi.BotAPI) {
-		msg := menu.GetRootMenu(message)
-		bot.Send(msg)
-	}(botUtil.Message, botUtil.Bot)
-
 	msg := SetSkills(botUtil, false)
 	botUtil.Bot.Send(msg)
 
@@ -189,9 +210,6 @@ func UpdateData(botUtil *util.BotUtil) {
 
 	msg = getUserData(botUtil.Message)
 	botUtil.Bot.Send(msg)
-
-	msg = menu.GetRootMenu(botUtil.Message)
-	botUtil.Bot.Send(msg)
 }
 
 func getUserData(message *util.MessageData) tgbotapi.MessageConfig {
@@ -220,11 +238,8 @@ func getUserData(message *util.MessageData) tgbotapi.MessageConfig {
 	return msg
 }
 
-func SendUnknownMessage(botUtil *util.BotUtil, command string) {
-	text := fmt.Sprintf("Я не знаю команды '%s'", command)
+func SendUnknownMessage(botUtil *util.BotUtil) {
+	text := "Пожалуйста, выберите один из вариантов"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-	botUtil.Bot.Send(msg)
-
-	msg = menu.GetRootMenu(botUtil.Message)
 	botUtil.Bot.Send(msg)
 }

@@ -248,18 +248,16 @@ CREATE TABLE IF NOT EXISTS `projja`.`answer`
     INT
     NOT
     NULL,
-    `answer_type`
+    `message_id`
+    INT
+    NOT
+    NULL,
+    `chat_id`
+    INT
+    NOT
+    NULL,
+    `status`
     ENUM
-(
-    'message',
-    'image',
-    'file',
-) NOT NULL,
-    `answer` VARCHAR
-(
-    200
-) NOT NULL,
-    `status` ENUM
 (
     'not checked',
     'accepted',

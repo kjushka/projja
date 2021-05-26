@@ -3,6 +3,7 @@ package view
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	controller2 "projja_telegram/command/current_project/controller"
 	"projja_telegram/command/current_project/view"
 	"projja_telegram/command/execute/controller"
 	"projja_telegram/command/execute/menu"
@@ -93,53 +94,11 @@ func ManageExecutorAnswers(botUtil *util.BotUtil, task *model.Task) {
 			command = mes.Text
 		}
 
-		if mes != nil {
-			if mes.Photo != nil {
-				command = "photo"
-			}
-			if mes.Document != nil {
-				command = "document"
-			}
-			if mes.Audio != nil {
-				command = "audio"
-			}
-			if mes.Voice != nil {
-				command = "voice"
-			}
-			if mes.VideoNote != nil {
-				command = "video_note"
-			}
-			if mes.Video != nil {
-				command = "video"
-			}
-		}
-
 		switch command {
 		case "back_btn":
 			return
-		case "photo":
-			text := "its photo"
-			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-			botUtil.Bot.Send(msg)
-		case "document":
-			text := "its document"
-			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-			botUtil.Bot.Send(msg)
-		case "audio":
-			text := "its audio"
-			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-			botUtil.Bot.Send(msg)
-		case "video":
-			text := "its video"
-			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-			botUtil.Bot.Send(msg)
-		case "video_note":
-			text := "its video_note"
-			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
-			botUtil.Bot.Send(msg)
-		case "voice":
-			text := "its voice"
-			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+		case "add_answer":
+			msg := AddAnswer(botUtil, task)
 			botUtil.Bot.Send(msg)
 		default:
 			msg := util.GetUnknownMessage(botUtil, command)
@@ -169,7 +128,9 @@ func MakeAddAnswerMenu(botUtil *util.BotUtil, task *model.Task) (tgbotapi.Messag
 	if answer == nil {
 		answerAsString = "Вы ещё не отправляли решение для этой задачи"
 	} else {
-		answerAsString = fmt.Sprintf("Ваш последний ответ: \n%s - %s", answer.Answer, answer.Status)
+		msg := tgbotapi.NewForward(botUtil.Message.Chat.ID, answer.ChatId, answer.MessageId)
+		botUtil.Bot.Send(msg)
+		answerAsString = fmt.Sprintf("Ваш последний ответ: %s", answer.Status)
 	}
 	answerMenu := tgbotapi.NewMessage(botUtil.Message.Chat.ID, answerAsString)
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
@@ -184,6 +145,108 @@ func MakeAddAnswerMenu(botUtil *util.BotUtil, task *model.Task) (tgbotapi.Messag
 	return answerMenu, true
 }
 
-func AddFile() {
+func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
+	text := "Загрузите файл или напишите сообщение"
+	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
+	keyboard := tgbotapi.InlineKeyboardMarkup{}
+	row := make([]tgbotapi.InlineKeyboardButton, 0)
+	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row = append(row, cancelBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	msg.ReplyMarkup = keyboard
+
+	botUtil.Bot.Send(msg)
+
+	ready := false
+
+	var messageId int
+	for update := range botUtil.Updates {
+		mes := update.Message
+		var command string
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+		} else if mes.Text != "" {
+			command = mes.Text
+		}
+
+		if mes != nil {
+			messageId = mes.MessageID
+			command = "answer_entered"
+		}
+
+		switch command {
+		case "cancel_btn":
+			text = "Отмена добавления ответа"
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			return msg
+		case "answer_entered":
+			ready = true
+		default:
+			msg := util.GetUnknownMessage(botUtil, command)
+			botUtil.Bot.Send(msg)
+		}
+
+		if ready {
+			break
+		}
+	}
+
+	executor, text := controller2.GetUser(botUtil.Message.From.UserName)
+	if executor == nil {
+		msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+		return msg
+	}
+
+	answer := &model.Answer{
+		Task:      task,
+		Executor:  executor,
+		MessageId: messageId,
+		ChatId:    botUtil.Message.Chat.ID,
+		Status:    "not checked",
+	}
+
+	forward := tgbotapi.NewForward(answer.ChatId, answer.ChatId, answer.MessageId)
+	botUtil.Bot.Send(forward)
+	acceptingString := "Вы действительно хотите создать ответ:\n"
+	msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+	botUtil.Bot.Send(msg)
+
+	for update := range botUtil.Updates {
+		mes := update.Message
+		var command string
+
+		if update.CallbackQuery != nil {
+			response := strings.Split(update.CallbackQuery.Data, " ")
+			command = response[0]
+		} else if mes.IsCommand() {
+			command = mes.Command()
+		} else if mes.Text != "" {
+			command = mes.Text
+		}
+
+		switch command {
+		case "yes_btn":
+			text, _ = controller.AddAnswer(answer)
+			goto LOOP
+		case "no_btn":
+			text = "Отмена добавления ответа"
+			goto LOOP
+		default:
+			text = "Неизвестная команда"
+			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			botUtil.Bot.Send(msg)
+
+			msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
+			botUtil.Bot.Send(msg)
+			forward = tgbotapi.NewForward(botUtil.Message.Chat.ID, botUtil.Message.Chat.ID, messageId)
+			botUtil.Bot.Send(forward)
+		}
+	}
+
+LOOP:
+	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	return msg
 }

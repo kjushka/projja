@@ -86,6 +86,10 @@ func main() {
 			r.Post("/:id/change/deadline", c.ChangeTaskDeadline)
 			r.Get("/:id/close", c.CloseTask)
 		})
+		router.Group("/answer", func(r martini.Router) {
+			r.Post("/create", c.AddAnswer)
+			r.Get("/last/:tid/:uname", c.GetLastAnswer)
+		})
 	})
 	m.RunOnAddr(addr)
 }

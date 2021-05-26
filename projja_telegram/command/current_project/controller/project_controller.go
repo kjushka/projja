@@ -104,7 +104,7 @@ func GetMembers(project *model.Project) ([]*model.User, bool) {
 func GetUser(username string) (*model.User, string) {
 	response, err := http.Get(config.GetAPIAddr() + "/user/get/" + username)
 
-	textError := "Возникла ошибка информации об участнике"
+	textError := "Возникла ошибка получения информации об участнике"
 
 	if err != nil {
 		log.Println("error in getting user by username: ", err)

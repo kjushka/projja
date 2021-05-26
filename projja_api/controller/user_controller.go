@@ -247,7 +247,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 }
 
 func (c *Controller) GetUserProjectsCount(params martini.Params, w http.ResponseWriter) (int, string) {
-	user, err := c.getUserByUsername(params)
+	user, err := c.getUserByUsername(params["uname"])
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()
@@ -270,7 +270,7 @@ func (c *Controller) GetUserProjectsCount(params martini.Params, w http.Response
 }
 
 func (c *Controller) GetUserProjects(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
-	user, err := c.getUserByUsername(params)
+	user, err := c.getUserByUsername(params["uname"])
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()
@@ -390,7 +390,7 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 }
 
 func (c *Controller) GetOpenProjectsWhereMember(params martini.Params, w http.ResponseWriter) (int, string) {
-	user, err := c.getUserByUsername(params)
+	user, err := c.getUserByUsername(params["uname"])
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()
@@ -420,7 +420,7 @@ func (c *Controller) GetOpenProjectsWhereMember(params martini.Params, w http.Re
 }
 
 func (c *Controller) GetAllProjectsWhereMember(params martini.Params, w http.ResponseWriter) (int, string) {
-	user, err := c.getUserByUsername(params)
+	user, err := c.getUserByUsername(params["uname"])
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()
@@ -449,7 +449,7 @@ func (c *Controller) GetAllProjectsWhereMember(params martini.Params, w http.Res
 }
 
 func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWriter) (int, string) {
-	user, err := c.getUserByUsername(params)
+	user, err := c.getUserByUsername(params["uname"])
 	if err != nil {
 		log.Println("error in getting user:", err)
 		return 500, err.Error()

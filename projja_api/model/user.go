@@ -33,10 +33,10 @@ type TaskStatus struct {
 }
 
 type Answer struct {
-	Id         int64
-	Task       *Task
-	Executor   *User
-	AnswerType string
-	Answer     string
-	Status     string
+	Id        int64
+	Task      *Task
+	Executor  *User
+	MessageId int
+	ChatId    int64
+	Status    string
 }

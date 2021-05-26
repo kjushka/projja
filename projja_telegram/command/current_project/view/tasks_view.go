@@ -274,13 +274,13 @@ func listenForDeadline(botUtil *util.BotUtil) (time.Time, bool) {
 			if err != nil {
 				log.Println("incorrect time format")
 				text := "Вы ввели дату в неверном формате\nПопробуйте ещё раз"
-				msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 				botUtil.Bot.Send(msg)
 				continue
 			}
 			if time.Until(resultDeadline) < 0 {
 				text := "Вы ввели дату, которая уже прошла\nПопробуйте ещё раз"
-				msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 				botUtil.Bot.Send(msg)
 				continue
 			}
@@ -292,6 +292,8 @@ func listenForDeadline(botUtil *util.BotUtil) (time.Time, bool) {
 		if ready {
 			break
 		}
+
+		botUtil.Bot.Send(msg)
 	}
 
 	return result, true

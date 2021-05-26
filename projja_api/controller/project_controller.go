@@ -67,11 +67,12 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 		return 500, err.Error()
 	}
 
-	row := c.DB.QueryRow("select id, name, telegram_id from users where username = ?", project.Owner.Username)
+	row := c.DB.QueryRow("select id, name, telegram_id, chat_id from users where username = ?", project.Owner.Username)
 	var ownerId int64
 	var ownerName string
 	var ownerTelegramId string
-	err = row.Scan(&ownerId, &ownerName, &ownerTelegramId)
+	var ownerChatId int64
+	err = row.Scan(&ownerId, &ownerName, &ownerTelegramId, &ownerChatId)
 	if err != nil {
 		log.Println("error in getting owner id: ", err)
 		return 500, err.Error()
@@ -87,6 +88,7 @@ func (c *Controller) CreateProject(w http.ResponseWriter, r *http.Request) (int,
 	project.Owner.Id = ownerId
 	project.Owner.Name = ownerName
 	project.Owner.TelegramId = ownerTelegramId
+	project.Owner.ChatId = ownerChatId
 	project.Owner.Skills = skills
 	_, err = c.sendDataToStream("project", "new", project)
 	if err != nil {
@@ -241,7 +243,7 @@ func (c *Controller) GetProjectMembers(params martini.Params, w http.ResponseWri
 	}
 
 	rows, err := c.DB.Query(
-		"select u.id, u.name, u.username, u.telegram_id from member m "+
+		"select u.id, u.name, u.username, u.telegram_id, u.chat_id from member m "+
 			"right join project p on p.id = m.project "+
 			"inner join users u on u.id = m.users where p.id = ? order by u.name asc",
 		projectId,
@@ -254,7 +256,7 @@ func (c *Controller) GetProjectMembers(params martini.Params, w http.ResponseWri
 	members := make([]*model.User, 0)
 	for rows.Next() {
 		member := &model.User{}
-		err = rows.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
+		err = rows.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId, &member.ChatId)
 		if err != nil {
 			log.Println("error in scanning members:", err)
 			return 500, err.Error()
@@ -304,9 +306,9 @@ func (c *Controller) AddMemberToProject(params martini.Params, w http.ResponseWr
 
 	rowsAffected, _ := result.RowsAffected()
 
-	row = c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", memberUsername)
+	row = c.DB.QueryRow("select id, name, username, telegram_id, chat_id from users where username = ?", memberUsername)
 	member := &model.User{}
-	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId)
+	err = row.Scan(&member.Id, &member.Name, &member.Username, &member.TelegramId, &member.ChatId)
 	if err != nil {
 		log.Println("error in getting new member info: ", err)
 		return 500, err.Error()
@@ -676,10 +678,10 @@ func (c *Controller) GetAllProjectTasks(params martini.Params, w http.ResponseWr
 
 	rows, err := c.DB.Query(
 		"select t.id, t.description, p.id, p.name, p.ow_id, p.ow_name, p.ow_username, "+
-			"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
-			"e.id, e.name, e.username, e.telegram_id from task t "+
+			"p.ow_telegram_id, p.ow_chat_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
+			"e.id, e.name, e.username, e.telegram_id, e.chat_id from task t "+
 			"left join (select p.id, p.name, u.id ow_id, u.name ow_name, "+
-			"u.username ow_username, u.telegram_id ow_telegram_id, p.status "+
+			"u.username ow_username, u.telegram_id ow_telegram_id, u.chat_id ow_chat_id, p.status "+
 			"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
 			"left join task_status ts on ts.id = t.status "+
 			"left join users e on t.executor = e.id "+
@@ -710,6 +712,7 @@ func (c *Controller) GetAllProjectTasks(params martini.Params, w http.ResponseWr
 			&task.Project.Owner.Name,
 			&task.Project.Owner.Username,
 			&task.Project.Owner.TelegramId,
+			&task.Project.Owner.ChatId,
 			&task.Project.Status,
 			&deadline,
 			&task.Priority,
@@ -719,6 +722,7 @@ func (c *Controller) GetAllProjectTasks(params martini.Params, w http.ResponseWr
 			&task.Executor.Name,
 			&task.Executor.Username,
 			&task.Executor.TelegramId,
+			&task.Executor.ChatId,
 		)
 
 		if err != nil {
@@ -743,14 +747,14 @@ func (c *Controller) GetProcessProjectTasks(params martini.Params, w http.Respon
 
 	rows, err := c.DB.Query(
 		"select t.id, t.description, p.id, p.name, p.ow_id, p.ow_name, p.ow_username, "+
-			"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
-			"e.id, e.name, e.username, e.telegram_id from task t "+
+			"p.ow_telegram_id, p.ow_chat_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
+			"e.id, e.name, e.username, e.telegram_id, e.chat_id from task t "+
 			"left join (select p.id, p.name, u.id ow_id, u.name ow_name, "+
-			"u.username ow_username, u.telegram_id ow_telegram_id, p.status "+
+			"u.username ow_username, u.telegram_id ow_telegram_id, u.chat_id ow_chat_id, p.status "+
 			"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
 			"left join task_status ts on ts.id = t.status "+
 			"left join users e on t.executor = e.id "+
-			"where t.project = ? and t.is_closed = 0 and is_closed <> true",
+			"where t.project = ? and t.is_closed = 0 and t.is_closed <> true",
 		projectId,
 	)
 	if err != nil && err != sql.ErrNoRows {
@@ -777,6 +781,7 @@ func (c *Controller) GetProcessProjectTasks(params martini.Params, w http.Respon
 			&task.Project.Owner.Name,
 			&task.Project.Owner.Username,
 			&task.Project.Owner.TelegramId,
+			&task.Project.Owner.ChatId,
 			&task.Project.Status,
 			&deadline,
 			&task.Priority,
@@ -786,6 +791,7 @@ func (c *Controller) GetProcessProjectTasks(params martini.Params, w http.Respon
 			&task.Executor.Name,
 			&task.Executor.Username,
 			&task.Executor.TelegramId,
+			&task.Executor.ChatId,
 		)
 
 		if err != nil {

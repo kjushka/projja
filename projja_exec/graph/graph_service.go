@@ -7,23 +7,6 @@ import (
 
 func (g *Graph) SetSkillsToUser(userId int64, skills []string) {
 	executor := g.Users[userId]
-	newSkills := make([]string, 0)
-	for _, s := range skills {
-		isNotExist := true
-
-		for _, gs := range g.Skills {
-			if s == gs {
-				isNotExist = false
-				break
-			}
-		}
-
-		if isNotExist {
-			newSkills = append(newSkills, s)
-		}
-	}
-
-	g.Skills = append(g.Skills, newSkills...)
 	executor.Skills = skills
 	g.Users[userId] = executor
 }
@@ -34,24 +17,6 @@ func (g *Graph) UpdateUserInfo(newUserInfo *model.User) {
 
 func (g *Graph) AddExecutor(executor *model.User) {
 	g.Users[executor.Id] = executor
-
-	newSkills := make([]string, 0)
-	for _, s := range executor.Skills {
-		isNotExist := true
-
-		for _, gs := range g.Skills {
-			if s == gs {
-				isNotExist = false
-				break
-			}
-		}
-
-		if isNotExist {
-			newSkills = append(newSkills, s)
-		}
-	}
-
-	g.Skills = append(g.Skills, newSkills...)
 }
 
 func (g *Graph) RemoveMember(memberUsername string) {

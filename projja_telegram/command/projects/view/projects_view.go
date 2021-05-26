@@ -150,7 +150,7 @@ func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 
 		switch command {
 		case "yes_btn":
-			text, _ = controller.CreateNewProject(botUtil.Message.From, projectName)
+			text, _ = controller.CreateNewProject(botUtil.Message, projectName)
 			goto LOOP
 		case "no_btn":
 			text = "Отмена создания проекта"

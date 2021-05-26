@@ -207,7 +207,15 @@ LOOP:
 		switch command {
 		case "yes_btn":
 			task.Executor = executor
-			text, _ = controller.CreateTask(project, task)
+			createText, status := controller.CreateTask(project, task)
+			text = createText
+
+			if status {
+				log.Println(botUtil.Message.Chat.ID, executor.Id)
+				msg := tgbotapi.NewMessage(executor.ChatId, fmt.Sprintf("Вы получили новую задачу:\n%s", task.Description))
+				botUtil.Bot.Send(msg)
+			}
+
 			goto BREAK
 		case "no_btn":
 			executor, text = listenForExecutor(botUtil, project, cancelText)
@@ -274,13 +282,15 @@ func listenForDeadline(botUtil *util.BotUtil) (time.Time, bool) {
 			if err != nil {
 				log.Println("incorrect time format")
 				text := "Вы ввели дату в неверном формате\nПопробуйте ещё раз"
-				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				errorMsg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				botUtil.Bot.Send(errorMsg)
 				botUtil.Bot.Send(msg)
 				continue
 			}
 			if time.Until(resultDeadline) < 0 {
 				text := "Вы ввели дату, которая уже прошла\nПопробуйте ещё раз"
-				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				errorMsg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+				botUtil.Bot.Send(errorMsg)
 				botUtil.Bot.Send(msg)
 				continue
 			}
@@ -414,6 +424,21 @@ func listenForPriority(botUtil *util.BotUtil) (string, bool) {
 			break
 		}
 	}
+
+	var priority string
+	switch result {
+	case "critical":
+		priority = "критический"
+	case "high":
+		priority = "высокий"
+	case "medium":
+		priority = "средний"
+	case "low":
+		priority = "низкий"
+	}
+	text := fmt.Sprintf("Для задачи был выбран %s приоритет", priority)
+	msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+	botUtil.Bot.Send(msg)
 
 	return result, true
 }

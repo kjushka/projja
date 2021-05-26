@@ -17,14 +17,15 @@ type MessageData struct {
 	Chat *tgbotapi.Chat
 }
 
-func TgUserToModelUser(tgUser *tgbotapi.User) *model.User {
-	name := tgUser.FirstName
-	if tgUser.LastName != "" {
-		name += " " + tgUser.LastName
+func TgUserToModelUser(data *MessageData) *model.User {
+	name := data.From.FirstName
+	if data.From.LastName != "" {
+		name += " " + data.From.LastName
 	}
 	return &model.User{
 		Name:       name,
-		Username:   tgUser.UserName,
-		TelegramId: strconv.Itoa(tgUser.ID),
+		Username:   data.From.UserName,
+		TelegramId: strconv.Itoa(data.From.ID),
+		ChatId:     data.Chat.ID,
 	}
 }

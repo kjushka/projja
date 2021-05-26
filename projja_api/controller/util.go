@@ -63,9 +63,9 @@ func (c *Controller) getSkillsTask(taskId int64) ([]string, error) {
 }
 
 func (c *Controller) getUserByUsername(username string) (*model.User, error) {
-	row := c.DB.QueryRow("select id, name, username, telegram_id from users where username = ?", username)
+	row := c.DB.QueryRow("select id, name, username, telegram_id, chat_id from users where username = ?", username)
 	user := &model.User{}
-	err := row.Scan(&user.Id, &user.Name, &user.Username, &user.TelegramId)
+	err := row.Scan(&user.Id, &user.Name, &user.Username, &user.TelegramId, &user.ChatId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting user:", err)
 		return nil, err
@@ -120,10 +120,10 @@ func (c *Controller) setSkillsToTask(skills []string, id int64) (int64, error) {
 
 func (c *Controller) getTaskById(taskId int64) (*model.Task, error) {
 	row := c.DB.QueryRow("select t.id, t.description, p.id, p.name, p.ow_id, p.ow_name, p.ow_username, "+
-		"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.level, t.is_closed, "+
-		"e.id, e.name, e.username, e.telegram_id from task t "+
+		"p.ow_telegram_id, p.ow_chat_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
+		"e.id, e.name, e.username, e.telegram_id, e.chat_id from task t "+
 		"left join (select p.id, p.name, u.id ow_id, u.name ow_name, "+
-		"u.username ow_username, u.telegram_id ow_telegram_id, p.status "+
+		"u.username ow_username, u.telegram_id ow_telegram_id, u.chat_id ow_chat_id, p.status "+
 		"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
 		"left join task_status ts on ts.id = t.status "+
 		"left join users e on t.executor = e.id "+
@@ -147,6 +147,7 @@ func (c *Controller) getTaskById(taskId int64) (*model.Task, error) {
 		&task.Project.Owner.Name,
 		&task.Project.Owner.Username,
 		&task.Project.Owner.TelegramId,
+		&task.Project.Owner.ChatId,
 		&task.Project.Status,
 		&deadline,
 		&task.Priority,
@@ -157,6 +158,7 @@ func (c *Controller) getTaskById(taskId int64) (*model.Task, error) {
 		&task.Executor.Name,
 		&task.Executor.Username,
 		&task.Executor.TelegramId,
+		&task.Executor.ChatId,
 	)
 
 	if err != nil && err != sql.ErrNoRows {

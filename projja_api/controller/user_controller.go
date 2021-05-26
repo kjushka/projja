@@ -35,10 +35,11 @@ func (c *Controller) Register(w http.ResponseWriter, r *http.Request) (int, stri
 		return 500, err.Error()
 	}
 	result, err := c.DB.Exec(
-		"insert into users (`name`, `username`, `telegram_id`) values (?, ?, ?)",
+		"insert into users (`name`, `username`, `telegram_id`, `chat_id`) values (?, ?, ?, ?)",
 		newUser.Name,
 		newUser.Username,
 		newUser.TelegramId,
+		newUser.ChatId,
 	)
 	if err != nil {
 		log.Println("error during create user:", err)
@@ -59,7 +60,7 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 	username := params["uname"]
 	user := &model.User{}
 	row := c.DB.QueryRow(
-		"select u.id, u.name, u.username, u.telegram_id from users u where username = ?",
+		"select u.id, u.name, u.username, u.telegram_id, u.chat_id from users u where username = ?",
 		username,
 	)
 	err := row.Scan(
@@ -67,6 +68,7 @@ func (c *Controller) GetUserByUsername(params martini.Params, w http.ResponseWri
 		&user.Name,
 		&user.Username,
 		&user.TelegramId,
+		&user.ChatId,
 	)
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting user by username:", err)
@@ -113,6 +115,7 @@ func (c *Controller) SetSkillsToUser(params martini.Params, r *http.Request, w h
 
 	uniqueSkills := make([]string, 0)
 	for _, s := range skills.Skills {
+		s = strings.ToLower(s)
 		skip := false
 		for _, u := range uniqueSkills {
 			if s == u {
@@ -336,8 +339,8 @@ func (c *Controller) UpdateUserData(params martini.Params, w http.ResponseWriter
 	var userId int64
 	err = row.Scan(&userId)
 
-	result, err := c.DB.Exec("update users set name = ?, username = ?, telegram_id = ? where id = ?",
-		newUserInfo.Name, newUserInfo.Username, newUserInfo.TelegramId, userId)
+	result, err := c.DB.Exec("update users set name = ?, username = ?, telegram_id = ?, chat_id = ? where id = ?",
+		newUserInfo.Name, newUserInfo.Username, newUserInfo.TelegramId, newUserInfo.ChatId, userId)
 	if err != nil {
 		log.Println("error in updating info:", err)
 		return 500, err.Error()
@@ -457,14 +460,14 @@ func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWrite
 
 	rows, err := c.DB.Query(
 		"select t.id, t.description, p.id, p.name, p.ow_id, p.ow_name, p.ow_username, "+
-			"p.ow_telegram_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
-			"e.id, e.name, e.username, e.telegram_id from task t "+
+			"p.ow_telegram_id, p.ow_chat_id, p.status, t.deadline, t.priority, ts.status, ts.status_level, "+
+			"e.id, e.name, e.username, e.telegram_id, e.chat_id from task t "+
 			"left join (select p.id, p.name, u.id ow_id, u.name ow_name, "+
-			"u.username ow_username, u.telegram_id ow_telegram_id, p.status "+
+			"u.username ow_username, u.telegram_id ow_telegram_id, u.chat_id ow_chat_id, p.status "+
 			"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
 			"left join task_status ts on ts.id = t.status "+
 			"left join users e on t.executor = e.id "+
-			"where t.executor = ? and t.is_closed = 0;",
+			"where t.project = ? and t.is_closed = 0;",
 		user.Id,
 	)
 	if err != nil && err != sql.ErrNoRows {
@@ -472,7 +475,7 @@ func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWrite
 		return 500, err.Error()
 	}
 
-	tasks := []*model.Task{}
+	tasks := make([]*model.Task, 0)
 
 	for rows.Next() {
 		task := &model.Task{}
@@ -491,6 +494,7 @@ func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWrite
 			&task.Project.Owner.Name,
 			&task.Project.Owner.Username,
 			&task.Project.Owner.TelegramId,
+			&task.Project.Owner.ChatId,
 			&task.Project.Status,
 			&deadline,
 			&task.Priority,
@@ -500,6 +504,7 @@ func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWrite
 			&task.Executor.Name,
 			&task.Executor.Username,
 			&task.Executor.TelegramId,
+			&task.Executor.ChatId,
 		)
 
 		if err != nil {

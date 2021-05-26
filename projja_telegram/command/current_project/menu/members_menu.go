@@ -35,7 +35,7 @@ func MakeMembersMenu(
 	row2 := make([]tgbotapi.InlineKeyboardButton, 0)
 	addBtn := tgbotapi.NewInlineKeyboardButtonData("Добавить участника", "add_member")
 	row1 = append(row1, addBtn)
-	if len(members) == 1 {
+	if len(members) != 1 {
 		removeBtn := tgbotapi.NewInlineKeyboardButtonData("Удалить участника", "remove_member")
 		row1 = append(row1, removeBtn)
 	}
@@ -84,11 +84,6 @@ func MakeMembersRemovingMenu(
 
 	keyboard := tgbotapi.InlineKeyboardMarkup{}
 
-	row1 := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
-	row1 = append(row1, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
-
 	if len(members) != 0 {
 		pagesCount := int(math.Ceil(float64(count) / 10.0))
 		prevNextBntRow := make([]tgbotapi.InlineKeyboardButton, 0)
@@ -118,6 +113,11 @@ func MakeMembersRemovingMenu(
 			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, membersRow)
 		}
 	}
+
+	row1 := make([]tgbotapi.InlineKeyboardButton, 0)
+	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row1 = append(row1, cancelBtn)
+	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
 
 	msg.ReplyMarkup = keyboard
 

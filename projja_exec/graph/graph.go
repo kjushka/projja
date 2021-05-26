@@ -25,7 +25,6 @@ type Project struct {
 type Graph struct {
 	Users       map[int64]*model.User
 	Tasks       map[int64]*model.Task
-	Skills      []string
 	UserToTask  map[int64][]int64
 	TaskToSkill map[int64][]string
 }
@@ -54,13 +53,11 @@ func MakeNewProject(newProject *model.Project) *Project {
 		Graph: &Graph{
 			Users:       make(map[int64]*model.User, 1),
 			Tasks:       make(map[int64]*model.Task, 0),
-			Skills:      make([]string, 0),
 			UserToTask:  make(map[int64][]int64),
 			TaskToSkill: make(map[int64][]string, 1),
 		},
 	}
 	project.Graph.Users[newProject.Owner.Id] = newProject.Owner
-	project.Graph.Skills = append(project.Graph.Skills, newProject.Owner.Skills...)
 
 	return project
 }

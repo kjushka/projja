@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -45,15 +44,17 @@ func GetUser(username string) *model.User {
 		return nil
 	}
 
+	log.Println(responseStruct.Content.ChatId)
+
 	return responseStruct.Content
 }
 
-func RegisterUser(tgUser *tgbotapi.User) (bool, string) {
-	if tgUser.UserName == "" {
+func RegisterUser(data *util.MessageData) (bool, string) {
+	if data.From.UserName == "" {
 		return false, "У вас не установлен username\n" +
 			"Пожалуйста, задайте его в настройках"
 	}
-	user := util.TgUserToModelUser(tgUser)
+	user := util.TgUserToModelUser(data)
 	jsonUser, err := json.Marshal(user)
 
 	returnText := "Возникла ошибка, попробуйте ещё раз через некоторое время"
@@ -77,6 +78,8 @@ func RegisterUser(tgUser *tgbotapi.User) (bool, string) {
 		log.Println("error in register")
 		return false, returnText
 	}
+
+	log.Println(user.ChatId)
 
 	return true, "Ваш профиль был успешно создан"
 }
@@ -109,8 +112,8 @@ func SetSkills(username string, skills []string) bool {
 	return true
 }
 
-func UpdateUserData(tgUser *tgbotapi.User) (bool, string) {
-	user := util.TgUserToModelUser(tgUser)
+func UpdateUserData(data *util.MessageData) (bool, string) {
+	user := util.TgUserToModelUser(data)
 	jsonUser, err := json.Marshal(user)
 
 	returnText := "Возникла ошибка, попробуйте ещё раз через некоторое время"

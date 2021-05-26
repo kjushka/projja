@@ -89,8 +89,8 @@ func GetProjectsCount(user *tgbotapi.User) (int, bool) {
 	return respData.Content, true
 }
 
-func CreateNewProject(tgUser *tgbotapi.User, projectName string) (string, bool) {
-	user := util.TgUserToModelUser(tgUser)
+func CreateNewProject(data *util.MessageData, projectName string) (string, bool) {
+	user := util.TgUserToModelUser(data)
 	project := &model.Project{
 		Name:   projectName,
 		Owner:  user,

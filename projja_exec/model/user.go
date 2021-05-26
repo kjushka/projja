@@ -7,6 +7,7 @@ type User struct {
 	Name       string
 	Username   string
 	TelegramId string
+	ChatId     int64
 	Skills     []string
 }
 

@@ -75,7 +75,7 @@ func getRegisterMessage(message *util.MessageData, text string) tgbotapi.Message
 }
 
 func Register(botUtil *util.BotUtil) {
-	status, text := rootc.RegisterUser(botUtil.Message.From)
+	status, text := rootc.RegisterUser(botUtil.Message)
 
 	if !status {
 		msg := getRegisterMessage(botUtil.Message, text)
@@ -88,6 +88,9 @@ func Register(botUtil *util.BotUtil) {
 	botUtil.Bot.Send(msg)
 
 	msg = SetSkills(botUtil, true)
+	botUtil.Bot.Send(msg)
+
+	msg = getUserData(botUtil.Message)
 	botUtil.Bot.Send(msg)
 
 	msg = menu.GetRootMenu(botUtil.Message)
@@ -179,7 +182,7 @@ func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, string) {
 }
 
 func UpdateData(botUtil *util.BotUtil) {
-	_, text := rootc.UpdateUserData(botUtil.Message.From)
+	_, text := rootc.UpdateUserData(botUtil.Message)
 
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 	botUtil.Bot.Send(msg)

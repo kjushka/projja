@@ -10,8 +10,11 @@ import (
 )
 
 const (
-	timeCoefficient   float32 = 1.2
-	skillsCoefficient float32 = 0.8
+	timeLowCoefficient      float32 = 1.05
+	timeMediumCoefficient   float32 = 1.15
+	timeHighCoefficient     float32 = 1.25
+	timeCriticalCoefficient float32 = 1.35
+	skillsCoefficient       float32 = 0.8
 )
 
 type Project struct {
@@ -65,7 +68,7 @@ func MakeNewProject(newProject *model.Project) *Project {
 func (g *Graph) CalculateNewTaskExecutor(task *model.Task) *model.User {
 	ratio := g.calculateRatingBySkills(task.Skills)
 	g.calculateRatingByTime(task.Deadline, ratio)
-	executor := g.selectExecutorByRating(ratio)
+	executor := g.selectExecutorByRating(ratio, task)
 	go g.checkCorrectWork()
 
 	return executor
@@ -147,9 +150,22 @@ func (g *Graph) checkTime(userId int64, deadline time.Time) float32 {
 	return ratio
 }
 
-func (g *Graph) selectExecutorByRating(ratio *rating) *model.User {
+func (g *Graph) selectExecutorByRating(ratio *rating, task *model.Task) *model.User {
 	var bestUser *model.User = nil
 	var bestRating float32 = -1
+
+	var timeCoefficient float32
+	switch task.Priority {
+	case "low":
+		timeCoefficient = timeLowCoefficient
+	case "medium":
+		timeCoefficient = timeMediumCoefficient
+	case "high":
+		timeCoefficient = timeHighCoefficient
+	case "critical":
+		timeCoefficient = timeCriticalCoefficient
+	}
+
 	for _, userRatio := range ratio.UsersRating {
 		userRate := userRatio.TimeRating*timeCoefficient + userRatio.SkillsRating*skillsCoefficient
 		log.Println(userRatio.User.Username, userRate, userRatio.SkillsRating, userRatio.TimeRating)

@@ -14,6 +14,7 @@ type Task struct {
 	Id          int64
 	Description string
 	Deadline    time.Time
+	Priority    string
 	Executor    *User
 	Skills      []string
 }

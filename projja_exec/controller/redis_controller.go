@@ -160,6 +160,7 @@ func (c *controller) createTask(jsonTask interface{}) {
 				Id          int64
 				Description string
 				Deadline    string
+				Priority    string
 				Executor    *model.User
 				Skills      []string
 			}
@@ -180,6 +181,7 @@ func (c *controller) createTask(jsonTask interface{}) {
 			Id:          taskDTO.Task.Id,
 			Description: taskDTO.Task.Description,
 			Deadline:    deadline,
+			Priority:    taskDTO.Task.Priority,
 			Executor:    taskDTO.Task.Executor,
 			Skills:      taskDTO.Task.Skills,
 		}

@@ -467,7 +467,7 @@ func (c *Controller) GetExecuteTasks(params martini.Params, w http.ResponseWrite
 			"from project p left join users u on u.id = p.owner) p on p.id = t.project "+
 			"left join task_status ts on ts.id = t.status "+
 			"left join users e on t.executor = e.id "+
-			"where t.project = ? and t.is_closed = 0;",
+			"where t.executor = ? and t.is_closed = 0 and t.is_closed <> true",
 		user.Id,
 	)
 	if err != nil && err != sql.ErrNoRows {

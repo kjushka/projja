@@ -9,6 +9,7 @@ import (
 	"projja_telegram/command/execute/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
+	"time"
 )
 
 func ExecuteTasks(botUtil *util.BotUtil) {
@@ -191,13 +192,14 @@ func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 		MessageId: messageId,
 		ChatId:    botUtil.Message.Chat.ID,
 		Status:    "not checked",
+		SentAt:    time.Now(),
 	}
 
-	forward := tgbotapi.NewForward(answer.ChatId, answer.ChatId, answer.MessageId)
-	botUtil.Bot.Send(forward)
-	acceptingString := "Вы действительно хотите создать ответ:\n"
+	acceptingString := "Вы действительно хотите создать ответ?\n"
 	msg = util.GetAcceptingMessage(botUtil.Message, acceptingString)
 	botUtil.Bot.Send(msg)
+	forward := tgbotapi.NewForward(answer.ChatId, answer.ChatId, answer.MessageId)
+	botUtil.Bot.Send(forward)
 
 	for update := range botUtil.Updates {
 		mes := update.Message

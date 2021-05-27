@@ -248,7 +248,20 @@ func ChangeTaskExecutor(botUtil *util.BotUtil, project *model.Project, task *mod
 
 		switch command {
 		case "Да":
-			text, _ = controller.ChangeTaskExecutor(task, executor)
+			prevExecutor := task.Executor
+			changeText, status := controller.ChangeTaskExecutor(task, executor)
+			text = changeText
+
+			if status {
+				notification := fmt.Sprintf("Вы больше не работаете над задачей '%s'", task.Description)
+				msg := tgbotapi.NewMessage(prevExecutor.ChatId, notification)
+				botUtil.Bot.Send(msg)
+
+				notification = fmt.Sprintf("Вам назначена новая задача '%s'", task.Description)
+				msg = tgbotapi.NewMessage(executor.ChatId, notification)
+				botUtil.Bot.Send(msg)
+			}
+
 			goto LOOP
 		case "Нет":
 			text = "Отмена изменения исполнителя задачи"

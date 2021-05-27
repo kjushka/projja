@@ -264,6 +264,10 @@ CREATE TABLE IF NOT EXISTS `projja`.`answer`
     'accepted',
     'declined'
 ) NOT NULL,
+    `sent_at`
+    DATETIME
+    NOT
+    NULL,
     PRIMARY KEY
 (
     `id`

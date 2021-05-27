@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type User struct {
 	Id         int64    `json:"id,omitempty"`
 	Name       string   `json:"name"`
@@ -40,4 +42,5 @@ type Answer struct {
 	MessageId int
 	ChatId    int64
 	Status    string
+	SentAt    time.Time
 }

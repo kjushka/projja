@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"projja_api/model"
 	"strconv"
+	"time"
 )
 
 func (c *Controller) AddAnswer(w http.ResponseWriter, r *http.Request) (int, string) {
@@ -33,12 +34,13 @@ func (c *Controller) AddAnswer(w http.ResponseWriter, r *http.Request) (int, str
 	}
 
 	result, err := c.DB.Exec(
-		"insert into answer (task, executor, message_id, chat_id, status) values (?, ?, ?, ?, ?)",
+		"insert into answer (task, executor, message_id, chat_id, status, sent_at) values (?, ?, ?, ?, ?, ?)",
 		answer.Task.Id,
 		answer.Executor.Id,
 		answer.MessageId,
 		answer.ChatId,
 		answer.Status,
+		answer.SentAt,
 	)
 	if err != nil {
 		log.Println("error in creating answer:", err)
@@ -57,7 +59,7 @@ func (c *Controller) AddAnswer(w http.ResponseWriter, r *http.Request) (int, str
 	})
 }
 
-func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter, r *http.Request) (int, string) {
+func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter) (int, string) {
 	user, err := c.getUserByUsername(params["uname"])
 	if err != nil {
 		log.Println("error in getting user: ", err)
@@ -70,7 +72,7 @@ func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter,
 	}
 
 	row := c.DB.QueryRow(
-		"select * from answer where task = ? and executor = ? order by id desc limit 1",
+		"select * from answer where task = ? and executor = ? order by sent_at desc limit 1",
 		taskId,
 		user.Id,
 	)
@@ -81,6 +83,7 @@ func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter,
 		MessageId int
 		ChatId    int64
 		Status    string
+		SentAt    time.Time
 	}{}
 	err = row.Scan(
 		&answerDto.Id,
@@ -89,6 +92,7 @@ func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter,
 		&answerDto.MessageId,
 		&answerDto.ChatId,
 		&answerDto.Status,
+		&answerDto.SentAt,
 	)
 	if err != nil && err != sql.ErrNoRows {
 		log.Println("error in getting answer: ", err)
@@ -108,6 +112,7 @@ func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter,
 		MessageId: answerDto.MessageId,
 		ChatId:    answerDto.ChatId,
 		Status:    answerDto.Status,
+		SentAt:    answerDto.SentAt,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

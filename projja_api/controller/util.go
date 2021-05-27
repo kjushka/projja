@@ -153,7 +153,6 @@ func (c *Controller) getTaskById(taskId int64) (*model.Task, error) {
 		&task.Priority,
 		&task.Status.Status,
 		&task.Status.Level,
-		&isClosed,
 		&task.Executor.Id,
 		&task.Executor.Name,
 		&task.Executor.Username,

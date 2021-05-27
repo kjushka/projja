@@ -122,7 +122,14 @@ func AddMember(botUtil *util.BotUtil, project *model.Project, members []*model.U
 
 		switch command {
 		case "Да":
-			text, _ = controller.AddMember(project, member)
+			addText, status := controller.AddMember(project, member)
+			text = addText
+			if status {
+				notification := fmt.Sprintf("Вы были добавлены в проект '%s'", project.Name)
+				msg := tgbotapi.NewMessage(member.ChatId, notification)
+				botUtil.Bot.Send(msg)
+			}
+
 			goto LOOP
 		case "Нет":
 			text = "Отмена добавления участника"
@@ -212,7 +219,14 @@ func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*mode
 
 		switch command {
 		case "Да":
-			text, _ = controller.RemoveMember(project, member)
+			removeText, status := controller.RemoveMember(project, member)
+			text = removeText
+			if status {
+				notification := fmt.Sprintf("Вы были удалены из проекта '%s'", project.Name)
+				msg := tgbotapi.NewMessage(member.ChatId, notification)
+				botUtil.Bot.Send(msg)
+			}
+
 			goto LOOP
 		case "Нет":
 			text = "Отмена удаления участника"

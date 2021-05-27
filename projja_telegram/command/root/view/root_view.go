@@ -16,9 +16,9 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 		message := update.Message
 		command := ""
 
-		if message.IsCommand() {
+		if message != nil && message.IsCommand() {
 			command = message.Command()
-		} else if message.Text != "" {
+		} else if message != nil && message.Text != "" {
 			command = message.Text
 		}
 

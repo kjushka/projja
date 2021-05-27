@@ -12,10 +12,10 @@ import (
 func MakeExecutedTasksMenu(message *util.MessageData, tasks []*model.Task, page int, count int) tgbotapi.MessageConfig {
 	msg := tgbotapi.MessageConfig{}
 	start := (page - 1) * 4
-	end := page + count
+	end := start + count
 	if len(tasks) != 0 {
 		textStrings := make([]string, len(tasks[start:end]))
-		for i, task := range tasks {
+		for i, task := range tasks[start:end] {
 			textStrings[i] = fmt.Sprintf("%d. %s до %s, %s", i+1, task.Description, task.Deadline, task.Priority)
 		}
 		text := fmt.Sprintf(

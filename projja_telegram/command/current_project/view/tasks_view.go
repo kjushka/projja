@@ -203,11 +203,21 @@ LOOP:
 			goto BREAK
 		case "Нет":
 			executor, text = listenForExecutor(botUtil, project, cancelText)
+
 			if executor == nil {
 				return tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			}
+
 			task.Executor = executor
-			text, _ = controller.CreateTask(project, task)
+			createText, status := controller.CreateTask(project, task)
+			text = createText
+
+			if status {
+				log.Println(botUtil.Message.Chat.ID, executor.Id)
+				msg := tgbotapi.NewMessage(executor.ChatId, fmt.Sprintf("Вы получили новую задачу:\n%s", task.Description))
+				botUtil.Bot.Send(msg)
+			}
+
 			goto BREAK
 		default:
 			text = "Пожалуйста, выберите один из вариантов"

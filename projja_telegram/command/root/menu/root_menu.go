@@ -10,21 +10,19 @@ func GetRootMenu(message *util.MessageData) tgbotapi.MessageConfig {
 	text := fmt.Sprintf("%s, что вы хотите сделать?\n", message.From.UserName)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	var row1 []tgbotapi.InlineKeyboardButton
-	var row2 []tgbotapi.InlineKeyboardButton
-	skillsBtn := tgbotapi.NewInlineKeyboardButtonData("Изменить навыки", "set_skills")
-	updateBtn := tgbotapi.NewInlineKeyboardButtonData("Обновить данные профиля", "update_data")
-	projectsManageBtn := tgbotapi.NewInlineKeyboardButtonData("Управлять проектами", "project_management")
-	tasksBtn := tgbotapi.NewInlineKeyboardButtonData("Ваши задачи", "check_tasks")
+	var row1 []tgbotapi.KeyboardButton
+	var row2 []tgbotapi.KeyboardButton
+	skillsBtn := tgbotapi.NewKeyboardButton("Изменить навыки")
+	updateBtn := tgbotapi.NewKeyboardButton("Обновить данные профиля")
+	projectsManageBtn := tgbotapi.NewKeyboardButton("Управлять проектами")
+	tasksBtn := tgbotapi.NewKeyboardButton("Ваши задачи")
 
 	row1 = append(row1, skillsBtn)
 	row1 = append(row1, updateBtn)
 	row2 = append(row2, projectsManageBtn)
 	row2 = append(row2, tasksBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
+
+	keyboard := tgbotapi.NewReplyKeyboard(row1, row2)
 
 	msg.ReplyMarkup = keyboard
 	return msg

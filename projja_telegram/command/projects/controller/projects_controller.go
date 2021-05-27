@@ -14,9 +14,9 @@ import (
 )
 
 func GetProjects(user *tgbotapi.User, page int, count int) ([]*model.Project, bool) {
-	projectsCount := count - (page-1)*10
-	if projectsCount > 10 {
-		projectsCount = 10
+	projectsCount := count - (page-1)*4
+	if projectsCount > 4 {
+		projectsCount = 4
 	}
 	resp, err := http.Get(config.GetAPIAddr() +
 		fmt.Sprintf(

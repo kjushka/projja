@@ -9,7 +9,6 @@ import (
 	"projja_telegram/command/execute/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strings"
 )
 
 func ExecuteTasks(botUtil *util.BotUtil) {
@@ -22,26 +21,21 @@ func ExecuteTasks(botUtil *util.BotUtil) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
-		case "back_btn":
+		case "Назад":
 			return
 		default:
-			text, index, status := view.IsTaskId(command, len(tasks), page)
+			text, index, status := view.IsTaskName(tasks, command)
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 			if status {
@@ -66,9 +60,9 @@ func ShowExecutedTasksMenu(botUtil *util.BotUtil, page int) ([]*model.Task, tgbo
 		return nil, msg, false
 	}
 
-	count := len(tasks) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(tasks) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := menu.MakeExecutedTasksMenu(botUtil.Message, tasks, page, count)
 	return tasks, msg, true
@@ -83,25 +77,20 @@ func ManageExecutorAnswers(botUtil *util.BotUtil, task *model.Task) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "back_btn":
+		case "Назад":
 			return
-		case "add_answer":
+		case "Добавить ответ":
 			msg := AddAnswer(botUtil, task)
 			botUtil.Bot.Send(msg)
 		default:
-			msg := util.GetUnknownMessage(botUtil, command)
+			msg := util.GetUnknownMessage(botUtil)
 			botUtil.Bot.Send(msg)
 		}
 
@@ -133,13 +122,13 @@ func MakeAddAnswerMenu(botUtil *util.BotUtil, task *model.Task) (tgbotapi.Messag
 		answerAsString = fmt.Sprintf("Ваш последний ответ: %s", answer.Status)
 	}
 	answerMenu := tgbotapi.NewMessage(botUtil.Message.Chat.ID, answerAsString)
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	addAnswerBtn := tgbotapi.NewInlineKeyboardButtonData("Добавить ответ", "add_answer")
-	rootBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
+
+	row := make([]tgbotapi.KeyboardButton, 0)
+	addAnswerBtn := tgbotapi.NewKeyboardButton("Добавить ответ")
+	rootBtn := tgbotapi.NewKeyboardButton("Назад")
 	row = append(row, addAnswerBtn)
 	row = append(row, rootBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	answerMenu.ReplyMarkup = keyboard
 
 	return answerMenu, true
@@ -149,11 +138,10 @@ func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 	text := "Загрузите файл или напишите сообщение"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -165,10 +153,7 @@ func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 		mes := update.Message
 		var command string
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
@@ -178,14 +163,14 @@ func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			text = "Отмена добавления ответа"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
 		case "answer_entered":
 			ready = true
 		default:
-			msg := util.GetUnknownMessage(botUtil, command)
+			msg := util.GetUnknownMessage(botUtil)
 			botUtil.Bot.Send(msg)
 		}
 
@@ -216,26 +201,21 @@ func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.AddAnswer(answer)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена добавления ответа"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 

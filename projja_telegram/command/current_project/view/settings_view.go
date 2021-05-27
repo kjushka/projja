@@ -7,7 +7,6 @@ import (
 	projectmenu "projja_telegram/command/current_project/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strings"
 )
 
 func ChangeProjectSetting(botUtil *util.BotUtil, project *model.Project) {
@@ -16,30 +15,28 @@ func ChangeProjectSetting(botUtil *util.BotUtil, project *model.Project) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "change_name":
+		case "Сменить название":
 			msg = ChangeProjectName(botUtil, project)
 			botUtil.Bot.Send(msg)
-		case "change_status":
+		case "Открыть/закрыть проект":
 			msg = ChangeProjectStatus(botUtil, project)
 			botUtil.Bot.Send(msg)
-		case "change_members":
+		case "Участники проекта":
 			ChangeProjectMembers(botUtil, project)
-		case "change_statuses":
+		case "Статусы задач":
 			ChangeProjectStatuses(botUtil, project)
-		case "back_btn":
+		case "Назад":
 			return
+		default:
+			msg = util.GetUnknownMessage(botUtil)
+			botUtil.Bot.Send(msg)
 		}
 
 		msg = projectmenu.MakeSettingsMenu(botUtil.Message, project)
@@ -51,12 +48,11 @@ func ChangeProjectName(botUtil *util.BotUtil, project *model.Project) tgbotapi.M
 	text := fmt.Sprintf("Введите новое название для проекта '%s'", project.Name)
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -64,24 +60,20 @@ func ChangeProjectName(botUtil *util.BotUtil, project *model.Project) tgbotapi.M
 	projectName := ""
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			text = "Отмена смены названия проекта"
 			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 			projectName = command
@@ -99,26 +91,21 @@ func ChangeProjectName(botUtil *util.BotUtil, project *model.Project) tgbotapi.M
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.ChangeProjectName(project, projectName)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена смены названия проекта"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -148,26 +135,21 @@ func ChangeProjectStatus(botUtil *util.BotUtil, project *model.Project) tgbotapi
 	var text string
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.ChangeProjectStatus(project, newStatus)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена смены статуса проекта"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 

@@ -11,32 +11,31 @@ func MakeProjectMenu(message *util.MessageData, project *model.Project) tgbotapi
 	text := fmt.Sprintf("Работаем над проектом '%s'", project.Name)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	var row1 []tgbotapi.InlineKeyboardButton
-	settingsBtn := tgbotapi.NewInlineKeyboardButtonData("Настройки проекта", "settings")
+	rows := make([][]tgbotapi.KeyboardButton, 0)
+	row1 := make([]tgbotapi.KeyboardButton, 0)
+	settingsBtn := tgbotapi.NewKeyboardButton("Настройки проекта")
 
 	row1 = append(row1, settingsBtn)
 
-	projectsMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
+	projectsMenuBtn := tgbotapi.NewKeyboardButton("Назад")
 
 	if project.Status == "opened" {
-		addTaskBtn := tgbotapi.NewInlineKeyboardButtonData("Управление задачами", "tasks")
-		checkAnswersBtn := tgbotapi.NewInlineKeyboardButtonData("Ответы на задачи", "answers")
+		addTaskBtn := tgbotapi.NewKeyboardButton("Управление задачами")
+		checkAnswersBtn := tgbotapi.NewKeyboardButton("Ответы на задачи")
 
-		var row2 []tgbotapi.InlineKeyboardButton
+		row2 := make([]tgbotapi.KeyboardButton, 0)
 
 		row1 = append(row1, addTaskBtn)
 		row2 = append(row2, checkAnswersBtn)
 		row2 = append(row2, projectsMenuBtn)
 
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row2)
+		rows = append(rows, row1, row2)
 	} else {
 		row1 = append(row1, projectsMenuBtn)
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row1)
+		rows = append(rows, row1)
 	}
 
+	keyboard := tgbotapi.NewReplyKeyboard(rows...)
 	msg.ReplyMarkup = keyboard
 	return msg
 }

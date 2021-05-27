@@ -9,7 +9,6 @@ import (
 	"projja_telegram/command/util"
 	"projja_telegram/model"
 	"strconv"
-	"strings"
 )
 
 func ChangeProjectStatuses(botUtil *util.BotUtil, project *model.Project) {
@@ -22,32 +21,27 @@ func ChangeProjectStatuses(botUtil *util.BotUtil, project *model.Project) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "add_status":
+		case "Добавить статус":
 			msg = CreateTaskStatus(botUtil, project, taskStatuses)
 			botUtil.Bot.Send(msg)
-		case "remove_status":
+		case "Удалить статус":
 			msg = RemoveTaskStatus(botUtil, project, taskStatuses)
 			botUtil.Bot.Send(msg)
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
-		case "back_btn":
+		case "Назад":
 			return
 		default:
-			msg = util.GetUnknownMessage(botUtil, command)
+			msg = util.GetUnknownMessage(botUtil)
 			botUtil.Bot.Send(msg)
 		}
 
@@ -68,9 +62,9 @@ func ShowTaskStatusesMenu(botUtil *util.BotUtil, project *model.Project, page in
 		return nil, msg, false
 	}
 
-	count := len(taskStatuses) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(taskStatuses) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := menu.MakeTaskStatusesMenu(botUtil.Message, project, taskStatuses, page, count)
 	return taskStatuses, msg, true
@@ -128,26 +122,21 @@ func CreateTaskStatus(botUtil *util.BotUtil, project *model.Project, taskStatuse
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.CreateTaskStatus(project, newTaskStatus)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена создания статуса задач"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -165,29 +154,29 @@ func listenForLevel(botUtil *util.BotUtil, taskStatuses []*model.TaskStatus) (st
 	mesText := "Выберите уровень для нового статуса"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, mesText)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-
+	rows := make([][]tgbotapi.KeyboardButton, 0)
 	i := 0
 	for i < len(taskStatuses)+1 {
-		membersRow := make([]tgbotapi.InlineKeyboardButton, 0)
-		firstRowMemberBtn := tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(i+1), strconv.Itoa(i+1))
-		membersRow = append(membersRow, firstRowMemberBtn)
+		statusesRow := make([]tgbotapi.KeyboardButton, 0)
+		firstRowStatusBtn := tgbotapi.NewKeyboardButton(strconv.Itoa(i + 1))
+		statusesRow = append(statusesRow, firstRowStatusBtn)
 		i++
 
 		if i != len(taskStatuses)+1 {
-			secondRowMemberBtn := tgbotapi.NewInlineKeyboardButtonData(strconv.Itoa(i+1), strconv.Itoa(i+1))
-			membersRow = append(membersRow, secondRowMemberBtn)
+			secondRowStatusBtn := tgbotapi.NewKeyboardButton(strconv.Itoa(i + 1))
+			statusesRow = append(statusesRow, secondRowStatusBtn)
 			i++
 		}
 
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, membersRow)
+		rows = append(rows, statusesRow)
 	}
 
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	rows = append(rows, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(rows...)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -197,23 +186,19 @@ func listenForLevel(botUtil *util.BotUtil, taskStatuses []*model.TaskStatus) (st
 	resultText := ""
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			resultText = cancelText
 			return resultText, false
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 
@@ -247,9 +232,9 @@ func listenForLevel(botUtil *util.BotUtil, taskStatuses []*model.TaskStatus) (st
 
 func RemoveTaskStatus(botUtil *util.BotUtil, project *model.Project, taskStatuses []*model.TaskStatus) tgbotapi.MessageConfig {
 	page := 1
-	count := len(taskStatuses) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(taskStatuses) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := menu.MakeTaskStatusesRemovingMenu(botUtil.Message, taskStatuses, page, count)
 	botUtil.Bot.Send(msg)
@@ -258,30 +243,25 @@ func RemoveTaskStatus(botUtil *util.BotUtil, project *model.Project, taskStatuse
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
 		exit := false
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			text := "Отмена удаления статуса задач"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
 		default:
-			text, index, status := IsTaskStatusIndex(command, len(taskStatuses), page)
+			text, index, status := IsTaskStatusStatus(taskStatuses, command)
 			statusIndex = index
 			if !status {
 				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
@@ -307,26 +287,21 @@ func RemoveTaskStatus(botUtil *util.BotUtil, project *model.Project, taskStatuse
 	var text string
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.RemoveTaskStatus(project, taskStatus)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена удаления статуса задач"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -340,20 +315,26 @@ LOOP:
 	return msg
 }
 
-func IsTaskStatusIndex(command string, count int, page int) (string, int, bool) {
-	id, err := strconv.Atoi(command)
-	if err != nil {
-		log.Println("error in casting command: ", err)
-		text := "Вы ввели не номер статуса задач в списке, а '" + command + "'"
-		return text, -1, false
-	}
-	if id > count || id < 1 {
-		log.Println(fmt.Sprintf("id not in range 1-%d", count))
-		text := fmt.Sprintf("Номер статуса задач должен быть в интервале от 1 до %d", count)
+func IsTaskStatusStatus(statuses []*model.TaskStatus, command string) (string, int, bool) {
+	if command == "" {
+		text := "Статуса с таким названием не существует"
 		return text, -1, false
 	}
 
-	id = (page-1)*10 + id
+	index := -1
+	found := false
+	for i, s := range statuses {
+		if s.Status == command {
+			found = true
+			index = i
+			break
+		}
+	}
 
-	return "", id - 1, true
+	if !found {
+		text := "Статуса с таким названием не существует"
+		return text, index, found
+	}
+
+	return "", index, found
 }

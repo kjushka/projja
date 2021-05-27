@@ -14,12 +14,9 @@ import (
 func ListenRootCommands(botUtil *util.BotUtil) {
 	for update := range botUtil.Updates {
 		message := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if message.IsCommand() {
+		if message.IsCommand() {
 			command = message.Command()
 		} else if message.Text != "" {
 			command = message.Text
@@ -29,13 +26,13 @@ func ListenRootCommands(botUtil *util.BotUtil) {
 		case "start":
 			msg := Start(botUtil)
 			botUtil.Bot.Send(msg)
-		case "set_skills":
+		case "Изменить навыки":
 			ChangeSkills(botUtil)
-		case "update_data":
+		case "Обновить данные профиля":
 			UpdateData(botUtil)
-		case "project_management":
+		case "Управлять проектами":
 			view.SelectProject(botUtil)
-		case "check_tasks":
+		case "Ваши задачи":
 			view2.ExecuteTasks(botUtil)
 		default:
 			SendUnknownMessage(botUtil)
@@ -60,14 +57,9 @@ func Start(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 	ready := false
 	for update := range botUtil.Updates {
 		message := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if message.IsCommand() {
-			command = message.Command()
-		} else if message.Text != "" {
+		if message.Text != "" {
 			command = message.Text
 		}
 
@@ -96,7 +88,7 @@ func getRegisterMessage(message *util.MessageData, text string) tgbotapi.Message
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
 	row := make([]tgbotapi.KeyboardButton, 0)
-	btn := tgbotapi.KeyboardButton{Text: "Регистрация"}
+	btn := tgbotapi.NewKeyboardButton("Регистрация")
 	row = append(row, btn)
 	keyboard := tgbotapi.NewReplyKeyboard(row)
 
@@ -139,12 +131,11 @@ func SetSkills(botUtil *util.BotUtil, isFirst bool) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
 	if !isFirst {
-		keyboard := tgbotapi.InlineKeyboardMarkup{}
-		row := make([]tgbotapi.InlineKeyboardButton, 0)
-		cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
-
+		row := make([]tgbotapi.KeyboardButton, 0)
+		cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 		row = append(row, cancelBtn)
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+
+		keyboard := tgbotapi.NewReplyKeyboard(row)
 		msg.ReplyMarkup = keyboard
 	}
 
@@ -157,6 +148,11 @@ func SetSkills(botUtil *util.BotUtil, isFirst bool) tgbotapi.MessageConfig {
 			text = "Отмена обновления навыков"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
+		}
+		if st == "error" {
+			text := "Вы ввели некорректные данные"
+			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			botUtil.Bot.Send(msg)
 		}
 	}
 
@@ -177,19 +173,13 @@ func SetSkills(botUtil *util.BotUtil, isFirst bool) tgbotapi.MessageConfig {
 func ListenForSkills(updates tgbotapi.UpdatesChannel) ([]string, string) {
 	for update := range updates {
 		mes := update.Message
-		var command string
-
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		command := ""
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			return nil, "cancel"
 		default:
 			if command == "" {

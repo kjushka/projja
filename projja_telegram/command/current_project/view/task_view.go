@@ -7,7 +7,6 @@ import (
 	projectmenu "projja_telegram/command/current_project/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strings"
 )
 
 func ManageTask(botUtil *util.BotUtil, project *model.Project, task *model.Task) {
@@ -16,38 +15,33 @@ func ManageTask(botUtil *util.BotUtil, project *model.Project, task *model.Task)
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "description":
+		case "Изменить описание":
 			msg = ChangeTaskDescription(botUtil, task)
 			botUtil.Bot.Send(msg)
-		case "deadline":
+		case "Изменить дедлайн":
 			msg = ChangeTaskDeadline(botUtil, task)
 			botUtil.Bot.Send(msg)
-		case "priority":
+		case "Изменить приоритет":
 			msg = ChangeTaskPriority(botUtil, task)
 			botUtil.Bot.Send(msg)
-		case "executor":
+		case "Изменить исполнителя":
 			msg = ChangeTaskExecutor(botUtil, project, task)
 			botUtil.Bot.Send(msg)
-		case "close_task":
+		case "Закрыть задачу":
 			msg = CloseTask(botUtil, task)
 			botUtil.Bot.Send(msg)
 			return
-		case "back_btn":
+		case "Назад":
 			return
 		default:
-			msg = util.GetUnknownMessage(botUtil, command)
+			msg = util.GetUnknownMessage(botUtil)
 			botUtil.Bot.Send(msg)
 		}
 
@@ -60,12 +54,11 @@ func ChangeTaskDescription(botUtil *util.BotUtil, task *model.Task) tgbotapi.Mes
 	text := fmt.Sprintf("Введите новое описание для задачи '%s'", task.Description)
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -73,24 +66,20 @@ func ChangeTaskDescription(botUtil *util.BotUtil, task *model.Task) tgbotapi.Mes
 	taskDescription := ""
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			text = "Отмена смены описания задачи"
 			msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 			taskDescription = command
@@ -108,26 +97,21 @@ func ChangeTaskDescription(botUtil *util.BotUtil, task *model.Task) tgbotapi.Mes
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.ChangeTaskDescription(task, taskDescription)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена смены описания задачи"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -160,26 +144,21 @@ func ChangeTaskDeadline(botUtil *util.BotUtil, task *model.Task) tgbotapi.Messag
 	var text string
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.ChangeTaskDeadline(task, deadline)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена изменения дедлайна задачи"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -212,26 +191,21 @@ func ChangeTaskPriority(botUtil *util.BotUtil, task *model.Task) tgbotapi.Messag
 	var text string
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.ChangeTaskPriority(task, priority)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена изменения приоритета задачи"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -266,26 +240,21 @@ func ChangeTaskExecutor(botUtil *util.BotUtil, project *model.Project, task *mod
 	var text string
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.ChangeTaskExecutor(task, executor)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена изменения исполнителя задачи"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -311,26 +280,21 @@ func CloseTask(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 	var text string
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.CloseTask(task)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена закрытия задачи"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 

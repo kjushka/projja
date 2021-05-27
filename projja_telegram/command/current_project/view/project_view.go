@@ -4,7 +4,6 @@ import (
 	projectmenu "projja_telegram/command/current_project/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strings"
 )
 
 func WorkWithProject(botUtil *util.BotUtil, project *model.Project) {
@@ -13,26 +12,22 @@ func WorkWithProject(botUtil *util.BotUtil, project *model.Project) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "settings":
+		case "Настройки проекта":
 			ChangeProjectSetting(botUtil, project)
-		case "tasks":
+		case "Управление задачами":
 			ManageProjectTasks(botUtil, project)
-		case "back_btn":
+		case "Ответы на задачи":
+		case "Назад":
 			return
 		default:
-			msg = util.GetUnknownMessage(botUtil, command)
+			msg = util.GetUnknownMessage(botUtil)
 			botUtil.Bot.Send(msg)
 		}
 

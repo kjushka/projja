@@ -44,8 +44,6 @@ func GetUser(username string) *model.User {
 		return nil
 	}
 
-	log.Println(responseStruct.Content.ChatId)
-
 	return responseStruct.Content
 }
 
@@ -78,8 +76,6 @@ func RegisterUser(data *util.MessageData) (bool, string) {
 		log.Println("error in register")
 		return false, returnText
 	}
-
-	log.Println(user.ChatId)
 
 	return true, "Ваш профиль был успешно создан"
 }

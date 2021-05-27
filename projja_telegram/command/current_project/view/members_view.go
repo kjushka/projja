@@ -3,12 +3,10 @@ package view
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"log"
 	"projja_telegram/command/current_project/controller"
 	"projja_telegram/command/current_project/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strconv"
 	"strings"
 )
 
@@ -22,32 +20,27 @@ func ChangeProjectMembers(botUtil *util.BotUtil, project *model.Project) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "add_member":
+		case "Добавить участника":
 			msg = AddMember(botUtil, project, members)
 			botUtil.Bot.Send(msg)
-		case "remove_member":
+		case "Удалить участника":
 			msg = RemoveMember(botUtil, project, members)
 			botUtil.Bot.Send(msg)
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
-		case "back_btn":
+		case "Назад":
 			return
 		default:
-			msg = util.GetUnknownMessage(botUtil, command)
+			msg = util.GetUnknownMessage(botUtil)
 			botUtil.Bot.Send(msg)
 		}
 
@@ -68,9 +61,9 @@ func ShowMembersMenu(botUtil *util.BotUtil, project *model.Project, page int) ([
 		return nil, msg, false
 	}
 
-	count := len(members) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(members) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := menu.MakeMembersMenu(botUtil.Message, project, members, page, count)
 	return members, msg, true
@@ -128,14 +121,14 @@ func AddMember(botUtil *util.BotUtil, project *model.Project, members []*model.U
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.AddMember(project, member)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена добавления участника"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -151,9 +144,9 @@ LOOP:
 
 func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*model.User) tgbotapi.MessageConfig {
 	page := 1
-	count := len(members) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(members) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := menu.MakeMembersRemovingMenu(botUtil.Message, project, members, page, count)
 	botUtil.Bot.Send(msg)
@@ -162,30 +155,25 @@ func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*mode
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
 		exit := false
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			text := "Отмена удаления участника"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
 		default:
-			text, index, status := IsMemberId(command, len(members), page)
+			text, index, status := IsMemberName(members, command)
 			memberIndex = index
 			if !status {
 				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
@@ -223,14 +211,14 @@ func RemoveMember(botUtil *util.BotUtil, project *model.Project, members []*mode
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.RemoveMember(project, member)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена удаления участника"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -244,20 +232,26 @@ LOOP:
 	return msg
 }
 
-func IsMemberId(command string, count int, page int) (string, int, bool) {
-	id, err := strconv.Atoi(command)
-	if err != nil {
-		log.Println("error in casting command: ", err)
-		text := "Вы ввели не номер участника в списке, а '" + command + "'"
-		return text, -1, false
-	}
-	if id > count || id < 1 {
-		log.Println(fmt.Sprintf("id not in range 1-%d", count))
-		text := fmt.Sprintf("Номер участника должен быть в интервале от 1 до %d", count)
+func IsMemberName(members []*model.User, command string) (string, int, bool) {
+	if command == "" {
+		text := "Участника с таким username не существует"
 		return text, -1, false
 	}
 
-	id = (page-1)*10 + id
+	index := -1
+	found := false
+	for i, m := range members {
+		if m.Username == command {
+			found = true
+			index = i
+			break
+		}
+	}
 
-	return "", id - 1, true
+	if !found {
+		text := "Участника с таким username не существует"
+		return text, index, found
+	}
+
+	return "", index, found
 }

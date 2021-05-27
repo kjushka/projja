@@ -1,13 +1,11 @@
 package util
 
 import (
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"strings"
 )
 
-func GetUnknownMessage(botUtil *BotUtil, command string) tgbotapi.MessageConfig {
-	text := fmt.Sprintf("Я не знаю команды '%s'", command)
+func GetUnknownMessage(botUtil *BotUtil) tgbotapi.MessageConfig {
+	text := "Пожалуйста, выберите один из вариантов"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 	return msg
 }
@@ -15,12 +13,11 @@ func GetUnknownMessage(botUtil *BotUtil, command string) tgbotapi.MessageConfig 
 func ListenForText(botUtil *BotUtil, mesText string, cancelText string) (string, bool) {
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, mesText)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -28,23 +25,19 @@ func ListenForText(botUtil *BotUtil, mesText string, cancelText string) (string,
 	resultText := ""
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			resultText = cancelText
 			return resultText, false
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 			resultText = command

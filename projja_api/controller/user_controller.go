@@ -294,7 +294,7 @@ func (c *Controller) GetUserProjects(params martini.Params, w http.ResponseWrite
 	rows, err := c.DB.Query(
 		"select p.id, p.name, p.status from project p where p.owner = ? order by p.status asc, id desc limit ?, ?",
 		user.Id,
-		10*(page-1),
+		4*(page-1),
 		count,
 	)
 

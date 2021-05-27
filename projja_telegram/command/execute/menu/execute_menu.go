@@ -6,14 +6,15 @@ import (
 	"math"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strconv"
 	"strings"
 )
 
 func MakeExecutedTasksMenu(message *util.MessageData, tasks []*model.Task, page int, count int) tgbotapi.MessageConfig {
 	msg := tgbotapi.MessageConfig{}
+	start := (page - 1) * 4
+	end := page + count
 	if len(tasks) != 0 {
-		textStrings := make([]string, len(tasks))
+		textStrings := make([]string, len(tasks[start:end]))
 		for i, task := range tasks {
 			textStrings[i] = fmt.Sprintf("%d. %s до %s, %s", i+1, task.Description, task.Deadline, task.Priority)
 		}
@@ -27,43 +28,43 @@ func MakeExecutedTasksMenu(message *util.MessageData, tasks []*model.Task, page 
 		msg = tgbotapi.NewMessage(message.Chat.ID, text)
 	}
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
+	rows := make([][]tgbotapi.KeyboardButton, 0)
 	if len(tasks) != 0 {
-		pagesCount := int(math.Ceil(float64(count) / 10.0))
-		prevNextBntRow := make([]tgbotapi.InlineKeyboardButton, 0)
-		if page > 1 {
-			prevBnt := tgbotapi.NewInlineKeyboardButtonData("Предыдущая страница", "prev_page")
-			prevNextBntRow = append(prevNextBntRow, prevBnt)
-		}
-		if page < pagesCount {
-			nextBnt := tgbotapi.NewInlineKeyboardButtonData("Следующая страница", "next_page")
-			prevNextBntRow = append(prevNextBntRow, nextBnt)
-		}
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, prevNextBntRow)
-
-		i := 0
-		for i < len(tasks) {
-			projectsRow := make([]tgbotapi.InlineKeyboardButton, 0)
-			firstRowProjectBtn := tgbotapi.NewInlineKeyboardButtonData(tasks[i].Description, strconv.Itoa(i+1))
-			projectsRow = append(projectsRow, firstRowProjectBtn)
+		i := start
+		for i < end {
+			tasksRow := make([]tgbotapi.KeyboardButton, 0)
+			firstRowTaskBtn := tgbotapi.NewKeyboardButton(tasks[i].Description)
+			tasksRow = append(tasksRow, firstRowTaskBtn)
 			i++
 
-			if i != len(tasks) {
-				secondRowProjectBtn := tgbotapi.NewInlineKeyboardButtonData(tasks[i].Description, strconv.Itoa(i+1))
-				projectsRow = append(projectsRow, secondRowProjectBtn)
+			if i != end {
+				secondRowTaskBtn := tgbotapi.NewKeyboardButton(tasks[i].Description)
+				tasksRow = append(tasksRow, secondRowTaskBtn)
 				i++
 			}
 
-			keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, projectsRow)
+			rows = append(rows, tasksRow)
 		}
+
+		pagesCount := int(math.Ceil(float64(len(tasks)) / 4.0))
+		prevNextBntRow := make([]tgbotapi.KeyboardButton, 0)
+		if page > 1 {
+			prevBnt := tgbotapi.NewKeyboardButton("Предыдущая страница")
+			prevNextBntRow = append(prevNextBntRow, prevBnt)
+		}
+		if page < pagesCount {
+			nextBnt := tgbotapi.NewKeyboardButton("Следующая страница")
+			prevNextBntRow = append(prevNextBntRow, nextBnt)
+		}
+		rows = append(rows, prevNextBntRow)
 	}
 
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	rootBtn := tgbotapi.NewInlineKeyboardButtonData("Назад", "back_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	rootBtn := tgbotapi.NewKeyboardButton("Назад")
 	row = append(row, rootBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	rows = append(rows, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(rows...)
 	msg.ReplyMarkup = keyboard
 
 	return msg

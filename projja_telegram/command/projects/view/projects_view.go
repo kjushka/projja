@@ -3,14 +3,11 @@ package view
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"log"
 	"projja_telegram/command/current_project/view"
 	"projja_telegram/command/projects/controller"
 	projectsmenu "projja_telegram/command/projects/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strconv"
-	"strings"
 )
 
 func SelectProject(botUtil *util.BotUtil) {
@@ -33,21 +30,16 @@ func SelectProject(botUtil *util.BotUtil) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "back_btn":
+		case "Назад":
 			return
-		case "create_project":
+		case "Создать новый проект":
 			page = 1
 			msg = CreateProject(botUtil)
 			botUtil.Bot.Send(msg)
@@ -60,12 +52,12 @@ func SelectProject(botUtil *util.BotUtil) {
 				botUtil.Bot.Send(msg)
 				return
 			}
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
 		default:
-			msg, index, status := IsProjectId(botUtil.Message, command, projects)
+			msg, index, status := IsProjectName(botUtil.Message, command, projects)
 			botUtil.Bot.Send(msg)
 			if status {
 				view.WorkWithProject(botUtil, projects[index])
@@ -84,12 +76,11 @@ func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 	text := "Введите имя нового проекта"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -97,24 +88,20 @@ func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 	projectName := ""
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			text = "Отмена создания проекта"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			return msg
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 			projectName = command
@@ -131,26 +118,21 @@ func CreateProject(botUtil *util.BotUtil) tgbotapi.MessageConfig {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text, _ = controller.CreateNewProject(botUtil.Message, projectName)
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = "Отмена создания проекта"
 			goto LOOP
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -164,24 +146,31 @@ LOOP:
 	return msg
 }
 
-func IsProjectId(message *util.MessageData, command string, projects []*model.Project) (tgbotapi.MessageConfig, int, bool) {
-	id, err := strconv.Atoi(command)
-	if err != nil {
-		log.Println("error in casting command: ", err)
-		text := "Вы ввели не номер проекта в списке, а '" + command + "'"
+func IsProjectName(message *util.MessageData, command string, projects []*model.Project) (tgbotapi.MessageConfig, int, bool) {
+	if command == "" {
+		text := "Проекта с таким названием не существует"
 		msg := tgbotapi.NewMessage(message.Chat.ID, text)
-		return msg, 0, false
-	}
-	count := len(projects)
-	if id > count || id < 1 {
-		log.Println(fmt.Sprintf("id not in range 1-%d", count))
-		text := fmt.Sprintf("Номер проекта должен быть в интервале от 1 до %d", count)
-		msg := tgbotapi.NewMessage(message.Chat.ID, text)
-		return msg, id, false
+		return msg, -1, false
 	}
 
-	text := fmt.Sprintf("Выбран проект '%s'", projects[id-1].Name)
+	index := -1
+	found := false
+	for i, p := range projects {
+		if p.Name == command {
+			found = true
+			index = i
+			break
+		}
+	}
+
+	if !found {
+		text := "Проекта с таким названием не существует"
+		msg := tgbotapi.NewMessage(message.Chat.ID, text)
+		return msg, index, found
+	}
+
+	text := fmt.Sprintf("Выбран проект '%s'", projects[index].Name)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
-	return msg, id - 1, true
+	return msg, index, found
 }

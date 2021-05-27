@@ -9,7 +9,6 @@ import (
 	"projja_telegram/command/current_project/menu"
 	"projja_telegram/command/util"
 	"projja_telegram/model"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -24,29 +23,24 @@ func ManageProjectTasks(botUtil *util.BotUtil, project *model.Project) {
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "create_task":
+		case "Создать новую задачу":
 			msg = CreateTask(botUtil, project)
 			botUtil.Bot.Send(msg)
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
-		case "back_btn":
+		case "Назад":
 			return
 		default:
-			text, index, status := IsTaskId(command, len(tasks), page)
+			text, index, status := IsTaskName(tasks, command)
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 			if status {
@@ -71,9 +65,9 @@ func ShowTasksMenu(botUtil *util.BotUtil, project *model.Project, page int) ([]*
 		return nil, msg, false
 	}
 
-	count := len(tasks) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(tasks) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := menu.MakeProjectTasksMenu(botUtil.Message, project, tasks, page, count)
 	return tasks, msg, true
@@ -138,38 +132,33 @@ func CreateTask(botUtil *util.BotUtil, project *model.Project) tgbotapi.MessageC
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			text = "Вычисляем подходящего исполнителя..."
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
 			user, err := controller.CalculateExecutor(project, task)
 			if err != nil {
-				errorText := "При получении исполнителя произошла ошибка\nПопробуйте позже"
+				errorText := "При получении исполнителя произошла ошибка\nПопробуйте позже ещё раз"
 				msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, errorText)
 				return msg
 			}
 			executor = user
 
 			goto LOOP
-		case "no_btn":
+		case "Нет":
 			text = cancelText
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, cancelText)
 			return msg
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -193,19 +182,14 @@ LOOP:
 
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "yes_btn":
+		case "Да":
 			task.Executor = executor
 			createText, status := controller.CreateTask(project, task)
 			text = createText
@@ -217,7 +201,7 @@ LOOP:
 			}
 
 			goto BREAK
-		case "no_btn":
+		case "Нет":
 			executor, text = listenForExecutor(botUtil, project, cancelText)
 			if executor == nil {
 				return tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
@@ -226,7 +210,7 @@ LOOP:
 			text, _ = controller.CreateTask(project, task)
 			goto BREAK
 		default:
-			text = "Неизвестная команда"
+			text = "Пожалуйста, выберите один из вариантов"
 			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 			botUtil.Bot.Send(msg)
 
@@ -244,13 +228,12 @@ func listenForDeadline(botUtil *util.BotUtil) (time.Time, bool) {
 	mesText := "Введите дату дедлайна в формате YYYY-MM-DD"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, mesText)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
+	row := make([]tgbotapi.KeyboardButton, 0)
 
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -259,22 +242,18 @@ func listenForDeadline(botUtil *util.BotUtil) (time.Time, bool) {
 	ready := false
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			return time.Now(), false
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 
@@ -314,13 +293,12 @@ func listenForTaskSkills(botUtil *util.BotUtil) ([]string, bool) {
 		"Пример:\nfrontend js angular"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, mesText)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
+	row := make([]tgbotapi.KeyboardButton, 0)
 
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	botUtil.Bot.Send(msg)
@@ -329,22 +307,18 @@ func listenForTaskSkills(botUtil *util.BotUtil) ([]string, bool) {
 	ready := false
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			return nil, false
 		default:
 			if command == "" {
+				botUtil.Bot.Send(msg)
 				continue
 			}
 
@@ -364,24 +338,21 @@ func listenForPriority(botUtil *util.BotUtil) (string, bool) {
 	mesText := "Выберите приоритет задачи"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, mesText)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	priorityRow := make([]tgbotapi.InlineKeyboardButton, 0)
-	critical := tgbotapi.NewInlineKeyboardButtonData("Критический", "critical")
-	high := tgbotapi.NewInlineKeyboardButtonData("Высокий", "high")
-	medium := tgbotapi.NewInlineKeyboardButtonData("Средний", "medium")
-	low := tgbotapi.NewInlineKeyboardButtonData("Низкий", "low")
+	priorityRow := make([]tgbotapi.KeyboardButton, 0)
+	critical := tgbotapi.NewKeyboardButton("Критический")
+	high := tgbotapi.NewKeyboardButton("Высокий")
+	medium := tgbotapi.NewKeyboardButton("Средний")
+	low := tgbotapi.NewKeyboardButton("Низкий")
 	priorityRow = append(priorityRow, critical)
 	priorityRow = append(priorityRow, high)
 	priorityRow = append(priorityRow, medium)
 	priorityRow = append(priorityRow, low)
 
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	cancelBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 	row = append(row, cancelBtn)
 
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, priorityRow)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	keyboard := tgbotapi.NewReplyKeyboard(priorityRow, row)
 
 	msg.ReplyMarkup = keyboard
 
@@ -391,36 +362,35 @@ func listenForPriority(botUtil *util.BotUtil) (string, bool) {
 	ready := false
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			return "", false
-		case "critical":
-			fallthrough
-		case "high":
-			fallthrough
-		case "medium":
-			fallthrough
-		case "low":
-			result = command
+		case "Критический":
+			result = "critical"
+			ready = true
+		case "Высокий":
+			result = "high"
+			ready = true
+		case "Средний":
+			result = "medium"
+			ready = true
+		case "Низкий":
+			result = "low"
 			ready = true
 		default:
-			text := "Неизвестная команда\nВыберите статус задачи"
-			msg = tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			text := "Пожалуйста, выберите один из вариантов"
+			errorMsg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
+			botUtil.Bot.Send(errorMsg)
 			botUtil.Bot.Send(msg)
 		}
 
-		if ready {
+		if ready && result != "" {
 			break
 		}
 	}
@@ -452,9 +422,9 @@ func listenForExecutor(botUtil *util.BotUtil, project *model.Project, cancelStri
 	}
 
 	page := 1
-	count := len(members) - (page-1)*10
-	if count > 10 {
-		count = 10
+	count := len(members) - (page-1)*4
+	if count > 4 {
+		count = 4
 	}
 	msg := makeExecutorMenu(botUtil.Message, members, page, count)
 	botUtil.Bot.Send(msg)
@@ -463,26 +433,21 @@ func listenForExecutor(botUtil *util.BotUtil, project *model.Project, cancelStri
 	exit := false
 	for update := range botUtil.Updates {
 		mes := update.Message
-		var command string
+		command := ""
 
-		if update.CallbackQuery != nil {
-			response := strings.Split(update.CallbackQuery.Data, " ")
-			command = response[0]
-		} else if mes.IsCommand() {
-			command = mes.Command()
-		} else if mes.Text != "" {
+		if mes.Text != "" {
 			command = mes.Text
 		}
 
 		switch command {
-		case "cancel_btn":
+		case "Отмена":
 			return nil, cancelString
-		case "prev_page":
+		case "Предыдущая страница":
 			page--
-		case "next_page":
+		case "Следующая страница":
 			page++
 		default:
-			text, index, status := IsMemberId(command, len(members), page)
+			text, index, status := IsMemberName(members, command)
 			memberIndex = index
 			if !status {
 				msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
@@ -505,7 +470,9 @@ func listenForExecutor(botUtil *util.BotUtil, project *model.Project, cancelStri
 
 func makeExecutorMenu(message *util.MessageData, members []*model.User, page int, count int) tgbotapi.MessageConfig {
 	msg := tgbotapi.MessageConfig{}
-	textStrings := make([]string, len(members))
+	start := (page - 1) * 4
+	end := start + count
+	textStrings := make([]string, len(members[start:end]))
 	for i, member := range members {
 		textStrings[i] = fmt.Sprintf("%d. %s aka %s", i+1, member.Name, member.Username)
 	}
@@ -515,60 +482,67 @@ func makeExecutorMenu(message *util.MessageData, members []*model.User, page int
 	)
 	msg = tgbotapi.NewMessage(message.Chat.ID, text)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
+	rows := make([][]tgbotapi.KeyboardButton, 0)
 
-	pagesCount := int(math.Ceil(float64(count) / 10.0))
-	prevNextBntRow := make([]tgbotapi.InlineKeyboardButton, 0)
-	if page > 1 {
-		prevBnt := tgbotapi.NewInlineKeyboardButtonData("Предыдущая страница", "prev_page")
-		prevNextBntRow = append(prevNextBntRow, prevBnt)
-	}
-	if page < pagesCount {
-		nextBnt := tgbotapi.NewInlineKeyboardButtonData("Следующая страница", "next_page")
-		prevNextBntRow = append(prevNextBntRow, nextBnt)
-	}
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, prevNextBntRow)
-
-	i := 0
-	for i < len(members) {
-		membersRow := make([]tgbotapi.InlineKeyboardButton, 0)
-		firstRowMemberBtn := tgbotapi.NewInlineKeyboardButtonData(members[i].Name, strconv.Itoa(i+1))
+	i := start
+	for i < end {
+		membersRow := make([]tgbotapi.KeyboardButton, 0)
+		firstRowMemberBtn := tgbotapi.NewKeyboardButton(members[i].Username)
 		membersRow = append(membersRow, firstRowMemberBtn)
 		i++
 
-		if i != len(members) {
-			secondRowMemberBtn := tgbotapi.NewInlineKeyboardButtonData(members[i].Name, strconv.Itoa(i+1))
+		if i != end {
+			secondRowMemberBtn := tgbotapi.NewKeyboardButton(members[i].Username)
 			membersRow = append(membersRow, secondRowMemberBtn)
 			i++
 		}
 
-		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, membersRow)
+		rows = append(rows, membersRow)
 	}
 
-	row := make([]tgbotapi.InlineKeyboardButton, 0)
-	projectMenuBtn := tgbotapi.NewInlineKeyboardButtonData("Отмена", "cancel_btn")
-	row = append(row, projectMenuBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
+	pagesCount := int(math.Ceil(float64(len(members)) / 10.0))
+	prevNextBntRow := make([]tgbotapi.KeyboardButton, 0)
+	if page > 1 {
+		prevBnt := tgbotapi.NewKeyboardButton("Предыдущая страница")
+		prevNextBntRow = append(prevNextBntRow, prevBnt)
+	}
+	if page < pagesCount {
+		nextBnt := tgbotapi.NewKeyboardButton("Следующая страница")
+		prevNextBntRow = append(prevNextBntRow, nextBnt)
+	}
+	rows = append(rows, prevNextBntRow)
 
+	row := make([]tgbotapi.KeyboardButton, 0)
+	projectMenuBtn := tgbotapi.NewKeyboardButton("Отмена")
+	row = append(row, projectMenuBtn)
+	rows = append(rows, row)
+
+	keyboard := tgbotapi.NewReplyKeyboard(rows...)
 	msg.ReplyMarkup = keyboard
 
 	return msg
 }
 
-func IsTaskId(command string, count int, page int) (string, int, bool) {
-	id, err := strconv.Atoi(command)
-	if err != nil {
-		log.Println("error in casting command: ", err)
-		text := "Вы ввели не номер задачи в списке, а '" + command + "'"
-		return text, -1, false
-	}
-	if id > count || id < 1 {
-		log.Println(fmt.Sprintf("id not in range 1-%d", count))
-		text := fmt.Sprintf("Номер задачи должен быть в интервале от 1 до %d", count)
+func IsTaskName(tasks []*model.Task, command string) (string, int, bool) {
+	if command == "" {
+		text := "Задачи с таким описанием не существует"
 		return text, -1, false
 	}
 
-	id = (page-1)*10 + id
+	index := -1
+	found := false
+	for i, task := range tasks {
+		if task.Description == command {
+			found = true
+			index = i
+			break
+		}
+	}
 
-	return "", id - 1, true
+	if !found {
+		text := "Задачи с таким описанием не существует"
+		return text, index, found
+	}
+
+	return "", index, found
 }

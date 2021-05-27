@@ -7,15 +7,13 @@ import (
 func GetAcceptingMessage(message *MessageData, acceptingString string) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(message.Chat.ID, acceptingString)
 
-	keyboard := tgbotapi.InlineKeyboardMarkup{}
-
-	var row []tgbotapi.InlineKeyboardButton
-	yesBtn := tgbotapi.NewInlineKeyboardButtonData("Да", "yes_btn")
-	noBtn := tgbotapi.NewInlineKeyboardButtonData("Нет", "no_btn")
+	row := make([]tgbotapi.KeyboardButton, 0)
+	yesBtn := tgbotapi.NewKeyboardButton("Да")
+	noBtn := tgbotapi.NewKeyboardButton("Нет")
 	row = append(row, yesBtn)
 	row = append(row, noBtn)
-	keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, row)
 
+	keyboard := tgbotapi.NewReplyKeyboard(row)
 	msg.ReplyMarkup = keyboard
 
 	return msg

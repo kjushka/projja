@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/scylladb/go-set"
 	"log"
 	"projja_api/model"
 	"strings"
@@ -101,11 +102,48 @@ func (c *Controller) makeContentResponse(code int, desc string, content interfac
 	return code, string(byteResponse)
 }
 
-func (c *Controller) setSkillsToTask(skills []string, id int64) (int64, error) {
+func (c *Controller) setSkillsToTask(skills []string, taskId int64) (int64, error) {
+	rows, err := c.DB.Query(
+		"select s.skill from skill s",
+	)
+
+	if err != nil && err != sql.ErrNoRows {
+		log.Println("error in getting skills:", err)
+		return 0, err
+	}
+
+	skillsSet := set.NewStringSet()
+	for rows.Next() {
+		var skill string
+		err = rows.Scan(&skill)
+		if err != nil {
+			log.Println("error in scan skills:", err)
+			return 0, err
+		}
+		skillsSet.Add(skill)
+	}
+	newSkills := make([]string, 0)
+	for _, skill := range skills {
+		skill := strings.ToLower(skill)
+		if !skillsSet.Has(skill) {
+			newSkills = append(newSkills, fmt.Sprintf("('%v')", skill))
+		}
+	}
+
+	if len(newSkills) != 0 {
+		_, err := c.DB.Exec("insert ignore into skill (skill) values " +
+			strings.Join(newSkills, ", "),
+		)
+		if err != nil {
+			log.Println("error in creating new skills:", err)
+			return 0, err
+		}
+	}
+
 	query := "insert into task_skill (task, skill) values "
 	queryArr := make([]string, len(skills))
 	for i := range skills {
-		queryArr[i] = fmt.Sprintf("(%v, (select id from skill where skill = '%v'))", id, skills[i])
+		queryArr[i] = fmt.Sprintf("(%v, (select id from skill where skill = '%v'))", taskId, skills[i])
 	}
 	query += strings.Join(queryArr, ", ")
 	result, err := c.DB.Exec(

@@ -89,6 +89,9 @@ func main() {
 		router.Group("/answer", func(r martini.Router) {
 			r.Post("/create", c.AddAnswer)
 			r.Get("/last/:tid/:uname", c.GetLastAnswer)
+			r.Get("/project/:pid", c.GetProjectAnswers)
+			r.Get("/:aid/accept", c.AcceptAnswer)
+			r.Get("/:aid/decline", c.DeclineAnswer)
 		})
 	})
 	m.RunOnAddr(addr)

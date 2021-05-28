@@ -363,6 +363,7 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 	}
 	var result sql.Result
 	var message string
+	closed := false
 	if count == 0 {
 		result, err = c.DB.Exec(
 			"update task set is_closed = ? where id = ?",
@@ -406,6 +407,7 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 		}
 
 		message = "Task closed because last status stayed yet"
+		closed = true
 	} else {
 		result, err = c.DB.Exec(
 			"update task set status = (select ts.id from task_status ts "+
@@ -425,8 +427,15 @@ func (c *Controller) SetNextTaskStatus(params martini.Params, w http.ResponseWri
 
 	rowsAffected, _ := result.RowsAffected()
 
+	var code int
+	if closed {
+		code = 200
+	} else {
+		code = 202
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	return c.makeContentResponse(200, message, struct {
+	return c.makeContentResponse(code, message, struct {
 		Name    string
 		Content interface{}
 	}{

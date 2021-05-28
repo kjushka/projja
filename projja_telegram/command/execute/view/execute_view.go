@@ -158,7 +158,7 @@ func AddAnswer(botUtil *util.BotUtil, task *model.Task) tgbotapi.MessageConfig {
 			command = mes.Text
 		}
 
-		if mes != nil {
+		if mes != nil && command != "Отмена" {
 			messageId = mes.MessageID
 			command = "answer_entered"
 		}

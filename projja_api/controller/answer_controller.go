@@ -72,9 +72,11 @@ func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter)
 	}
 
 	row := c.DB.QueryRow(
-		"select * from answer where task = ? and executor = ? order by sent_at desc limit 1",
+		"select * from answer where task = ? and executor = ? and status in (?, ?) order by sent_at desc limit 1",
 		taskId,
 		user.Id,
+		"not checked",
+		"declined",
 	)
 	answerDto := &struct {
 		Id        int64
@@ -117,4 +119,143 @@ func (c *Controller) GetLastAnswer(params martini.Params, w http.ResponseWriter)
 
 	w.Header().Set("Content-Type", "application/json")
 	return c.makeContentResponse(200, "Last answer", answer)
+}
+
+func (c *Controller) GetProjectAnswers(params martini.Params, w http.ResponseWriter) (int, string) {
+	projectId, err := strconv.ParseInt(params["pid"], 10, 64)
+	if err != nil {
+		log.Println("error in parse project id: ", err.Error())
+		return 500, err.Error()
+	}
+
+	rows, err := c.DB.Query(
+		"select max(a.id), a.task, t.description, cast(t.deadline as char), t.priority, "+
+			"t.status, t.level, max(a.message_id), max(a.chat_id), max(a.status), max(cast(a.sent_at as char)) "+
+			"from answer a "+
+			"inner join (select t.id, t.description, t.deadline, t.priority, "+
+			"ts.status, ts.status_level level from task t "+
+			"left join task_status ts on ts.id = t.status "+
+			"where t.project = ? and t.is_closed <> true and t.is_closed = 0) t on t.id = a.task "+
+			"where a.status = ? "+
+			"group by a.task "+
+			"order by max(a.id) asc",
+		projectId,
+		"not checked",
+	)
+	if err != nil {
+		log.Println("error in getting answers: ", err)
+		return 500, err.Error()
+	}
+	answers := make([]*model.Answer, 0)
+	for rows.Next() {
+		answer := &model.Answer{
+			Id: 0,
+			Task: &model.Task{
+				Id:          0,
+				Description: "",
+				Project:     nil,
+				Deadline:    "",
+				Priority:    "",
+				Status: &model.TaskStatus{
+					Status: "",
+					Level:  0,
+				},
+				IsClosed: false,
+				Executor: nil,
+				Skills:   nil,
+			},
+			Executor:  nil,
+			MessageId: 0,
+			ChatId:    0,
+			Status:    "",
+			SentAt:    time.Time{},
+		}
+		var date string
+
+		err = rows.Scan(
+			&answer.Id,
+			&answer.Task.Id,
+			&answer.Task.Description,
+			&answer.Task.Deadline,
+			&answer.Task.Priority,
+			&answer.Task.Status.Status,
+			&answer.Task.Status.Level,
+			&answer.MessageId,
+			&answer.ChatId,
+			&answer.Status,
+			&date,
+		)
+		if err != nil {
+			log.Println("error in scanning answers: ", err)
+			continue
+		}
+
+		answer.SentAt, err = time.Parse("2006-01-02 15:04:05", date)
+		if err != nil {
+			log.Println("error in casting date: ", err)
+			continue
+		}
+
+		answers = append(answers, answer)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	return c.makeContentResponse(200, "Project answers", answers)
+}
+
+func (c *Controller) AcceptAnswer(params martini.Params, w http.ResponseWriter) (int, string) {
+	answerId, err := strconv.ParseInt(params["aid"], 10, 64)
+	if err != nil {
+		log.Println("error in parsing answer id: ", err)
+		return 500, err.Error()
+	}
+
+	result, err := c.DB.Exec(
+		"update answer set status = ? where id = ?",
+		"accepted",
+		answerId,
+	)
+	if err != nil {
+		log.Println("error in accepting answer: ", err.Error())
+		return 500, err.Error()
+	}
+	rowsAffected, _ := result.RowsAffected()
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Answer accepted", struct {
+		Name    string
+		Content interface{}
+	}{
+		Name:    "Rows affected",
+		Content: rowsAffected,
+	})
+}
+
+func (c *Controller) DeclineAnswer(params martini.Params, w http.ResponseWriter) (int, string) {
+	answerId, err := strconv.ParseInt(params["aid"], 10, 64)
+	if err != nil {
+		log.Println("error in parsing answer id: ", err)
+		return 500, err.Error()
+	}
+
+	result, err := c.DB.Exec(
+		"update answer set status = ? where id = ?",
+		"declined",
+		answerId,
+	)
+	if err != nil {
+		log.Println("error in declining answer: ", err.Error())
+		return 500, err.Error()
+	}
+	rowsAffected, _ := result.RowsAffected()
+
+	w.Header().Set("Content-Type", "application/json")
+	return c.makeContentResponse(200, "Answer declined", struct {
+		Name    string
+		Content interface{}
+	}{
+		Name:    "Rows affected",
+		Content: rowsAffected,
+	})
 }

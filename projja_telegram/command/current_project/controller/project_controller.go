@@ -294,3 +294,94 @@ func GetProjectTasks(project *model.Project) ([]*model.Task, bool) {
 
 	return respData.Content, true
 }
+
+func GetProjectAnswers(project *model.Project) ([]*model.Answer, bool) {
+	resp, err := http.Get(config.GetAPIAddr() +
+		fmt.Sprintf("/answer/project/%d", project.Id),
+	)
+
+	if err != nil {
+		log.Println("error in getting answers: ", err)
+		return nil, false
+	}
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in getting answers")
+		return nil, false
+	}
+
+	respData := &struct {
+		Description string
+		Content     []*model.Answer
+	}{}
+
+	jsonBody, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Println("error in reading response body: ", err)
+		return nil, false
+	}
+
+	err = json.Unmarshal(jsonBody, respData)
+	if err != nil {
+		log.Println("error in unmarshalling answers: ", err)
+		return nil, false
+	}
+
+	return respData.Content, true
+}
+
+func AcceptAnswer(answer *model.Answer) (string, bool, bool) {
+	errorText := "Во время принятия ответа произошла ошибка\nПопробуйте позже ещё раз"
+
+	resp, err := http.Get(config.GetAPIAddr() + fmt.Sprintf("/answer/%d/accept", answer.Id))
+	if err != nil {
+		log.Println("error in request for accepting answer: ", err)
+		return errorText, false, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in request for accepting answer")
+		return errorText, false, false
+	}
+
+	resp, err = http.Get(config.GetAPIAddr() + fmt.Sprintf("/task/%d/change/status/next", answer.Task.Id))
+	if err != nil {
+		log.Println("error in request for changing task status: ", err)
+		return errorText, false, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in request for changing task status")
+		return errorText, false, false
+	}
+
+	closed := false
+	resultText := ""
+	if resp.StatusCode == http.StatusOK {
+		closed = true
+		resultText = fmt.Sprintf("Ответ принят. Задача '%s' закрыта", answer.Task.Description)
+	} else if resp.StatusCode == http.StatusAccepted {
+		closed = false
+		resultText = fmt.Sprintf("Ответ принят. Задача '%s' переведена на следующий этап", answer.Task.Description)
+	}
+
+	return resultText, true, closed
+}
+
+func DeclineAnswer(answer *model.Answer) (string, bool) {
+	errorText := "Во время отклонения ответа произошла ошибка\nПопробуйте позже ещё раз"
+
+	resp, err := http.Get(config.GetAPIAddr() + fmt.Sprintf("/answer/%d/decline", answer.Id))
+	if err != nil {
+		log.Println("error in request for declining answer: ", err)
+		return errorText, false
+	}
+
+	if resp.StatusCode == http.StatusInternalServerError {
+		log.Println("error in request for declining answer")
+		return errorText, false
+	}
+
+	resultText := fmt.Sprintf("Ответ на задачу '%s' был отклонен", answer.Task.Description)
+	return resultText, true
+}

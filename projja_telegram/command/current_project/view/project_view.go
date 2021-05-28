@@ -24,6 +24,7 @@ func WorkWithProject(botUtil *util.BotUtil, project *model.Project) {
 		case "Управление задачами":
 			ManageProjectTasks(botUtil, project)
 		case "Ответы на задачи":
+			CheckProjectAnswers(botUtil, project)
 		case "Назад":
 			return
 		default:

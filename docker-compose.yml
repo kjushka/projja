@@ -13,7 +13,7 @@ services:
     ports:
       - 8080:8080
     networks:
-      - ticket_network
+      - network
     environment:
       - DATABASE_NAME=projja
       - DATABASE_USER=root
@@ -33,9 +33,22 @@ services:
     ports:
       - 8090:8090
     networks:
-      - ticket_network
+      - network
     restart: always
-    
+
+  backend-telegram:
+    container_name: backend-telegram
+    image: backend-telegram
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - network
+    environment:
+      - BOT_TOKEN=1854133506:AAFi2RLmybsgjAuNQtB207xsXaRqiIaipm8
+    restart: always
+
   mysql:
     container_name: mysql
     image: mysql
@@ -43,11 +56,11 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: '%'
     volumes:
-     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - 7706:3306
     networks:
-      - ticket_network
+      - network
     restart: always
 
   redis:
@@ -56,9 +69,9 @@ services:
     ports:
       - 7705:6379
     networks:
-      - ticket_network
+      - network
     restart: always
     
 networks:
-  ticket_network:
+  network:
     driver: bridge

@@ -1,0 +1,77 @@
+version: "3.5"
+services:
+  backend-api:
+    container_name: backend-api
+    image: backend-api
+    depends_on:
+      - mysql
+      - redis
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    ports:
+      - 8080:8080
+    networks:
+      - network
+    environment:
+      - DATABASE_NAME=projja
+      - DATABASE_USER=root
+      - DATABASE_PASS=root
+      - DATABASE_HOST=mysql
+    restart: always
+
+  backend-exec:
+    container_name: backend-exec
+    image: backend-exec
+    depends_on:
+      - redis
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    ports:
+      - 8090:8090
+    networks:
+      - network
+    restart: always
+
+  backend-telegram:
+    container_name: backend-telegram
+    image: backend-telegram
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - network
+    environment:
+      - BOT_TOKEN=1854133506:AAFi2RLmybsgjAuNQtB207xsXaRqiIaipm8
+    restart: always
+
+  mysql:
+    container_name: mysql
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 7706:3306
+    networks:
+      - network
+    restart: always
+
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 7705:6379
+    networks:
+      - network
+    restart: always
+    
+networks:
+  network:
+    driver: bridge

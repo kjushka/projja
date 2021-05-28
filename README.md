@@ -1,4 +1,3 @@
-# projja
 projja is a telegram task tracker system
 
 ### Сборка и запуск
@@ -14,3 +13,4 @@ projja is a telegram task tracker system
 7. Логи можно посмотреть с помощью команды make logs
 8. Сервер api запускается по адресу localhost:8080
 9. Сервер exec запускается по адресу localhost:8090
+=======

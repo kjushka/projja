@@ -25,7 +25,18 @@ func MakeProjectTasksMenu(
 
 		log.Println(start, count, end)
 		for i, task := range tasks[start:end] {
-			textStrings[i] = fmt.Sprintf("%d. %s до %s, %s", i+1, task.Description, task.Deadline, task.Priority)
+			var priority string
+			switch task.Priority {
+			case "critical":
+				priority = "критический"
+			case "high":
+				priority = "высокий"
+			case "medium":
+				priority = "средний"
+			case "low":
+				priority = "низкий"
+			}
+			textStrings[i] = fmt.Sprintf("%d. %s до %s, приоритет: %s", i+1, task.Description, task.Deadline, priority)
 		}
 		text := fmt.Sprintf(
 			"Задачи проекта '%s':\n%s\n",

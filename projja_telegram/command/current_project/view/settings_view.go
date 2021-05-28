@@ -121,13 +121,19 @@ LOOP:
 
 func ChangeProjectStatus(botUtil *util.BotUtil, project *model.Project) tgbotapi.MessageConfig {
 	var newStatus string
+	var newStatusRus string
+	var oldStatusRus string
 	if project.Status == "opened" {
 		newStatus = "closed"
+		newStatusRus = "закрытый"
+		oldStatusRus = "открытый"
 	} else {
 		newStatus = "opened"
+		newStatusRus = "открытый"
+		oldStatusRus = "закрытый"
 	}
 
-	acceptingString := fmt.Sprintf("Вы хотите поменять статус проекта с '%s' на '%s'", project.Status, newStatus)
+	acceptingString := fmt.Sprintf("Вы хотите поменять статус проекта с '%s' на '%s'", oldStatusRus, newStatusRus)
 	msg := util.GetAcceptingMessage(botUtil.Message, acceptingString)
 
 	botUtil.Bot.Send(msg)

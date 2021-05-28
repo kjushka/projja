@@ -8,7 +8,18 @@ import (
 )
 
 func MakeTaskMenu(message *util.MessageData, task *model.Task) tgbotapi.MessageConfig {
-	text := fmt.Sprintf("Работаем над задачей '%s' до %s, %s", task.Description, task.Deadline, task.Priority)
+	var priority string
+	switch task.Priority {
+	case "critical":
+		priority = "критический"
+	case "high":
+		priority = "высокий"
+	case "medium":
+		priority = "средний"
+	case "low":
+		priority = "низкий"
+	}
+	text := fmt.Sprintf("Работаем над задачей '%s' до %s, приоритет: %s", task.Description, task.Deadline, priority)
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
 	var row1 []tgbotapi.KeyboardButton

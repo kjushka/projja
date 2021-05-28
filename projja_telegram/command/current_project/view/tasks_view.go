@@ -114,6 +114,17 @@ func CreateTask(botUtil *util.BotUtil, project *model.Project) tgbotapi.MessageC
 		Skills:      newTaskSkills,
 	}
 
+	var priority string
+	switch task.Priority {
+	case "critical":
+		priority = "критический"
+	case "high":
+		priority = "высокий"
+	case "medium":
+		priority = "средний"
+	case "low":
+		priority = "низкий"
+	}
 	acceptingString := fmt.Sprintf("Вы хотите создать:\n"+
 		"Описание: %s\n"+
 		"Deadline: %s\n"+
@@ -121,7 +132,7 @@ func CreateTask(botUtil *util.BotUtil, project *model.Project) tgbotapi.MessageC
 		"Навыки: %s\n",
 		task.Description,
 		task.Deadline,
-		task.Priority,
+		priority,
 		strings.Join(task.Skills, ", "),
 	)
 	msg := util.GetAcceptingMessage(botUtil.Message, acceptingString)

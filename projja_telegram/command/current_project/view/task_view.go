@@ -180,9 +180,20 @@ func ChangeTaskPriority(botUtil *util.BotUtil, task *model.Task) tgbotapi.Messag
 		return msg
 	}
 
+	var newPriority string
+	switch task.Priority {
+	case "critical":
+		newPriority = "критический"
+	case "high":
+		newPriority = "высокий"
+	case "medium":
+		newPriority = "средний"
+	case "low":
+		newPriority = "низкий"
+	}
 	acceptingString := fmt.Sprintf(
 		"Вы действительно хотите изменить приоритет задачи на '%s'?",
-		priority,
+		newPriority,
 	)
 	msg := util.GetAcceptingMessage(botUtil.Message, acceptingString)
 

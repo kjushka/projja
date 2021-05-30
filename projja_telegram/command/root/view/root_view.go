@@ -130,14 +130,19 @@ func SetSkills(botUtil *util.BotUtil, isFirst bool) tgbotapi.MessageConfig {
 		"frontend js angular"
 	msg := tgbotapi.NewMessage(botUtil.Message.Chat.ID, text)
 
+	row := make([]tgbotapi.KeyboardButton, 0)
 	if !isFirst {
-		row := make([]tgbotapi.KeyboardButton, 0)
 		cancelBtn := tgbotapi.NewKeyboardButton("Отмена")
 		row = append(row, cancelBtn)
-
-		keyboard := tgbotapi.NewReplyKeyboard(row)
-		msg.ReplyMarkup = keyboard
+	} else {
+		frontendBtn := tgbotapi.NewKeyboardButton("Frontend")
+		backendBtn := tgbotapi.NewKeyboardButton("Backend")
+		dataScienceBtn := tgbotapi.NewKeyboardButton("DataScience")
+		row = append(row, frontendBtn, backendBtn, dataScienceBtn)
 	}
+
+	keyboard := tgbotapi.NewReplyKeyboard(row)
+	msg.ReplyMarkup = keyboard
 
 	var st string
 	var skills []string

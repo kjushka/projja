@@ -181,7 +181,7 @@ func ChangeTaskPriority(botUtil *util.BotUtil, task *model.Task) tgbotapi.Messag
 	}
 
 	var newPriority string
-	switch task.Priority {
+	switch priority {
 	case "critical":
 		newPriority = "критический"
 	case "high":

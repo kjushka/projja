@@ -343,7 +343,7 @@ func listenForTaskSkills(botUtil *util.BotUtil) ([]string, bool) {
 				continue
 			}
 
-			result = strings.Split(command, " ")
+			result = strings.Split(strings.ToLower(command), " ")
 			ready = true
 		}
 

@@ -8,8 +8,6 @@ import (
 	"projja_telegram/command/util"
 )
 
-//1854133506:AAFi2RLmybsgjAuNQtB207xsXaRqiIaipm8
-
 var UsersChan map[int]*util.BotUtil
 
 func main() {
